@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import BaseCard from "../BaseCard/BaseCard";
 import "./WorldCard.css";
 import DottedWorldMap from "./DottedWorldMap";
 
@@ -46,7 +47,7 @@ function WorldCard() {
   }, [ready]);
 
   return (
-    <div className={`card card-world ${ready ? "is-ready" : "is-loading"}`}>
+    <BaseCard className={`card card-world ${ready ? "is-ready" : "is-loading"}`} variant="no-padding">
       {!ready && <div className="world-card-loader" />}
 
       <div className="world-content">
@@ -88,7 +89,7 @@ function WorldCard() {
 
         </div>
       </div>
-    </div>
+    </BaseCard>
   );
 }
 

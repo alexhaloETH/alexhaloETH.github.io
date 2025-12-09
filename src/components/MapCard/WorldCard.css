@@ -48,36 +48,43 @@
 
 .world-info {
   flex: 1;
-  padding: 18px 20px 22px 20px;
+  padding: clamp(12px, 3%, 18px) clamp(16px, 4%, 20px) clamp(16px, 4%, 22px) clamp(16px, 4%, 20px);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: clamp(6px, 2%, 10px);
   justify-content: flex-start;
   width: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .world-row {
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
-  column-gap: 16px;
+  column-gap: clamp(8px, 2%, 16px);
   width: 100%;
+  min-height: 0;
 }
 
 .world-label {
-  font-size: 12px;
+  font-size: clamp(10px, 1.8vw, 12px);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   opacity: 0.6;
   justify-self: start;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .world-value {
-  font-size: 18px;
+  font-size: clamp(14px, 2.5vw, 18px);
   font-weight: 600;
   opacity: 0.95;
   justify-self: end;
   text-align: right;
+  white-space: nowrap;
 }
 
 .world-card-loader {
@@ -109,9 +116,11 @@
 }
 
 .world-spotlight {
-  margin-bottom: 14px;
+  margin-bottom: clamp(8px, 2%, 14px);
   position: relative;
-  padding-bottom: 12px;
+  padding-bottom: clamp(8px, 2%, 12px);
+  min-height: 0;
+  overflow: hidden;
 }
 
 .world-spotlight::after {
@@ -130,16 +139,22 @@
 }
 
 .world-spotlight-title {
-  font-size: 16px;
+  font-size: clamp(14px, 2.2vw, 16px);
   font-weight: 600;
   opacity: 0.95;
-  margin-bottom: 4px;
+  margin-bottom: clamp(2px, 0.5%, 4px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .world-spotlight-desc {
-  font-size: 12px;
+  font-size: clamp(10px, 1.8vw, 12px);
   opacity: 0.6;
   line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .place-dot {

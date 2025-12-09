@@ -1,6 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Unity, useUnityContext } from 'react-unity-webgl'
+import HeroCard from './components/HeroCard.jsx'
+import SkillsCard from './components/SkillsCard/SkillsCard.jsx'
+import ExperienceCard from './components/ExperienceCard/ExperienceCard.jsx'
+import ProjectsCard from './components/ProjectsCard/ProjectsCard.jsx'
 import WorldCard from './components/MapCard/WorldCard.jsx'
+import ContactCard from './components/ContactCard/ContactCard.jsx'
 import './App.css'
 import './components/HeroCard.css'
 
@@ -124,26 +129,22 @@ function App() {
         {/* Card Grid */}
         <main className="card-grid">
           {/* Card 1 - Hero/Intro */}
-          <div className="card card-hero">
-            <div className="hero-bg"></div>
-            <div className="hero-bg-overlay"></div>
-            {/* Hero content goes here */}
-          </div>
-          {/* Card 3 - Skills */}
-          <div className="card card-skills">
-            {/* Skills content goes here */}
-          </div>
-          {/* Card 5 - Experience */}
-          <div className="card card-experience">
+          <HeroCard />
 
-          </div>
-          {/* Card 4 - Projects (wide) */}
-          <div className="card wide card-projects">
-            {/* Projects content goes here */}
-          </div>
+          {/* Card 2 - Skills */}
+          <SkillsCard />
 
+          {/* Card 3 - Experience */}
+          <ExperienceCard />
+
+          {/* Card 4 - Projects (wide - spans 2 columns) */}
+          <ProjectsCard />
+
+          {/* Card 5 - World Map */}
           <WorldCard />
 
+          {/* Card 6 - Contact (NEW - uncomment to add) */}
+          {/* <ContactCard /> */}
         </main>
       </div>
     </>

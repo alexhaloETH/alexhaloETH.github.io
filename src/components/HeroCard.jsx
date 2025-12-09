@@ -1,13 +1,20 @@
-import './HeroCard.css'
+import BaseCard from './BaseCard/BaseCard';
+import './HeroCard.css';
 
 function HeroCard() {
   return (
-    <div className="card card-hero">
+    <BaseCard className="card card-hero" variant="no-padding">
       <div className="hero-bg"></div>
       <div className="hero-bg-overlay"></div>
-      {/* Hero content goes here */}
-    </div>
-  )
+      <div className="hero-content">
+        <h1 className="hero-name">Alex Halo</h1>
+        <p className="hero-subtitle">Blockchain Developer & Web3 Enthusiast</p>
+        <p className="hero-description">
+          Building decentralized applications and exploring the future of the web
+        </p>
+      </div>
+    </BaseCard>
+  );
 }
 
-export default HeroCard
+export default HeroCard;
