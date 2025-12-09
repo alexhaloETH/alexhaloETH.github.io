@@ -304,3 +304,88 @@
     font-size: 20px;
   }
 }
+
+/* Additional mobile styles for better fit */
+@media (max-width: 768px) {
+  .card-experience {
+    min-height: 360px;
+  }
+
+  .experience-content {
+    gap: 12px;
+  }
+
+  .experience-details {
+    gap: 6px;
+    overflow-y: auto;
+    flex: 1;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+  }
+
+  .experience-details::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .experience-details::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .experience-details::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+  }
+
+  .experience-details::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.25);
+  }
+
+  .experience-title {
+    font-size: 16px;
+  }
+
+  .experience-role {
+    font-size: 14px;
+  }
+
+  .experience-company {
+    font-size: 12px;
+  }
+
+  .experience-description {
+    font-size: 11px;
+    line-height: 1.5;
+  }
+
+  .experience-highlights {
+    margin-top: 4px;
+    gap: 3px;
+  }
+
+  .experience-highlight {
+    font-size: 10px;
+    line-height: 1.4;
+  }
+
+  .experience-skills {
+    margin-top: 6px;
+    gap: 4px;
+  }
+
+  .experience-skill-tag {
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+}
+
+/* Portrait/narrow aspect ratio adjustments */
+@media (max-aspect-ratio: 3/4) {
+  .card-experience {
+    min-height: 400px;
+  }
+
+  .experience-details {
+    overflow-y: auto;
+    max-height: none;
+  }
+}

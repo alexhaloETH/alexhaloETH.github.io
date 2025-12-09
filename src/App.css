@@ -362,7 +362,8 @@
   }
 
   .card {
-    min-height: clamp(180px, 25vh, 220px);
+    min-height: 200px;
+    height: auto;
   }
 
   .card.wide {
@@ -383,5 +384,16 @@
 
   .toggle-btn {
     padding: 8px;
+  }
+}
+
+/* Portrait aspect ratio - ensure cards don't squash */
+@media (max-aspect-ratio: 3/4) {
+  .card-grid {
+    grid-template-rows: auto;
+  }
+
+  .card {
+    min-height: 220px;
   }
 }

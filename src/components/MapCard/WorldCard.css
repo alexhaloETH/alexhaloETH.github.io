@@ -171,3 +171,56 @@
 .bg-dot {
   fill: rgba(255, 255, 255, 0.12);
 }
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .card-world {
+    min-height: 340px;
+  }
+
+  .world-map {
+    flex: 0 0 55%;
+  }
+
+  .world-info {
+    flex: 1;
+    padding: 12px 16px 16px;
+    gap: 6px;
+  }
+
+  .world-spotlight {
+    margin-bottom: 6px;
+    padding-bottom: 6px;
+  }
+
+  .world-spotlight-title {
+    font-size: 14px;
+  }
+
+  .world-spotlight-desc {
+    font-size: 11px;
+  }
+
+  .world-label {
+    font-size: 10px;
+  }
+
+  .world-value {
+    font-size: 14px;
+  }
+}
+
+/* Portrait/narrow aspect ratio adjustments */
+@media (max-aspect-ratio: 3/4) {
+  .card-world {
+    min-height: 380px;
+  }
+
+  .world-map {
+    flex: 0 0 50%;
+  }
+
+  .world-info {
+    flex: 1;
+    min-height: 140px;
+  }
+}
