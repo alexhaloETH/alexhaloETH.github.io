@@ -362,7 +362,7 @@
   }
 
   .card {
-    min-height: 200px;
+    min-height: clamp(280px, 40vh, 380px);
     height: auto;
   }
 
@@ -387,13 +387,21 @@
   }
 }
 
-/* Portrait aspect ratio - ensure cards don't squash */
+/* Portrait aspect ratio - ensure cards take more space */
 @media (max-aspect-ratio: 3/4) {
   .card-grid {
     grid-template-rows: auto;
   }
 
   .card {
-    min-height: 220px;
+    min-height: clamp(300px, 45vh, 420px);
+  }
+
+  .card-hero {
+    min-height: clamp(320px, 50vh, 450px);
+  }
+
+  .card-skills {
+    min-height: clamp(350px, 55vh, 480px);
   }
 }
