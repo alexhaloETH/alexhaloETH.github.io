@@ -13,6 +13,32 @@ const WorldCard = lazy(() => import('./components/MapCard/WorldCard.jsx'))
 
 const IDLE_TIMEOUT = 60000 // 1 minute in milliseconds
 
+// Check if WebGL2 is supported (required for modern Unity shaders)
+function checkWebGL2Support() {
+  try {
+    const canvas = document.createElement('canvas')
+    const gl = canvas.getContext('webgl2')
+    return !!gl
+  } catch (e) {
+    return false
+  }
+}
+
+// Toast notification component
+function Toast({ message, onClose }) {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 5000)
+    return () => clearTimeout(timer)
+  }, [onClose])
+
+  return (
+    <div className="toast">
+      <span>{message}</span>
+      <button className="toast-close" onClick={onClose}>&times;</button>
+    </div>
+  )
+}
+
 function StarsBackground() {
   const stars = Array.from({ length: 30 }, (_, i) => (
     <div key={i} className="star" />
@@ -87,10 +113,32 @@ function useIdleDetection(timeout, enabled) {
 
 function App() {
   const [unityEnabled, setUnityEnabled] = useState(false)
+  const [unityMounted, setUnityMounted] = useState(false) // Track if Unity should be mounted
+  const [toastMessage, setToastMessage] = useState(null)
   const isIdle = useIdleDetection(IDLE_TIMEOUT, unityEnabled)
+
+  const handleToggle3D = useCallback(() => {
+    if (!unityEnabled) {
+      // Trying to enable 3D - check WebGL2 support first
+      if (!checkWebGL2Support()) {
+        setToastMessage('3D background requires WebGL2 which is not supported on this device/browser.')
+        return
+      }
+      setUnityMounted(true) // Mount Unity component
+      setUnityEnabled(true)
+    } else {
+      setUnityEnabled(false)
+      // Keep Unity mounted to avoid re-downloading, just hide it
+    }
+  }, [unityEnabled])
 
   return (
     <>
+      {/* Toast notification */}
+      {toastMessage && (
+        <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
+      )}
+
       {/* Background Layer */}
       <div className="background-container">
         {/* Stars Background - always rendered, fades out when Unity is on */}
@@ -98,11 +146,13 @@ function App() {
           <StarsBackground />
         </div>
 
-        {/* Unity Background - always rendered, fades in when enabled */}
-        <div className={`background-layer ${unityEnabled ? '' : 'hidden'}`}>
-          <UnityBackground />
-          <div className={`background-overlay ${isIdle ? 'screensaver' : ''}`} />
-        </div>
+        {/* Unity Background - only mounted after user clicks 3D button */}
+        {unityMounted && (
+          <div className={`background-layer ${unityEnabled ? '' : 'hidden'}`}>
+            <UnityBackground />
+            <div className={`background-overlay ${isIdle ? 'screensaver' : ''}`} />
+          </div>
+        )}
 
         {/* Faint light overlay on top of all backgrounds */}
         <div className="background-light-overlay" />
@@ -115,7 +165,7 @@ function App() {
           <span className="header-name">ALEXHALO</span>
           <button
             className={`toggle-btn ${unityEnabled ? 'active' : ''}`}
-            onClick={() => setUnityEnabled(!unityEnabled)}
+            onClick={handleToggle3D}
           >
             <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               {unityEnabled ? (
