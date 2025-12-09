@@ -12,6 +12,11 @@ const experiences = [
     startDate: new Date(2023, 0), // January 2023
     endDate: null, // Present
     description: "Building decentralized applications and smart contracts. Working with Solidity, Ethereum, and various Web3 technologies.",
+    highlights: [
+      "Deployed 15+ smart contracts managing $2M+ in assets",
+      "Reduced gas costs by 40% through optimization",
+      "Led team of 3 junior developers"
+    ],
     skills: ["Solidity", "Ethereum", "React", "Web3.js", "Smart Contracts"],
   },
   {
@@ -22,6 +27,11 @@ const experiences = [
     startDate: new Date(2021, 1), // February 2021
     endDate: new Date(2023, 0), // January 2023
     description: "Developed scalable web applications with React and Node.js. Led frontend architecture decisions.",
+    highlights: [
+      "Improved application performance by 60%",
+      "Architected microservices handling 100K+ daily users",
+      "Mentored 5 junior developers"
+    ],
     skills: ["React", "Node.js", "TypeScript", "PostgreSQL", "AWS"],
   },
   {
@@ -32,6 +42,11 @@ const experiences = [
     startDate: new Date(2020, 2), // March 2020
     endDate: new Date(2021, 1), // February 2021
     description: "Created responsive websites and web applications. Learned modern development practices.",
+    highlights: [
+      "Built 20+ responsive client websites",
+      "Achieved 98% client satisfaction rating",
+      "Reduced page load times by 50%"
+    ],
     skills: ["HTML", "CSS", "JavaScript", "React", "Git"],
   },
 ];
@@ -114,6 +129,15 @@ function ExperienceCard() {
             </div>
             <div className="experience-company">{selectedExperience.company}</div>
             <div className="experience-description">{selectedExperience.description}</div>
+            {selectedExperience.highlights && (
+              <ul className="experience-highlights">
+                {selectedExperience.highlights.map((highlight, index) => (
+                  <li key={index} className="experience-highlight">
+                    {highlight}
+                  </li>
+                ))}
+              </ul>
+            )}
             {selectedExperience.skills && (
               <div className="experience-skills">
                 {selectedExperience.skills.map((skill) => (

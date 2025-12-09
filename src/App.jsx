@@ -1,13 +1,15 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react'
 import { Unity, useUnityContext } from 'react-unity-webgl'
 import HeroCard from './components/HeroCard.jsx'
 import SkillsCard from './components/SkillsCard/SkillsCard.jsx'
 import ExperienceCard from './components/ExperienceCard/ExperienceCard.jsx'
 import ProjectsCard from './components/ProjectsCard/ProjectsCard.jsx'
-import WorldCard from './components/MapCard/WorldCard.jsx'
 import ContactCard from './components/ContactCard/ContactCard.jsx'
 import './App.css'
 import './components/HeroCard.css'
+
+// Lazy load the WorldCard to prevent blocking initial render
+const WorldCard = lazy(() => import('./components/MapCard/WorldCard.jsx'))
 
 const IDLE_TIMEOUT = 60000 // 1 minute in milliseconds
 
@@ -141,7 +143,9 @@ function App() {
           <ProjectsCard />
 
           {/* Card 5 - World Map */}
-          <WorldCard />
+          <Suspense fallback={<div className="card" style={{ background: 'rgba(20, 20, 20, 0.8)' }} />}>
+            <WorldCard />
+          </Suspense>
 
           {/* Card 6 - Contact (NEW - uncomment to add) */}
           {/* <ContactCard /> */}
