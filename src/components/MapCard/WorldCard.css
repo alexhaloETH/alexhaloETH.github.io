@@ -1,0 +1,158 @@
+.card-world {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.world-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  transition: opacity 280ms ease;
+}
+
+.card-world.is-ready .world-content {
+  opacity: 1;
+}
+
+.world-map {
+  flex: 0 0 62%;
+  min-height: 0;
+  position: relative;
+}
+
+.world-map::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.world-map .dotted-map {
+  width: 100%;
+  height: 100%;
+}
+
+.active-ring {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.7);
+  stroke-width: 1;
+  filter: drop-shadow(0 0 6px rgba(255,255,255,0.25));
+}
+
+
+.world-info {
+  flex: 1;
+  padding: 18px 20px 22px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.world-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  column-gap: 16px;
+  width: 100%;
+}
+
+.world-label {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  justify-self: start;
+}
+
+.world-value {
+  font-size: 18px;
+  font-weight: 600;
+  opacity: 0.95;
+  justify-self: end;
+  text-align: right;
+}
+
+.world-card-loader {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  z-index: 5;
+
+  opacity: 0.35;
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.03),
+    rgba(255,255,255,0.08),
+    rgba(255,255,255,0.03)
+  );
+  background-size: 200% 100%;
+  animation: worldShimmer 1.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes worldShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.card-world.is-ready .world-card-loader {
+  opacity: 0;
+  animation: none;
+}
+
+.world-spotlight {
+  margin-bottom: 14px;
+  position: relative;
+  padding-bottom: 12px;
+}
+
+.world-spotlight::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.08),
+    rgba(255,255,255,0.02),
+    rgba(255,255,255,0)
+  );
+}
+
+.world-spotlight-title {
+  font-size: 16px;
+  font-weight: 600;
+  opacity: 0.95;
+  margin-bottom: 4px;
+}
+
+.world-spotlight-desc {
+  font-size: 12px;
+  opacity: 0.6;
+  line-height: 1.4;
+}
+
+.place-dot {
+  fill: rgba(255, 255, 255, 0.28);
+  opacity: 0.6;
+  transition: fill 450ms ease, opacity 450ms ease, filter 450ms ease;
+}
+
+.place-dot.is-active {
+  fill: #ffffff;
+  opacity: 1;
+  filter: drop-shadow(0 0 6px rgba(255,255,255,0.35));
+}
+.bg-dot {
+  fill: rgba(255, 255, 255, 0.12);
+}

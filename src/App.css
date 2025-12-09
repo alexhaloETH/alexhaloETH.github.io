@@ -1,0 +1,380 @@
+/* ==================== */
+/* Background Layer     */
+/* ==================== */
+.background-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  overflow: hidden;
+}
+
+/* Background layer wrapper for transitions */
+.background-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 1;
+  transition: opacity 1s ease-in-out;
+}
+
+.background-layer.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Faint light overlay on top of background */
+.background-light-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.008) 0%, transparent 90%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Stars Animation Background */
+.stars-background {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at bottom, #1a1a1a 0%, #0a0a0a 100%);
+}
+
+.stars {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 120%;
+  transform: rotate(-45deg);
+}
+
+.star {
+  --star-color: rgba(255, 255, 255, 0.7);
+  --star-tail-length: 6em;
+  --star-tail-height: 2px;
+  --star-width: calc(var(--star-tail-length) / 6);
+  --fall-duration: 20s;
+  --tail-fade-duration: var(--fall-duration);
+
+  position: absolute;
+  top: var(--top-offset);
+  left: 0;
+  width: var(--star-tail-length);
+  height: var(--star-tail-height);
+  color: var(--star-color);
+  background: linear-gradient(45deg, currentColor, transparent);
+  border-radius: 50%;
+  filter: drop-shadow(0 0 6px currentColor);
+  transform: translate3d(200vw, 0, 0);
+  animation: fall var(--fall-duration) var(--fall-delay) linear infinite,
+             tail-fade var(--tail-fade-duration) var(--fall-delay) ease-out infinite;
+}
+
+.star::before,
+.star::after {
+  position: absolute;
+  content: '';
+  top: 0;
+  left: calc(var(--star-width) / -2);
+  width: var(--star-width);
+  height: 100%;
+  background: linear-gradient(45deg, transparent, currentColor, transparent);
+  border-radius: inherit;
+  animation: blink 2s linear infinite;
+}
+
+.star::before {
+  transform: rotate(45deg);
+}
+
+.star::after {
+  transform: rotate(-45deg);
+}
+
+/* Generate unique properties for each star - slower speeds, white/grey tones */
+.star:nth-child(1) { --top-offset: 12vh; --fall-duration: 18s; --fall-delay: 0s; --star-tail-length: 6.5em; }
+.star:nth-child(2) { --top-offset: 45vh; --fall-duration: 22s; --fall-delay: 2s; --star-tail-length: 5.8em; }
+.star:nth-child(3) { --top-offset: 78vh; --fall-duration: 16s; --fall-delay: 5s; --star-tail-length: 7.2em; }
+.star:nth-child(4) { --top-offset: 23vh; --fall-duration: 24s; --fall-delay: 1s; --star-tail-length: 5.5em; }
+.star:nth-child(5) { --top-offset: 56vh; --fall-duration: 20s; --fall-delay: 6s; --star-tail-length: 6.8em; }
+.star:nth-child(6) { --top-offset: 89vh; --fall-duration: 19s; --fall-delay: 3s; --star-tail-length: 6.2em; }
+.star:nth-child(7) { --top-offset: 34vh; --fall-duration: 26s; --fall-delay: 8s; --star-tail-length: 5.2em; }
+.star:nth-child(8) { --top-offset: 67vh; --fall-duration: 17s; --fall-delay: 4s; --star-tail-length: 7em; }
+.star:nth-child(9) { --top-offset: 8vh; --fall-duration: 23s; --fall-delay: 10s; --star-tail-length: 6em; }
+.star:nth-child(10) { --top-offset: 92vh; --fall-duration: 15s; --fall-delay: 1.5s; --star-tail-length: 7.5em; }
+.star:nth-child(11) { --top-offset: 41vh; --fall-duration: 21s; --fall-delay: 7s; --star-tail-length: 5.6em; }
+.star:nth-child(12) { --top-offset: 73vh; --fall-duration: 18s; --fall-delay: 12s; --star-tail-length: 6.4em; }
+.star:nth-child(13) { --top-offset: 19vh; --fall-duration: 25s; --fall-delay: 2.5s; --star-tail-length: 5.9em; }
+.star:nth-child(14) { --top-offset: 52vh; --fall-duration: 17s; --fall-delay: 9s; --star-tail-length: 7.3em; }
+.star:nth-child(15) { --top-offset: 85vh; --fall-duration: 22s; --fall-delay: 5.5s; --star-tail-length: 6.1em; }
+.star:nth-child(16) { --top-offset: 28vh; --fall-duration: 19s; --fall-delay: 14s; --star-tail-length: 5.4em; }
+.star:nth-child(17) { --top-offset: 61vh; --fall-duration: 16s; --fall-delay: 0.5s; --star-tail-length: 6.9em; }
+.star:nth-child(18) { --top-offset: 94vh; --fall-duration: 26s; --fall-delay: 11s; --star-tail-length: 5.7em; }
+.star:nth-child(19) { --top-offset: 36vh; --fall-duration: 20s; --fall-delay: 6.5s; --star-tail-length: 7.1em; }
+.star:nth-child(20) { --top-offset: 69vh; --fall-duration: 16s; --fall-delay: 16s; --star-tail-length: 6.3em; }
+.star:nth-child(21) { --top-offset: 15vh; --fall-duration: 24s; --fall-delay: 3.5s; --star-tail-length: 5.3em; --star-color: rgba(200, 200, 200, 0.5); }
+.star:nth-child(22) { --top-offset: 48vh; --fall-duration: 18s; --fall-delay: 13s; --star-tail-length: 6.7em; --star-color: rgba(200, 200, 200, 0.5); }
+.star:nth-child(23) { --top-offset: 81vh; --fall-duration: 24s; --fall-delay: 8.5s; --star-tail-length: 5.1em; --star-color: rgba(180, 180, 180, 0.4); }
+.star:nth-child(24) { --top-offset: 25vh; --fall-duration: 17s; --fall-delay: 18s; --star-tail-length: 7.4em; --star-color: rgba(180, 180, 180, 0.4); }
+.star:nth-child(25) { --top-offset: 58vh; --fall-duration: 21s; --fall-delay: 4.5s; --star-tail-length: 6.6em; }
+.star:nth-child(26) { --top-offset: 4vh; --fall-duration: 14s; --fall-delay: 15s; --star-tail-length: 5em; }
+.star:nth-child(27) { --top-offset: 37vh; --fall-duration: 22s; --fall-delay: 1.2s; --star-tail-length: 7.6em; }
+.star:nth-child(28) { --top-offset: 70vh; --fall-duration: 19s; --fall-delay: 10.5s; --star-tail-length: 6em; --star-color: rgba(220, 220, 220, 0.6); }
+.star:nth-child(29) { --top-offset: 96vh; --fall-duration: 16s; --fall-delay: 7.5s; --star-tail-length: 5.8em; }
+.star:nth-child(30) { --top-offset: 43vh; --fall-duration: 24s; --fall-delay: 17s; --star-tail-length: 6.5em; --star-color: rgba(220, 220, 220, 0.6); }
+
+@keyframes fall {
+  to {
+    transform: translate3d(-200vw, 0, 0);
+  }
+}
+
+@keyframes tail-fade {
+  0%, 50% {
+    width: var(--star-tail-length);
+    opacity: 1;
+  }
+  70%, 80% {
+    width: 0;
+    opacity: 0.4;
+  }
+  100% {
+    width: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Mobile: simpler animation for performance */
+@media (max-width: 768px) {
+  .star {
+    animation: fall var(--fall-duration) var(--fall-delay) linear infinite;
+  }
+}
+
+/* Unity Container */
+.unity-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.unity-container canvas {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* Unity Loading State */
+.unity-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  z-index: 1;
+}
+
+/* Overlay for Unity background */
+.background-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(10, 10, 10, 0.8);
+  pointer-events: none;
+  transition: background 2s ease;
+}
+
+/* Screensaver mode - reduce overlay opacity to show more Unity */
+.background-overlay.screensaver {
+  background: rgba(10, 10, 10, 0.3);
+}
+
+/* ==================== */
+/* Main Portfolio       */
+/* ==================== */
+.portfolio {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  height: 100%;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  transition: opacity 2s ease;
+}
+
+/* Screensaver mode - fade out content */
+.portfolio.screensaver {
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+/* ==================== */
+/* Header               */
+/* ==================== */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 24px;
+  margin-bottom: 5px;
+  flex-shrink: 0;
+}
+
+.header-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--text-primary);
+}
+
+/* Toggle Button */
+.toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggle-btn:hover {
+  border-color: var(--accent-color);
+  color: var(--text-primary);
+}
+
+.toggle-btn.active {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.toggle-btn .icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* ==================== */
+/* Card Grid            */
+/* ==================== */
+.card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr 1.4fr;
+  grid-template-rows: minmax(280px, 1fr) minmax(320px, 1.2fr);
+  gap: 16px;
+  padding: 0 4px;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ==================== */
+/* Individual Card      */
+/* ==================== */
+.card {
+  background-color: var(--bg-card);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 24px;
+  transition: border-color 0.2s ease;
+  overflow: hidden;
+}
+
+.card:hover {
+  border-color: #3a3a3a;
+}
+
+/* Card spanning 2 columns */
+.card.wide {
+  grid-column: span 2;
+}
+
+/* Card spanning 2 rows */
+.card.tall {
+  grid-row: span 2;
+}
+
+/* Hero card - half width */
+.card-hero {
+  grid-column: span 1;
+}
+
+
+/* ==================== */
+/* Responsive           */
+/* ==================== */
+@media (max-width: 1200px) {
+  .card-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: minmax(250px, auto) minmax(300px, auto);
+  }
+}
+
+@media (max-width: 1024px) {
+  .card-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
+    gap: 14px;
+  }
+
+  .card.wide {
+    grid-column: span 2;
+  }
+
+  .card {
+    min-height: 220px;
+  }
+}
+
+@media (max-width: 768px) {
+  .card-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    gap: 12px;
+  }
+
+  .card {
+    min-height: 200px;
+  }
+
+  .card.wide {
+    grid-column: span 1;
+  }
+
+  .header {
+    padding: 12px 16px;
+  }
+
+  .portfolio {
+    padding: 12px;
+  }
+
+  .toggle-btn span {
+    display: none;
+  }
+
+  .toggle-btn {
+    padding: 8px;
+  }
+}
