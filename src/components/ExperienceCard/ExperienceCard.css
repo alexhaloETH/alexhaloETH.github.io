@@ -319,8 +319,9 @@
     gap: 6px;
     overflow-y: auto;
     flex: 1;
+    padding-right: 4px;
     scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+    scrollbar-color: rgba(255, 255, 255, 0.15) rgba(255, 255, 255, 0.05);
   }
 
   .experience-details::-webkit-scrollbar {
@@ -328,7 +329,8 @@
   }
 
   .experience-details::-webkit-scrollbar-track {
-    background: transparent;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
   }
 
   .experience-details::-webkit-scrollbar-thumb {

@@ -17,16 +17,24 @@ export default function DottedWorldMap({
   useEffect(() => {
     if (!containerRef.current) return;
 
+    let timeoutId = null;
     const ro = new ResizeObserver(([entry]) => {
-      const { width, height } = entry.contentRect;
-      setSize({
-        w: Math.max(1, Math.floor(width)),
-        h: Math.max(1, Math.floor(height)),
-      });
+      // Debounce resize to prevent stuttering during window resize
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        const { width, height } = entry.contentRect;
+        setSize({
+          w: Math.max(1, Math.floor(width)),
+          h: Math.max(1, Math.floor(height)),
+        });
+      }, 150);
     });
 
     ro.observe(containerRef.current);
-    return () => ro.disconnect();
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      ro.disconnect();
+    };
   }, []);
 
   useEffect(() => {
@@ -102,72 +110,70 @@ export default function DottedWorldMap({
   return (
     <div ref={containerRef} className={`dotted-map ${className}`}>
       <svg
-  className="world-map-svg"
-  width="100%"
-  height="100%"
-  viewBox={`0 0 ${size.w} ${size.h}`}
-  preserveAspectRatio="xMidYMid meet"
->
-  <g>
-    {bgDots.map((d, i) => (
-      <motion.circle
-        key={d.id}
-        className="bg-dot"
-        cx={d.x}
-        cy={d.y}
-        r={1.4}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.35 }}
-        transition={{ delay: (i % 200) * 0.002 }}
-      />
-    ))}
-  </g>
+        className="world-map-svg"
+        width="100%"
+        height="100%"
+        viewBox={`0 0 ${size.w} ${size.h}`}
+        preserveAspectRatio="xMidYMid meet"
+      >
+        <g>
+          {bgDots.map((d, i) => (
+            <motion.circle
+              key={d.id}
+              className="bg-dot"
+              cx={d.x}
+              cy={d.y}
+              r={1.4}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.35 }}
+              transition={{ delay: (i % 200) * 0.002 }}
+            />
+          ))}
+        </g>
 
-  <g>
-    {placeDots.map((d) => {
-      const isActive = d.id === activePlaceId;
+        <g>
+          {placeDots.map((d) => {
+            const isActive = d.id === activePlaceId;
 
-      return (
-        <motion.circle
-          key={d.id}
-          className={isActive ? "place-dot is-active" : "place-dot"}
-          cx={d.x}
-          cy={d.y}
-          r={isActive ? 6 : 3.6}
-          initial={false}
-          animate={isActive ? { scale: [1, 1.08, 1] } : { scale: 1 }}
-          transition={
-            isActive
-              ? { duration: 1.6, repeat: Infinity, ease: "easeInOut" }
-              : { duration: 0.45, ease: "easeInOut" }
-          }
-        />
-      );
-    })}
-  </g>
+            return (
+              <motion.circle
+                key={d.id}
+                className={isActive ? "place-dot is-active" : "place-dot"}
+                cx={d.x}
+                cy={d.y}
+                r={isActive ? 6 : 3.6}
+                initial={false}
+                animate={isActive ? { scale: [1, 1.08, 1] } : { scale: 1 }}
+                transition={
+                  isActive
+                    ? { duration: 1.6, repeat: Infinity, ease: "easeInOut" }
+                    : { duration: 0.45, ease: "easeInOut" }
+                }
+              />
+            );
+          })}
+        </g>
 
-  {/* ✅ Active "handoff" ripple */}
-  <g>
-    {(() => {
-      const active = placeDots.find((p) => p.id === activePlaceId);
-      if (!active) return null;
+        <g>
+          {(() => {
+            const active = placeDots.find((p) => p.id === activePlaceId);
+            if (!active) return null;
 
-      return (
-        <motion.circle
-          key={`ring-${activePlaceId}`}
-          cx={active.x}
-          cy={active.y}
-          r={10}
-          className="active-ring"
-          initial={{ opacity: 0.45, scale: 0.6 }}
-          animate={{ opacity: 0, scale: 1.6 }}
-          transition={{ duration: 0.9, ease: "easeOut" }}
-        />
-      );
-    })()}
-  </g>
-</svg>
-
+            return (
+              <motion.circle
+                key={`ring-${activePlaceId}`}
+                cx={active.x}
+                cy={active.y}
+                r={10}
+                className="active-ring"
+                initial={{ opacity: 0.45, scale: 0.6 }}
+                animate={{ opacity: 0, scale: 1.6 }}
+                transition={{ duration: 0.9, ease: "easeOut" }}
+              />
+            );
+          })()}
+        </g>
+      </svg>
     </div>
   );
 }
