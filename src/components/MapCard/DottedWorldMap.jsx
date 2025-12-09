@@ -27,7 +27,7 @@ export default function DottedWorldMap({
           w: Math.max(1, Math.floor(width)),
           h: Math.max(1, Math.floor(height)),
         });
-      }, 150);
+      }, 300);
     });
 
     ro.observe(containerRef.current);
@@ -116,17 +116,14 @@ export default function DottedWorldMap({
         viewBox={`0 0 ${size.w} ${size.h}`}
         preserveAspectRatio="xMidYMid meet"
       >
-        <g>
-          {bgDots.map((d, i) => (
-            <motion.circle
+        <g className="bg-dots-group">
+          {bgDots.map((d) => (
+            <circle
               key={d.id}
               className="bg-dot"
               cx={d.x}
               cy={d.y}
               r={1.4}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.35 }}
-              transition={{ delay: (i % 200) * 0.002 }}
             />
           ))}
         </g>
