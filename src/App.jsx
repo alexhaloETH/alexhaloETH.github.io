@@ -13,15 +13,26 @@ const WorldCard = lazy(() => import('./components/MapCard/WorldCard.jsx'))
 
 const IDLE_TIMEOUT = 60000 // 1 minute in milliseconds
 
-// Check if WebGL2 is supported (required for modern Unity shaders)
-function checkWebGL2Support() {
+// Check if device can run Unity WebGL (WebGL2 + not mobile)
+function checkUnitySupport() {
+  // Check if mobile device - Unity WebGL doesn't work well on mobile
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  if (isMobile) {
+    return { supported: false, reason: 'mobile' }
+  }
+
+  // Check WebGL2 support
   try {
     const canvas = document.createElement('canvas')
     const gl = canvas.getContext('webgl2')
-    return !!gl
+    if (!gl) {
+      return { supported: false, reason: 'webgl2' }
+    }
   } catch (e) {
-    return false
+    return { supported: false, reason: 'webgl2' }
   }
+
+  return { supported: true }
 }
 
 // Toast notification component
@@ -119,9 +130,14 @@ function App() {
 
   const handleToggle3D = useCallback(() => {
     if (!unityEnabled) {
-      // Trying to enable 3D - check WebGL2 support first
-      if (!checkWebGL2Support()) {
-        setToastMessage('3D background requires WebGL2 which is not supported on this device/browser.')
+      // Trying to enable 3D - check device support first
+      const support = checkUnitySupport()
+      if (!support.supported) {
+        if (support.reason === 'mobile') {
+          setToastMessage('3D background is not available on mobile devices. Please visit on a desktop browser.')
+        } else {
+          setToastMessage('3D background requires WebGL2 which is not supported on this device/browser.')
+        }
         return
       }
       setUnityMounted(true) // Mount Unity component
