@@ -39,20 +39,21 @@ That's it! The card will now span 2 columns on desktop and tablet, and automatic
 
 I've created a **ContactCard** as an example. Here's how to add it:
 
-### Step 1: Uncomment in App.jsx
+### Step 1: Import and Add to App.jsx
 
 File: `src/App.jsx`
 
-**Find this line**:
+**Add the import at the top**:
 ```jsx
-{/* Card 6 - Contact (NEW - uncomment to add) */}
-{/* <ContactCard /> */}
+import ContactCard from './components/ContactCard/ContactCard.jsx'
 ```
 
-**Change to**:
+**Add to the card grid**:
 ```jsx
-{/* Card 6 - Contact */}
-<ContactCard />
+<main className="card-grid">
+  {/* Other cards... */}
+  <ContactCard />
+</main>
 ```
 
 Done! The new card is now visible.
