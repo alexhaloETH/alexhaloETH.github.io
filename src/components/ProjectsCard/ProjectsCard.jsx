@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import BaseCard from "../BaseCard/BaseCard";
 import { projects } from "../../data/projects";
@@ -20,16 +20,32 @@ const slideVariants = {
 };
 
 const imageVariants = {
-  enter: { opacity: 0, scale: 0.95 },
-  center: { opacity: 1, scale: 1 },
-  exit: { opacity: 0, scale: 0.95 },
+  enter: { opacity: 0 },
+  center: { opacity: 1 },
+  exit: { opacity: 0 },
 };
 
 function ProjectsCard() {
   const [[currentIndex, direction], setCurrentIndex] = useState([0, 0]);
   const [imageIndex, setImageIndex] = useState(0);
+  const intervalRef = useRef(null);
 
   const currentProject = projects[currentIndex];
+
+  // Auto-rotate images every 5 seconds
+  useEffect(() => {
+    if (currentProject.images && currentProject.images.length > 1) {
+      intervalRef.current = setInterval(() => {
+        setImageIndex((prev) => (prev + 1) % currentProject.images.length);
+      }, 5000);
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [currentIndex, currentProject.images]);
 
   const paginate = (newDirection) => {
     const newIndex = currentIndex + newDirection;
@@ -45,9 +61,22 @@ function ProjectsCard() {
     setImageIndex(0);
   };
 
+  // Reset timer when manually changing images
+  const resetTimer = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+    if (currentProject.images && currentProject.images.length > 1) {
+      intervalRef.current = setInterval(() => {
+        setImageIndex((prev) => (prev + 1) % currentProject.images.length);
+      }, 5000);
+    }
+  };
+
   const nextImage = () => {
     if (currentProject.images && currentProject.images.length > 0) {
       setImageIndex((prev) => (prev + 1) % currentProject.images.length);
+      resetTimer();
     }
   };
 
@@ -56,7 +85,13 @@ function ProjectsCard() {
       setImageIndex((prev) =>
         prev === 0 ? currentProject.images.length - 1 : prev - 1
       );
+      resetTimer();
     }
+  };
+
+  const goToImage = (idx) => {
+    setImageIndex(idx);
+    resetTimer();
   };
 
   return (
@@ -117,7 +152,7 @@ function ProjectsCard() {
                         initial="enter"
                         animate="center"
                         exit="exit"
-                        transition={{ duration: 0.2 }}
+                        transition={{ duration: 0.6, ease: "easeInOut" }}
                       />
                     </AnimatePresence>
                     {currentProject.images.length > 1 && (
@@ -132,7 +167,7 @@ function ProjectsCard() {
                             <button
                               key={idx}
                               className={`gallery-dot ${idx === imageIndex ? "active" : ""}`}
-                              onClick={() => setImageIndex(idx)}
+                              onClick={() => goToImage(idx)}
                             />
                           ))}
                         </div>

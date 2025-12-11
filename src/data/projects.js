@@ -6,9 +6,8 @@ export const projects = [
     tags: ["Solidity", "React", "Web3.js", "Hardhat"],
     status: "Live",
     images: [
-      // Add your project images here
-      // "/images/projects/defi-1.png",
-      // "/images/projects/defi-2.png",
+      "https://picsum.photos/500/700",
+      "https://picsum.photos/id/237/500/700",
     ],
   },
   {
