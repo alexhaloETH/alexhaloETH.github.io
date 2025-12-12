@@ -9,9 +9,9 @@ export const experiences = [
   description:
     "Technical lead for a mobile-first onchain game studio. I own end-to-end engineering (game client, web stack, and Starknet/Cairo contracts), with a focus on shipping production gameplay, smooth onboarding, and scalable live operations. Primary shipped title: Blob Arena — a fully onchain turn-based battler on Starknet, powered by Cartridge, with Classic + AMMA modes and competitive tournaments/leagues.",
   highlights: [
-    "Shipped Blob Arena on Starknet (fully onchain turn-based battler), including Classic + AMMA modes and competitive PvP/Arcade experiences. :contentReference[oaicite:0]{index=0}",
-    "Built/owned the onchain + client architecture and onboarding UX (e.g., Discord / passkey-style access) to make the game playable for mainstream users. :contentReference[oaicite:1]{index=1}",
-    "Delivered live competitive rollouts tied to real-world events (Armored MMA / Hall of Fame Village launch) and supported tournament/seasonal prize operations. :contentReference[oaicite:2]{index=2}",
+    "Shipped Blob Arena on Starknet (fully onchain turn-based battler), including Classic + AMMA modes and competitive PvP/Arcade experiences.",
+    "Built/owned the onchain + client architecture and onboarding UX (e.g., Discord / passkey-style access) to make the game playable for mainstream users.",
+    "Delivered live competitive rollouts tied to real-world events (Armored MMA / Hall of Fame Village launch) and supported tournament/seasonal prize operations.",
   ],
   skills: [
     "Unity",
