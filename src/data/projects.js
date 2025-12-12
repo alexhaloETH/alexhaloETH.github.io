@@ -15,10 +15,10 @@ export const projects = [
     "Tech Leadership (CTO)"
   ],
   status: "Live",
-  images: [
-    "https://www.starknet.io/wp-content/uploads/2024/07/Blob-Arena.jpg",
-    "https://blockchaingames.fun/wp-content/uploads/2025/04/blobarena800x200.jpg",
-    "https://blockchaingames.fun/wp-content/uploads/2025/04/blobarena_gameplay.jpg"
+    images: [
+    "/Images/ba_1.png",
+    "/Images/ba_2.png",
+    "/Images/ba_3.png"
   ]
 },
   {
