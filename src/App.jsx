@@ -1,5 +1,5 @@
 import { useState, useCallback, lazy, Suspense } from 'react'
-import HeroCard from './components/HeroCard.jsx'
+import HeroCard from './components/HeroCard/HeroCard.jsx'
 import SkillsCard from './components/SkillsCard/SkillsCard.jsx'
 import ExperienceCard from './components/ExperienceCard/ExperienceCard.jsx'
 import ProjectsCard from './components/ProjectsCard/ProjectsCard.jsx'

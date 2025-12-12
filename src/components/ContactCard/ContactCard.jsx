@@ -3,10 +3,10 @@ import BaseCard from "../BaseCard/BaseCard";
 import "./ContactCard.css";
 
 const socialLinks = [
-  { name: "GitHub", handle: "@alexhalo", url: "#", icon: "💻" },
-  { name: "Twitter", handle: "@alexhalo", url: "#", icon: "🐦" },
-  { name: "LinkedIn", handle: "Alex Halo", url: "#", icon: "💼" },
-  { name: "Email", handle: "hello@alexhalo.dev", url: "#", icon: "📧" },
+  { name: "GitHub", handle: "alexhaloETH", url: "https://github.com/alexhaloETH", icon: "💻" },
+  { name: "LinkedIn", handle: "Alessandro Bufalino", url: "https://www.linkedin.com/in/alessandro-bufalino-3732b5273/", icon: "💼" }, 
+  { name: "Email", handle: "alessandro.bufalino3115@gmail.com", url: "mailto:alessandro.bufalino3115@gmail.com", icon: "📧" },
+  { name: "Discord", handle: "Alexhalo3115", url: "https://discord.com/users/286210715604221963", icon: "👾" },
 ];
 
 const containerVariants = {

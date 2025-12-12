@@ -1,5 +1,5 @@
-import BaseCard from './BaseCard/BaseCard';
-import { socialLinks, heroData } from '../data/social';
+import BaseCard from '../BaseCard/BaseCard';
+import { socialLinks, heroData } from '../../data/social';
 import './HeroCard.css';
 
 function HeroCard() {
@@ -38,7 +38,7 @@ function HeroCard() {
         </div>
         <div className="hero-footer">
           <div className="hero-current">
-            <span className="current-label">Currently working on</span>
+            <span className="current-label">Currently working on/at</span>
             <span className="current-project">{heroData.currentProject}</span>
           </div>
           <div className="hero-jams">
