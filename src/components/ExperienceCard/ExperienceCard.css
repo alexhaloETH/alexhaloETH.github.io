@@ -159,6 +159,29 @@
   gap: clamp(8px, 1.5%, 12px);
   flex: 1;
   min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) rgba(255, 255, 255, 0.05);
+}
+
+.experience-details::-webkit-scrollbar {
+  width: 4px;
+}
+
+.experience-details::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.experience-details::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+.experience-details::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
 }
 
 .experience-icon {
@@ -317,29 +340,6 @@
 
   .experience-details {
     gap: 6px;
-    overflow-y: auto;
-    flex: 1;
-    padding-right: 4px;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.15) rgba(255, 255, 255, 0.05);
-  }
-
-  .experience-details::-webkit-scrollbar {
-    width: 4px;
-  }
-
-  .experience-details::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 4px;
-  }
-
-  .experience-details::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 4px;
-  }
-
-  .experience-details::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.25);
   }
 
   .experience-title {
