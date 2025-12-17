@@ -1,8 +1,31 @@
+import { useRef, useCallback } from 'react';
 import BaseCard from '../BaseCard/BaseCard';
 import { socialLinks, heroData } from '../../data/social';
+import { useAuth } from '../../contexts/AuthContext';
 import './HeroCard.css';
 
 function HeroCard() {
+  const { triggerSecretEntry } = useAuth();
+  const clickCountRef = useRef(0);
+  const clickTimeoutRef = useRef(null);
+
+  const handleSecretClick = useCallback(() => {
+    clickCountRef.current += 1;
+
+    if (clickTimeoutRef.current) {
+      clearTimeout(clickTimeoutRef.current);
+    }
+
+    if (clickCountRef.current >= 3) {
+      clickCountRef.current = 0;
+      triggerSecretEntry();
+    } else {
+      clickTimeoutRef.current = setTimeout(() => {
+        clickCountRef.current = 0;
+      }, 500);
+    }
+  }, [triggerSecretEntry]);
+
   return (
     <BaseCard className="card card-hero" variant="no-padding">
       <div className="hero-bg"></div>
@@ -16,7 +39,12 @@ function HeroCard() {
             </p>
             <p className="hero-bio">
               {heroData.bio.prefix}
-              <span className="highlight">{heroData.bio.highlight}</span>
+              <span
+                className="highlight secret-trigger"
+                onClick={handleSecretClick}
+              >
+                {heroData.bio.highlight}
+              </span>
               {heroData.bio.suffix}
             </p>
           </div>
