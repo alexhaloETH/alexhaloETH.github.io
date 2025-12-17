@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import BaseCard from '../BaseCard/BaseCard';
+import PantryCard from '../secret/PantryCard/PantryCard';
 import { useAuth } from '../../contexts/AuthContext';
 import './SecretDashboard.css';
 
@@ -96,48 +97,9 @@ function SecretDashboard() {
           </BaseCard>
         </motion.div>
 
-        {/* Shopping List Card */}
-        <motion.div variants={cardVariants}>
-          <BaseCard className="card secret-card">
-            <div className="secret-card-header">
-              <div className="secret-card-icon shopping">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <circle cx="9" cy="21" r="1" />
-                  <circle cx="20" cy="21" r="1" />
-                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-                </svg>
-              </div>
-              <h3>Shopping List</h3>
-            </div>
-            <div className="secret-card-content">
-              <ul className="shopping-list">
-                <li className="shopping-item">
-                  <div className="checkbox checked" />
-                  <span className="done">Milk</span>
-                </li>
-                <li className="shopping-item">
-                  <div className="checkbox" />
-                  <span>Bread</span>
-                </li>
-                <li className="shopping-item">
-                  <div className="checkbox" />
-                  <span>Eggs</span>
-                </li>
-                <li className="shopping-item">
-                  <div className="checkbox checked" />
-                  <span className="done">Coffee</span>
-                </li>
-                <li className="shopping-item">
-                  <div className="checkbox" />
-                  <span>Butter</span>
-                </li>
-              </ul>
-            </div>
-            <div className="secret-card-footer">
-              <span className="status-dot warning" />
-              <span>3 items remaining</span>
-            </div>
-          </BaseCard>
+        {/* Kitchen Hub Card - Pantry, Recipes, Shopping */}
+        <motion.div variants={cardVariants} className="pantry-card-wrapper">
+          <PantryCard />
         </motion.div>
 
         {/* Trading Bots Status Card */}
