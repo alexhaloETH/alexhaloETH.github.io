@@ -2,9 +2,10 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import BaseCard from '../../BaseCard/BaseCard';
 import {
-  pantryItems,
-  shoppingList,
-  getRecipesByAvailability,
+  pantryItems as initialPantryItems,
+  shoppingList as initialShoppingList,
+  recipes as initialRecipes,
+  canMakeRecipe,
 } from '../../../data/secret/pantry';
 import './PantryCard.css';
 
@@ -14,19 +15,100 @@ const tabs = [
   { id: 'shopping', label: 'Shopping', icon: '🛒' },
 ];
 
+const categories = [
+  { id: 'dairy', label: 'Dairy', icon: '🥛' },
+  { id: 'meat', label: 'Meat', icon: '🥩' },
+  { id: 'seafood', label: 'Seafood', icon: '🦐' },
+  { id: 'vegetables', label: 'Vegetables', icon: '🥬' },
+  { id: 'fruits', label: 'Fruits', icon: '🍎' },
+  { id: 'bakery', label: 'Bakery', icon: '🍞' },
+  { id: 'pantry', label: 'Pantry', icon: '🏠' },
+];
+
+const commonEmojis = ['🥚', '🥛', '🧈', '🍞', '🧀', '🥓', '🍅', '🧅', '🧄', '🍝', '🍚', '🍗', '🫑', '🍄', '🫒', '🥔', '🥕', '🥒', '🥬', '🌽', '🥦', '🍎', '🍌', '🍊', '🍓', '🍇', '🥩', '🦐', '🌾', '🧂', '🌶️', '🫗', '🍯', '🥑', '🍋', '🐟', '☕', '🥜', '🥥', '🫘'];
+
 function PantryCard() {
   const [activeTab, setActiveTab] = useState('recipes');
   const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [pantryItems, setPantryItems] = useState(initialPantryItems);
+  const [shoppingList, setShoppingList] = useState(initialShoppingList);
+  const [recipes, setRecipes] = useState(initialRecipes);
 
-  const sortedRecipes = useMemo(
-    () => getRecipesByAvailability(pantryItems),
-    []
-  );
+  // Modal states
+  const [editingItem, setEditingItem] = useState(null);
+  const [showAddPantryModal, setShowAddPantryModal] = useState(false);
+  const [showAddRecipeModal, setShowAddRecipeModal] = useState(false);
+  const [showAddShoppingModal, setShowAddShoppingModal] = useState(false);
+
+  const sortedRecipes = useMemo(() => {
+    return recipes
+      .map((recipe) => {
+        const { canMake, missing } = canMakeRecipe(recipe, pantryItems);
+        const matchedCount = recipe.ingredients.length - missing.length;
+        const matchPercentage = (matchedCount / recipe.ingredients.length) * 100;
+        return { ...recipe, canMake, missing, matchPercentage, matchedCount };
+      })
+      .sort((a, b) => {
+        if (a.canMake && !b.canMake) return -1;
+        if (!a.canMake && b.canMake) return 1;
+        return b.matchPercentage - a.matchPercentage;
+      });
+  }, [pantryItems, recipes]);
 
   const availableRecipes = sortedRecipes.filter((r) => r.canMake);
   const almostRecipes = sortedRecipes.filter(
     (r) => !r.canMake && r.matchPercentage >= 60
   );
+
+  // Pantry item handlers
+  const handleUpdateQuantity = (id, newQuantity) => {
+    setPantryItems(items =>
+      items.map(item =>
+        item.id === id ? { ...item, quantity: Math.max(0, newQuantity) } : item
+      )
+    );
+  };
+
+  const handleDeletePantryItem = (id) => {
+    setPantryItems(items => items.filter(item => item.id !== id));
+  };
+
+  const handleAddPantryItem = (newItem) => {
+    const id = Math.max(...pantryItems.map(i => i.id), 0) + 1;
+    setPantryItems([...pantryItems, { ...newItem, id }]);
+    setShowAddPantryModal(false);
+  };
+
+  // Shopping list handlers
+  const handleToggleShoppingItem = (id) => {
+    setShoppingList(items =>
+      items.map(item =>
+        item.id === id ? { ...item, checked: !item.checked } : item
+      )
+    );
+  };
+
+  const handleDeleteShoppingItem = (id) => {
+    setShoppingList(items => items.filter(item => item.id !== id));
+  };
+
+  const handleAddShoppingItem = (newItem) => {
+    const id = Math.max(...shoppingList.map(i => i.id), 0) + 1;
+    setShoppingList([...shoppingList, { ...newItem, id, checked: false }]);
+    setShowAddShoppingModal(false);
+  };
+
+  // Recipe handlers
+  const handleAddRecipe = (newRecipe) => {
+    const id = Math.max(...recipes.map(r => r.id), 0) + 1;
+    setRecipes([...recipes, { ...newRecipe, id }]);
+    setShowAddRecipeModal(false);
+  };
+
+  const handleDeleteRecipe = (id) => {
+    setRecipes(recipes.filter(r => r.id !== id));
+    setSelectedRecipe(null);
+  };
 
   return (
     <BaseCard className="card secret-card pantry-card wide">
@@ -69,10 +151,22 @@ function PantryCard() {
               {selectedRecipe ? (
                 <RecipeDetail
                   recipe={selectedRecipe}
+                  pantryItems={pantryItems}
                   onBack={() => setSelectedRecipe(null)}
+                  onDelete={() => handleDeleteRecipe(selectedRecipe.id)}
                 />
               ) : (
                 <>
+                  <div className="recipes-header">
+                    <button className="add-recipe-btn" onClick={() => setShowAddRecipeModal(true)}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                      </svg>
+                      Add Recipe
+                    </button>
+                  </div>
+
                   {availableRecipes.length > 0 && (
                     <div className="recipe-section">
                       <h4 className="section-label ready">
@@ -121,9 +215,22 @@ function PantryCard() {
               exit={{ opacity: 0, y: -10 }}
               className="pantry-view"
             >
+              <div className="pantry-actions-bar">
+                <button className="add-pantry-btn" onClick={() => setShowAddPantryModal(true)}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                  Add Item
+                </button>
+              </div>
               <div className="pantry-grid">
                 {pantryItems.map((item) => (
-                  <div key={item.id} className="pantry-item">
+                  <div
+                    key={item.id}
+                    className="pantry-item"
+                    onClick={() => setEditingItem(item)}
+                  >
                     <span className="item-icon">{item.icon}</span>
                     <div className="item-info">
                       <span className="item-name">{item.name}</span>
@@ -154,33 +261,688 @@ function PantryCard() {
                 {shoppingList.map((item) => (
                   <div
                     key={item.id}
-                    className={`shopping-item-full ${
-                      item.checked ? 'checked' : ''
-                    }`}
+                    className={`shopping-item-full ${item.checked ? 'checked' : ''}`}
                   >
                     <div
                       className={`checkbox ${item.checked ? 'checked' : ''}`}
+                      onClick={() => handleToggleShoppingItem(item.id)}
                     />
                     <span className="item-icon">{item.icon}</span>
                     <span className="item-name">{item.name}</span>
                     <span className="item-qty">
                       {item.quantity} {item.unit}
                     </span>
+                    <button
+                      className="delete-shopping-btn"
+                      onClick={() => handleDeleteShoppingItem(item.id)}
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
+                    </button>
                   </div>
                 ))}
               </div>
               <div className="shopping-footer">
                 <span>
-                  {shoppingList.filter((i) => !i.checked).length} items
-                  remaining
+                  {shoppingList.filter((i) => !i.checked).length} items remaining
                 </span>
-                <button className="add-item-btn">+ Add Item</button>
+                <button className="add-item-btn" onClick={() => setShowAddShoppingModal(true)}>
+                  + Add Item
+                </button>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
+
+      {/* Edit Pantry Item Modal */}
+      <AnimatePresence>
+        {editingItem && (
+          <EditPantryItemModal
+            item={editingItem}
+            onClose={() => setEditingItem(null)}
+            onSave={(newQty) => {
+              handleUpdateQuantity(editingItem.id, newQty);
+              setEditingItem(null);
+            }}
+            onDelete={() => {
+              handleDeletePantryItem(editingItem.id);
+              setEditingItem(null);
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Add Pantry Item Modal */}
+      <AnimatePresence>
+        {showAddPantryModal && (
+          <AddPantryItemModal
+            onClose={() => setShowAddPantryModal(false)}
+            onAdd={handleAddPantryItem}
+            categories={categories}
+            emojis={commonEmojis}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Add Shopping Item Modal */}
+      <AnimatePresence>
+        {showAddShoppingModal && (
+          <AddShoppingItemModal
+            onClose={() => setShowAddShoppingModal(false)}
+            onAdd={handleAddShoppingItem}
+            emojis={commonEmojis}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Add Recipe Modal */}
+      <AnimatePresence>
+        {showAddRecipeModal && (
+          <AddRecipeModal
+            onClose={() => setShowAddRecipeModal(false)}
+            onAdd={handleAddRecipe}
+            emojis={commonEmojis}
+          />
+        )}
+      </AnimatePresence>
     </BaseCard>
+  );
+}
+
+// Edit Pantry Item Modal
+function EditPantryItemModal({ item, onClose, onSave, onDelete }) {
+  const [quantity, setQuantity] = useState(item.quantity);
+
+  return (
+    <motion.div
+      className="modal-overlay"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+    >
+      <motion.div
+        className="modal-content"
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="modal-header">
+          <span className="modal-icon">{item.icon}</span>
+          <h3>{item.name}</h3>
+          <button className="modal-close" onClick={onClose}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="modal-body">
+          <div className="quantity-editor">
+            <label>Quantity</label>
+            <div className="quantity-controls">
+              <button onClick={() => setQuantity(q => Math.max(0, q - 1))}>−</button>
+              <input
+                type="number"
+                value={quantity}
+                onChange={(e) => setQuantity(Number(e.target.value))}
+                min="0"
+              />
+              <button onClick={() => setQuantity(q => q + 1)}>+</button>
+              <span className="unit-label">{item.unit}</span>
+            </div>
+          </div>
+
+          <div className="quick-adjust">
+            <span>Quick adjust:</span>
+            <button onClick={() => setQuantity(q => q + 5)}>+5</button>
+            <button onClick={() => setQuantity(q => q + 10)}>+10</button>
+            <button onClick={() => setQuantity(q => Math.max(0, q - 5))}>−5</button>
+          </div>
+        </div>
+
+        <div className="modal-footer">
+          <button className="delete-btn" onClick={onDelete}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="3,6 5,6 21,6" />
+              <path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6m3,0V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2v2" />
+            </svg>
+            Delete
+          </button>
+          <button className="save-btn" onClick={() => onSave(quantity)}>
+            Save Changes
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// Add Pantry Item Modal
+function AddPantryItemModal({ onClose, onAdd, categories, emojis }) {
+  const [name, setName] = useState('');
+  const [quantity, setQuantity] = useState(1);
+  const [unit, setUnit] = useState('pcs');
+  const [category, setCategory] = useState('pantry');
+  const [icon, setIcon] = useState('📦');
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+    onAdd({ name: name.trim(), quantity, unit, category, icon });
+  };
+
+  return (
+    <motion.div
+      className="modal-overlay"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+    >
+      <motion.div
+        className="modal-content modal-large"
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="modal-header">
+          <h3>Add Pantry Item</h3>
+          <button className="modal-close" onClick={onClose}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="modal-body">
+          <div className="form-row">
+            <div className="form-group icon-picker-group">
+              <label>Icon</label>
+              <button
+                type="button"
+                className="icon-picker-btn"
+                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              >
+                {icon}
+              </button>
+              {showEmojiPicker && (
+                <div className="emoji-picker">
+                  {emojis.map((emoji) => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      className={emoji === icon ? 'selected' : ''}
+                      onClick={() => {
+                        setIcon(emoji);
+                        setShowEmojiPicker(false);
+                      }}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="form-group flex-grow">
+              <label>Item Name</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. Eggs, Milk, Bread..."
+                autoFocus
+              />
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label>Quantity</label>
+              <input
+                type="number"
+                value={quantity}
+                onChange={(e) => setQuantity(Number(e.target.value))}
+                min="0"
+              />
+            </div>
+            <div className="form-group">
+              <label>Unit</label>
+              <select value={unit} onChange={(e) => setUnit(e.target.value)}>
+                <option value="pcs">pcs</option>
+                <option value="g">g</option>
+                <option value="ml">ml</option>
+                <option value="kg">kg</option>
+                <option value="L">L</option>
+                <option value="slices">slices</option>
+                <option value="cloves">cloves</option>
+                <option value="cobs">cobs</option>
+                <option value="heads">heads</option>
+                <option value="bunches">bunches</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label>Category</label>
+              <select value={category} onChange={(e) => setCategory(e.target.value)}>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.icon} {cat.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="modal-footer">
+            <button type="button" className="cancel-btn" onClick={onClose}>
+              Cancel
+            </button>
+            <button type="submit" className="save-btn" disabled={!name.trim()}>
+              Add Item
+            </button>
+          </div>
+        </form>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// Add Shopping Item Modal
+function AddShoppingItemModal({ onClose, onAdd, emojis }) {
+  const [name, setName] = useState('');
+  const [quantity, setQuantity] = useState(1);
+  const [unit, setUnit] = useState('pcs');
+  const [icon, setIcon] = useState('🛒');
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+    onAdd({ name: name.trim(), quantity, unit, icon });
+  };
+
+  return (
+    <motion.div
+      className="modal-overlay"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+    >
+      <motion.div
+        className="modal-content"
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="modal-header">
+          <h3>Add Shopping Item</h3>
+          <button className="modal-close" onClick={onClose}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="modal-body">
+          <div className="form-row">
+            <div className="form-group icon-picker-group">
+              <label>Icon</label>
+              <button
+                type="button"
+                className="icon-picker-btn"
+                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              >
+                {icon}
+              </button>
+              {showEmojiPicker && (
+                <div className="emoji-picker">
+                  {emojis.map((emoji) => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      className={emoji === icon ? 'selected' : ''}
+                      onClick={() => {
+                        setIcon(emoji);
+                        setShowEmojiPicker(false);
+                      }}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="form-group flex-grow">
+              <label>Item Name</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="What do you need to buy?"
+                autoFocus
+              />
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label>Quantity</label>
+              <input
+                type="number"
+                value={quantity}
+                onChange={(e) => setQuantity(Number(e.target.value))}
+                min="1"
+              />
+            </div>
+            <div className="form-group flex-grow">
+              <label>Unit</label>
+              <select value={unit} onChange={(e) => setUnit(e.target.value)}>
+                <option value="pcs">pcs</option>
+                <option value="g">g</option>
+                <option value="ml">ml</option>
+                <option value="kg">kg</option>
+                <option value="L">L</option>
+                <option value="bunch">bunch</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="modal-footer">
+            <button type="button" className="cancel-btn" onClick={onClose}>
+              Cancel
+            </button>
+            <button type="submit" className="save-btn" disabled={!name.trim()}>
+              Add to List
+            </button>
+          </div>
+        </form>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// Add Recipe Modal
+function AddRecipeModal({ onClose, onAdd, emojis }) {
+  const [name, setName] = useState('');
+  const [time, setTime] = useState('15 min');
+  const [difficulty, setDifficulty] = useState('Easy');
+  const [servings, setServings] = useState(2);
+  const [icon, setIcon] = useState('🍳');
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [ingredients, setIngredients] = useState([{ name: '', amount: 1, unit: 'pcs' }]);
+  const [steps, setSteps] = useState([{ instruction: '', tip: '' }]);
+
+  const handleAddIngredient = () => {
+    setIngredients([...ingredients, { name: '', amount: 1, unit: 'pcs' }]);
+  };
+
+  const handleRemoveIngredient = (index) => {
+    setIngredients(ingredients.filter((_, i) => i !== index));
+  };
+
+  const handleIngredientChange = (index, field, value) => {
+    setIngredients(ingredients.map((ing, i) =>
+      i === index ? { ...ing, [field]: value } : ing
+    ));
+  };
+
+  const handleAddStep = () => {
+    setSteps([...steps, { instruction: '', tip: '' }]);
+  };
+
+  const handleRemoveStep = (index) => {
+    setSteps(steps.filter((_, i) => i !== index));
+  };
+
+  const handleStepChange = (index, field, value) => {
+    setSteps(steps.map((step, i) =>
+      i === index ? { ...step, [field]: value } : step
+    ));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+
+    const validIngredients = ingredients.filter(i => i.name.trim());
+    const validSteps = steps.filter(s => s.instruction.trim());
+
+    if (validIngredients.length === 0) return;
+    if (validSteps.length === 0) return;
+
+    onAdd({
+      name: name.trim(),
+      time,
+      difficulty,
+      servings,
+      icon,
+      ingredients: validIngredients.map(i => ({ ...i, amount: Number(i.amount) })),
+      steps: validSteps,
+    });
+  };
+
+  return (
+    <motion.div
+      className="modal-overlay"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+    >
+      <motion.div
+        className="modal-content modal-xlarge"
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="modal-header">
+          <h3>Add New Recipe</h3>
+          <button className="modal-close" onClick={onClose}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="modal-body recipe-form">
+          {/* Basic Info */}
+          <div className="form-section">
+            <h4>Basic Info</h4>
+            <div className="form-row">
+              <div className="form-group icon-picker-group">
+                <label>Icon</label>
+                <button
+                  type="button"
+                  className="icon-picker-btn"
+                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                >
+                  {icon}
+                </button>
+                {showEmojiPicker && (
+                  <div className="emoji-picker">
+                    {emojis.map((emoji) => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        className={emoji === icon ? 'selected' : ''}
+                        onClick={() => {
+                          setIcon(emoji);
+                          setShowEmojiPicker(false);
+                        }}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="form-group flex-grow">
+                <label>Recipe Name</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. Spaghetti Bolognese"
+                  autoFocus
+                />
+              </div>
+            </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label>Time</label>
+                <select value={time} onChange={(e) => setTime(e.target.value)}>
+                  <option value="5 min">5 min</option>
+                  <option value="10 min">10 min</option>
+                  <option value="15 min">15 min</option>
+                  <option value="20 min">20 min</option>
+                  <option value="25 min">25 min</option>
+                  <option value="30 min">30 min</option>
+                  <option value="45 min">45 min</option>
+                  <option value="1 hour">1 hour</option>
+                  <option value="1.5 hours">1.5 hours</option>
+                  <option value="2 hours">2 hours</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Difficulty</label>
+                <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
+                  <option value="Easy">Easy</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Hard">Hard</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Servings</label>
+                <input
+                  type="number"
+                  value={servings}
+                  onChange={(e) => setServings(Number(e.target.value))}
+                  min="1"
+                  max="12"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Ingredients */}
+          <div className="form-section">
+            <div className="section-header">
+              <h4>Ingredients</h4>
+              <button type="button" className="add-row-btn" onClick={handleAddIngredient}>
+                + Add
+              </button>
+            </div>
+            <div className="ingredients-editor">
+              {ingredients.map((ing, index) => (
+                <div key={index} className="ingredient-row-editor">
+                  <input
+                    type="text"
+                    placeholder="Ingredient name"
+                    value={ing.name}
+                    onChange={(e) => handleIngredientChange(index, 'name', e.target.value)}
+                  />
+                  <input
+                    type="number"
+                    placeholder="Qty"
+                    value={ing.amount}
+                    onChange={(e) => handleIngredientChange(index, 'amount', e.target.value)}
+                    min="0"
+                  />
+                  <select
+                    value={ing.unit}
+                    onChange={(e) => handleIngredientChange(index, 'unit', e.target.value)}
+                  >
+                    <option value="pcs">pcs</option>
+                    <option value="g">g</option>
+                    <option value="ml">ml</option>
+                    <option value="kg">kg</option>
+                    <option value="L">L</option>
+                    <option value="cloves">cloves</option>
+                    <option value="slices">slices</option>
+                  </select>
+                  <button
+                    type="button"
+                    className="remove-row-btn"
+                    onClick={() => handleRemoveIngredient(index)}
+                    disabled={ingredients.length === 1}
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Steps */}
+          <div className="form-section">
+            <div className="section-header">
+              <h4>Steps</h4>
+              <button type="button" className="add-row-btn" onClick={handleAddStep}>
+                + Add
+              </button>
+            </div>
+            <div className="steps-editor">
+              {steps.map((step, index) => (
+                <div key={index} className="step-row-editor">
+                  <span className="step-number">{index + 1}</span>
+                  <div className="step-inputs">
+                    <input
+                      type="text"
+                      placeholder="Step instruction..."
+                      value={step.instruction}
+                      onChange={(e) => handleStepChange(index, 'instruction', e.target.value)}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Tip (optional)"
+                      value={step.tip}
+                      onChange={(e) => handleStepChange(index, 'tip', e.target.value)}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    className="remove-row-btn"
+                    onClick={() => handleRemoveStep(index)}
+                    disabled={steps.length === 1}
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="modal-footer">
+            <button type="button" className="cancel-btn" onClick={onClose}>
+              Cancel
+            </button>
+            <button type="submit" className="save-btn" disabled={!name.trim()}>
+              Create Recipe
+            </button>
+          </div>
+        </form>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -212,7 +974,7 @@ function RecipeCard({ recipe, onClick }) {
   );
 }
 
-function RecipeDetail({ recipe, onBack }) {
+function RecipeDetail({ recipe, pantryItems, onBack, onDelete }) {
   const [cookingMode, setCookingMode] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState([]);
@@ -253,12 +1015,20 @@ function RecipeDetail({ recipe, onBack }) {
 
   return (
     <div className="recipe-detail">
-      <button className="back-btn" onClick={onBack}>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M19 12H5M12 19l-7-7 7-7" />
-        </svg>
-        Back
-      </button>
+      <div className="recipe-detail-actions">
+        <button className="back-btn" onClick={onBack}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+          Back
+        </button>
+        <button className="delete-recipe-btn" onClick={onDelete}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polyline points="3,6 5,6 21,6" />
+            <path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6m3,0V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2v2" />
+          </svg>
+        </button>
+      </div>
 
       <div className="recipe-detail-header">
         <span className="detail-icon">{recipe.icon}</span>

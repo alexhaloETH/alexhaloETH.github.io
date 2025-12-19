@@ -1,10 +1,10 @@
-import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import HomeAutomationCard from '../secret/HomeAutomationCard/HomeAutomationCard';
 import PantryCard from '../secret/PantryCard/PantryCard';
 import TradingBotsCard from '../secret/TradingBotsCard/TradingBotsCard';
 import QuickActionsCard from '../secret/QuickActionsCard/QuickActionsCard';
 import SystemStatusCard from '../secret/SystemStatusCard/SystemStatusCard';
-import PortfolioCard from '../secret/PortfolioCard/PortfolioCard';
 import ExchangeAccountsCard from '../secret/ExchangeAccountsCard/ExchangeAccountsCard';
 import TasksCard from '../secret/TasksCard/TasksCard';
 import CommandTerminalCard from '../secret/CommandTerminalCard/CommandTerminalCard';
@@ -26,8 +26,35 @@ const cardVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
+const pageVariants = {
+  enter: (direction) => ({
+    x: direction > 0 ? 100 : -100,
+    opacity: 0,
+  }),
+  center: {
+    x: 0,
+    opacity: 1,
+  },
+  exit: (direction) => ({
+    x: direction < 0 ? 100 : -100,
+    opacity: 0,
+  }),
+};
+
+const pages = [
+  { id: 1, label: 'Main', icon: 'home' },
+  { id: 2, label: 'System', icon: 'system' },
+];
+
 function SecretDashboard() {
   const { logout, exitSecretPortal } = useAuth();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [direction, setDirection] = useState(0);
+
+  const goToPage = (pageNum) => {
+    setDirection(pageNum > currentPage ? 1 : -1);
+    setCurrentPage(pageNum);
+  };
 
   return (
     <div className="secret-dashboard">
@@ -39,6 +66,18 @@ function SecretDashboard() {
             </svg>
             Secure Mode
           </span>
+          <div className="page-indicator">
+            {pages.map((page) => (
+              <button
+                key={page.id}
+                className={`page-dot ${currentPage === page.id ? 'active' : ''}`}
+                onClick={() => goToPage(page.id)}
+                title={page.label}
+              >
+                <span className="page-number">{page.id}</span>
+              </button>
+            ))}
+          </div>
           <span className="secret-title">Command Center</span>
         </div>
         <div className="secret-header-right">
@@ -59,78 +98,112 @@ function SecretDashboard() {
         </div>
       </header>
 
-      <motion.main
-        className="secret-content"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        {/* Finance Row */}
-        <section className="dashboard-section">
-          <h2 className="section-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="12" y1="1" x2="12" y2="23" />
-              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-            </svg>
-            Finance
-          </h2>
-          <div className="section-grid">
-            <motion.div variants={cardVariants} className="wide-card-wrapper">
-              <PortfolioCard />
-            </motion.div>
-            <motion.div variants={cardVariants}>
-              <ExchangeAccountsCard />
-            </motion.div>
-            <motion.div variants={cardVariants}>
-              <TradingBotsCard />
-            </motion.div>
-          </div>
-        </section>
+      <main className="secret-content">
+        <AnimatePresence mode="wait" custom={direction}>
+          {currentPage === 1 && (
+            <motion.div
+              key="page-1"
+              className="dashboard-page"
+              custom={direction}
+              variants={pageVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.3 }}
+            >
+              <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                className="page-content"
+              >
+                {/* Finance Row */}
+                <section className="dashboard-section">
+                  <h2 className="section-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <line x1="12" y1="1" x2="12" y2="23" />
+                      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                    </svg>
+                    Finance
+                  </h2>
+                  <div className="section-grid">
+                    <motion.div variants={cardVariants} className="wide-card-wrapper">
+                      <ExchangeAccountsCard />
+                    </motion.div>
+                    <motion.div variants={cardVariants}>
+                      <TradingBotsCard />
+                    </motion.div>
+                  </div>
+                </section>
 
-        {/* Life Row */}
-        <section className="dashboard-section">
-          <h2 className="section-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-            </svg>
-            Life
-          </h2>
-          <div className="section-grid">
-            <motion.div variants={cardVariants} className="wide-card-wrapper">
-              <TasksCard />
+                {/* Life Row */}
+                <section className="dashboard-section">
+                  <h2 className="section-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                    </svg>
+                    Life
+                  </h2>
+                  <div className="section-grid">
+                    <motion.div variants={cardVariants} className="wide-card-wrapper">
+                      <TasksCard />
+                    </motion.div>
+                    <motion.div variants={cardVariants}>
+                      <PantryCard />
+                    </motion.div>
+                    <motion.div variants={cardVariants}>
+                      <QuickActionsCard />
+                    </motion.div>
+                  </div>
+                </section>
+              </motion.div>
             </motion.div>
-            <motion.div variants={cardVariants}>
-              <PantryCard />
-            </motion.div>
-            <motion.div variants={cardVariants}>
-              <QuickActionsCard />
-            </motion.div>
-          </div>
-        </section>
+          )}
 
-        {/* System Row */}
-        <section className="dashboard-section">
-          <h2 className="section-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-              <line x1="8" y1="21" x2="16" y2="21" />
-              <line x1="12" y1="17" x2="12" y2="21" />
-            </svg>
-            System
-          </h2>
-          <div className="section-grid">
-            <motion.div variants={cardVariants}>
-              <HomeAutomationCard />
+          {currentPage === 2 && (
+            <motion.div
+              key="page-2"
+              className="dashboard-page"
+              custom={direction}
+              variants={pageVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.3 }}
+            >
+              <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                className="page-content"
+              >
+                {/* System Row */}
+                <section className="dashboard-section">
+                  <h2 className="section-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+                      <line x1="8" y1="21" x2="16" y2="21" />
+                      <line x1="12" y1="17" x2="12" y2="21" />
+                    </svg>
+                    System
+                  </h2>
+                  <div className="section-grid three-col">
+                    <motion.div variants={cardVariants}>
+                      <HomeAutomationCard />
+                    </motion.div>
+                    <motion.div variants={cardVariants}>
+                      <SystemStatusCard />
+                    </motion.div>
+                    <motion.div variants={cardVariants}>
+                      <CommandTerminalCard />
+                    </motion.div>
+                  </div>
+                </section>
+              </motion.div>
             </motion.div>
-            <motion.div variants={cardVariants}>
-              <SystemStatusCard />
-            </motion.div>
-            <motion.div variants={cardVariants} className="wide-card-wrapper">
-              <CommandTerminalCard />
-            </motion.div>
-          </div>
-        </section>
-      </motion.main>
+          )}
+        </AnimatePresence>
+      </main>
     </div>
   );
 }
