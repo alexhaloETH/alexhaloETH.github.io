@@ -9,6 +9,7 @@ export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showSecretPortal, setShowSecretPortal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [isLoadingDashboard, setIsLoadingDashboard] = useState(false);
 
   const triggerSecretEntry = useCallback(() => {
     setShowLoginModal(true);
@@ -19,7 +20,14 @@ export function AuthProvider({ children }) {
     if (password === MOCK_PASSWORD) {
       setIsAuthenticated(true);
       setShowLoginModal(false);
-      setShowSecretPortal(true);
+      setIsLoadingDashboard(true);
+
+      // Show loading animation for 2 seconds before showing dashboard
+      setTimeout(() => {
+        setIsLoadingDashboard(false);
+        setShowSecretPortal(true);
+      }, 2000);
+
       return { success: true };
     }
     return { success: false, error: 'Invalid password' };
@@ -36,6 +44,7 @@ export function AuthProvider({ children }) {
 
   const exitSecretPortal = useCallback(() => {
     setShowSecretPortal(false);
+    setIsLoadingDashboard(false);
   }, []);
 
   return (
@@ -44,6 +53,7 @@ export function AuthProvider({ children }) {
         isAuthenticated,
         showSecretPortal,
         showLoginModal,
+        isLoadingDashboard,
         triggerSecretEntry,
         login,
         logout,

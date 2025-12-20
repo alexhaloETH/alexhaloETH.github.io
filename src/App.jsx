@@ -1,4 +1,5 @@
 import { useState, useCallback, lazy, Suspense } from 'react'
+import { AnimatePresence } from 'framer-motion'
 import HeroCard from './components/HeroCard/HeroCard.jsx'
 import SkillsCard from './components/SkillsCard/SkillsCard.jsx'
 import ExperienceCard from './components/ExperienceCard/ExperienceCard.jsx'
@@ -8,6 +9,8 @@ import StarsBackground from './components/StarsBackground/StarsBackground.jsx'
 import UnityBackground from './components/UnityBackground/UnityBackground.jsx'
 import LoginModal from './components/LoginModal/LoginModal.jsx'
 import SecretDashboard from './components/SecretDashboard/SecretDashboard.jsx'
+import LoadingAnimation from './components/LoadingAnimation/LoadingAnimation.jsx'
+import SecretBackground from './components/SecretBackground/SecretBackground.jsx'
 import { AuthProvider, useAuth } from './contexts/AuthContext.jsx'
 import useIdleDetection from './hooks/useIdleDetection'
 import { checkUnitySupport } from './utils/deviceDetection'
@@ -22,7 +25,7 @@ function AppContent() {
   const [unityMounted, setUnityMounted] = useState(false)
   const [toastMessage, setToastMessage] = useState(null)
   const isIdle = useIdleDetection(IDLE_TIMEOUT, unityEnabled)
-  const { showSecretPortal } = useAuth()
+  const { showSecretPortal, isLoadingDashboard } = useAuth()
 
   const handleToggle3D = useCallback(() => {
     if (!unityEnabled) {
@@ -50,19 +53,31 @@ function AppContent() {
 
       <LoginModal />
 
+      {/* Show loading animation while transitioning to secret dashboard */}
+      <AnimatePresence>
+        {isLoadingDashboard && <LoadingAnimation />}
+      </AnimatePresence>
+
+      {/* Background layer - hide stars and unity when in secret portal */}
       <div className="background-container">
-        <div className={`background-layer ${unityEnabled ? 'hidden' : ''}`}>
-          <StarsBackground />
-        </div>
+        {showSecretPortal ? (
+          <SecretBackground />
+        ) : (
+          <>
+            <div className={`background-layer ${unityEnabled ? 'hidden' : ''}`}>
+              <StarsBackground />
+            </div>
 
-        {unityMounted && (
-          <div className={`background-layer ${unityEnabled ? '' : 'hidden'}`}>
-            <UnityBackground />
-            <div className={`background-overlay ${isIdle ? 'screensaver' : ''}`} />
-          </div>
+            {unityMounted && (
+              <div className={`background-layer ${unityEnabled ? '' : 'hidden'}`}>
+                <UnityBackground />
+                <div className={`background-overlay ${isIdle ? 'screensaver' : ''}`} />
+              </div>
+            )}
+
+            <div className="background-light-overlay" />
+          </>
         )}
-
-        <div className="background-light-overlay" />
       </div>
 
       {showSecretPortal ? (
