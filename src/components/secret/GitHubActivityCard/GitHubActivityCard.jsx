@@ -111,6 +111,7 @@ function GitHubActivityCard() {
 
       const events = await response.json();
       console.log('[GitHub Activity] Received events:', events.length);
+      console.log('[GitHub Activity] Event types:', events.map(e => e.type).join(', '));
 
       // Transform GitHub events to our activity format
       const transformedActivities = events
@@ -194,6 +195,9 @@ function GitHubActivityCard() {
         })
         .filter(Boolean) // Remove null entries
         .slice(0, 10); // Limit to 10 most recent
+
+      console.log('[GitHub Activity] Transformed activities:', transformedActivities.length);
+      console.log('[GitHub Activity] Activities:', transformedActivities);
 
       setActivities(transformedActivities);
       setLastUpdate(new Date());
