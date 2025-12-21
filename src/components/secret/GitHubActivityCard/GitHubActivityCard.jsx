@@ -130,23 +130,23 @@ function GitHubActivityCard() {
           try {
             switch (event.type) {
               case 'PushEvent':
-                console.log('[GitHub Activity] PushEvent payload:', {
-                  hasCommits: !!event.payload?.commits,
-                  isArray: Array.isArray(event.payload?.commits),
-                  commitsLength: event.payload?.commits?.length,
-                  hasRef: !!event.payload?.ref,
-                  ref: event.payload?.ref,
-                  size: event.payload?.size
-                });
-                if (!event.payload?.commits || !Array.isArray(event.payload.commits) || !event.payload?.ref) {
-                  console.log('[GitHub Activity] PushEvent rejected - missing data');
+                // Only require ref, commits array is optional
+                if (!event.payload?.ref) {
                   return null;
                 }
+
+                // Get commit message and count
+                const commits = event.payload?.commits || [];
+                const commitCount = event.payload?.size || commits.length || 1;
+                const commitMessage = Array.isArray(commits) && commits.length > 0
+                  ? commits[0]?.message || 'Pushed commits'
+                  : 'Pushed commits';
+
                 return {
                   ...baseActivity,
                   type: 'push',
-                  message: event.payload.commits[0]?.message || 'Pushed commits',
-                  commits: event.payload.size || event.payload.commits.length,
+                  message: commitMessage,
+                  commits: commitCount,
                   branch: event.payload.ref.replace('refs/heads/', '')
                 };
 
