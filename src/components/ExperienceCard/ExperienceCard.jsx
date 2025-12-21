@@ -76,6 +76,7 @@ function ExperienceCard() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
               transition={{ duration: 0.3 }}
+              style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}
             >
               {/* Experience details */}
               <AnimatePresence mode="wait">

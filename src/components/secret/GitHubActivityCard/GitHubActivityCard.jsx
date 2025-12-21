@@ -138,16 +138,32 @@ function GitHubActivityCard() {
                 // Get commit message and count
                 const commits = event.payload?.commits || [];
                 const commitCount = event.payload?.size || commits.length || 1;
-                const commitMessage = Array.isArray(commits) && commits.length > 0
-                  ? commits[0]?.message || 'Pushed commits'
-                  : 'Pushed commits';
+
+                // Try to get actual commit message, or create a descriptive one
+                let commitMessage = 'Pushed commits';
+                if (Array.isArray(commits) && commits.length > 0) {
+                  // Get the first commit message
+                  commitMessage = commits[0]?.message || 'Pushed commits';
+
+                  // Truncate if too long
+                  if (commitMessage.length > 100) {
+                    commitMessage = commitMessage.substring(0, 97) + '...';
+                  }
+                } else if (event.payload?.head) {
+                  // If no commits but we have a head SHA, show that
+                  commitMessage = `Pushed to ${event.payload.ref.replace('refs/heads/', '')}`;
+                }
 
                 return {
                   ...baseActivity,
                   type: 'push',
                   message: commitMessage,
                   commits: commitCount,
-                  branch: event.payload.ref.replace('refs/heads/', '')
+                  branch: event.payload.ref.replace('refs/heads/', ''),
+                  sha: event.payload?.head || (commits.length > 0 ? commits[0]?.sha : null),
+                  compareUrl: event.payload?.before && event.payload?.head
+                    ? `https://github.com/${event.repo.name}/compare/${event.payload.before.substring(0, 7)}...${event.payload.head.substring(0, 7)}`
+                    : null
                 };
 
               case 'WatchEvent':
@@ -403,6 +419,32 @@ function GitHubActivityCard() {
                         </svg>
                         {activity.branch}
                       </span>
+                    )}
+                    {activity.sha && (
+                      <span className="meta-badge commit-sha" title={`Commit SHA: ${activity.sha}`}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="3" />
+                          <line x1="3" y1="12" x2="9" y2="12" />
+                          <line x1="15" y1="12" x2="21" y2="12" />
+                        </svg>
+                        {activity.sha.substring(0, 7)}
+                      </span>
+                    )}
+                    {activity.compareUrl && (
+                      <a
+                        href={activity.compareUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="meta-badge view-commits"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                          <polyline points="15 3 21 3 21 9" />
+                          <line x1="10" y1="14" x2="21" y2="3" />
+                        </svg>
+                        View commits
+                      </a>
                     )}
                     {activity.status && (
                       <span className={`meta-badge status-${activity.status}`}>
