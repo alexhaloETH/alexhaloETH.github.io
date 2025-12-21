@@ -8,6 +8,7 @@ import SystemStatusCard from '../secret/SystemStatusCard/SystemStatusCard';
 import ExchangeAccountsCard from '../secret/ExchangeAccountsCard/ExchangeAccountsCard';
 import TasksCard from '../secret/TasksCard/TasksCard';
 import CommandTerminalCard from '../secret/CommandTerminalCard/CommandTerminalCard';
+import SkillTreeCard from '../secret/SkillTreeCard/SkillTreeCard';
 import { useAuth } from '../../contexts/AuthContext';
 import './SecretDashboard.css';
 
@@ -196,6 +197,22 @@ function SecretDashboard() {
                     </motion.div>
                     <motion.div variants={cardVariants}>
                       <CommandTerminalCard />
+                    </motion.div>
+                  </div>
+                </section>
+
+                {/* Developer Row */}
+                <section className="dashboard-section">
+                  <h2 className="section-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="16 18 22 12 16 6" />
+                      <polyline points="8 6 2 12 8 18" />
+                    </svg>
+                    Developer
+                  </h2>
+                  <div className="section-grid">
+                    <motion.div variants={cardVariants} className="wide-card-wrapper">
+                      <SkillTreeCard />
                     </motion.div>
                   </div>
                 </section>

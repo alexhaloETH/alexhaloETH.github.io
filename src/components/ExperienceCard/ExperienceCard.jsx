@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import BaseCard from "../BaseCard/BaseCard";
 import { experiences, TIMELINE_START_YEAR, TIMELINE_END_YEAR } from "../../data/experience";
+import GitHubActivityCard from "../secret/GitHubActivityCard/GitHubActivityCard";
 import "./ExperienceCard.css";
 
 const textVariants = {
@@ -11,6 +12,8 @@ const textVariants = {
 };
 
 function ExperienceCard() {
+  const [viewMode, setViewMode] = useState('experience'); // 'experience' or 'github'
+
   // Find the current/latest experience (one with endDate null or most recent)
   const latestExperience = useMemo(() => {
     const current = experiences.find(exp => exp.endDate === null);
@@ -51,10 +54,31 @@ function ExperienceCard() {
   return (
     <BaseCard className="card card-experience">
       <div className="experience-content">
-        <h2 className="experience-title">Experience</h2>
+        <div className="experience-header-row">
+          <h2 className="experience-title">
+            {viewMode === 'experience' ? 'Experience' : 'GitHub Activity'}
+          </h2>
+          <button
+            className="view-toggle-btn"
+            onClick={() => setViewMode(viewMode === 'experience' ? 'github' : 'experience')}
+            aria-label={`Switch to ${viewMode === 'experience' ? 'GitHub Activity' : 'Experience'} view`}
+            title={`Switch to ${viewMode === 'experience' ? 'GitHub Activity' : 'Experience'} view`}
+          >
+            🔄
+          </button>
+        </div>
 
-        {/* Experience details */}
         <AnimatePresence mode="wait">
+          {viewMode === 'experience' ? (
+            <motion.div
+              key="experience-view"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.3 }}
+            >
+              {/* Experience details */}
+              <AnimatePresence mode="wait">
           <motion.div
             key={selectedExperience.id}
             className="experience-details"
@@ -100,8 +124,8 @@ function ExperienceCard() {
           </motion.div>
         </AnimatePresence>
 
-        {/* Timeline */}
-        <div className="timeline-container">
+              {/* Timeline */}
+              <div className="timeline-container">
           {/* Year labels */}
           <div className="timeline-years">
             <div className="timeline-year">{TIMELINE_START_YEAR}</div>
@@ -153,6 +177,20 @@ function ExperienceCard() {
             })}
           </div>
         </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="github-view"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+              className="github-view-wrapper"
+            >
+              <GitHubActivityCard />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </BaseCard>
   );

@@ -7,12 +7,82 @@
   min-height: 0;
 }
 
+/* Header row with title and toggle */
+.experience-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
 .experience-title {
   font-size: clamp(16px, 2.5vw, 20px);
   font-weight: 600;
   opacity: 0.95;
   margin: 0;
   flex-shrink: 0;
+}
+
+.view-toggle-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 18px;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.view-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: rotate(180deg);
+}
+
+.view-toggle-btn:active {
+  transform: rotate(180deg) scale(0.95);
+}
+
+/* GitHub view wrapper */
+.github-view-wrapper {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.github-view-wrapper .github-activity-card {
+  padding: 0;
+  background: transparent;
+  border: none;
+  backdrop-filter: none;
+  height: 100%;
+}
+
+.github-view-wrapper .github-header {
+  display: none;
+}
+
+.github-view-wrapper .activity-footer {
+  padding-top: 12px;
+  margin-top: 12px;
+}
+
+.github-view-wrapper .activity-feed {
+  padding: 12px;
+  min-height: 250px;
+  max-height: 100%;
+  flex: 1;
+}
+
+.github-view-wrapper .activity-list {
+  max-height: none;
 }
 
 /* Timeline - at bottom */

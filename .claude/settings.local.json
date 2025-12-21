@@ -7,7 +7,8 @@
       "Bash(wsl -e bash -c \"cd /root/general_scripts/PortfolioWebsite/portfolio && npm install react-unity-webgl\")",
       "Bash(wsl -e bash -c:*)",
       "Bash(npm run dev:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []
