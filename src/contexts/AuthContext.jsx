@@ -6,7 +6,6 @@ const AuthContext = createContext(null);
 const MOCK_PASSWORD = 'demo123';
 
 export function AuthProvider({ children, showNotification }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showSecretPortal, setShowSecretPortal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [isLoadingDashboard, setIsLoadingDashboard] = useState(false);
@@ -19,7 +18,6 @@ export function AuthProvider({ children, showNotification }) {
   const login = useCallback((password) => {
     // Mock authentication - replace with real API call later
     if (password === MOCK_PASSWORD) {
-      setIsAuthenticated(true);
       setShowLoginModal(false);
       setIsLoadingDashboard(true);
 
@@ -50,7 +48,6 @@ export function AuthProvider({ children, showNotification }) {
 
     // Show exit animation for 1.5 seconds before closing portal
     setTimeout(() => {
-      setIsAuthenticated(false);
       setShowSecretPortal(false);
       setIsExitingDashboard(false);
     }, 1500);
@@ -74,7 +71,6 @@ export function AuthProvider({ children, showNotification }) {
   return (
     <AuthContext.Provider
       value={{
-        isAuthenticated,
         showSecretPortal,
         showLoginModal,
         isLoadingDashboard,

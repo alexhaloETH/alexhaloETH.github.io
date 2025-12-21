@@ -165,11 +165,6 @@
   grid-column: span 2;
 }
 
-/* Card spanning 2 rows */
-.card.tall {
-  grid-row: span 2;
-}
-
 /* Hero card - first column */
 .card-hero {
   grid-column: span 1;

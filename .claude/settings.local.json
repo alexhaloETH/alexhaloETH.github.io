@@ -8,7 +8,13 @@
       "Bash(wsl -e bash -c:*)",
       "Bash(npm run dev:*)",
       "Bash(mkdir:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(du:*)",
+      "Bash(stat:*)",
+      "Bash(grep:*)",
+      "Bash(wc:*)"
     ],
     "deny": [],
     "ask": []
