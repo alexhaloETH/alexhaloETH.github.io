@@ -130,7 +130,16 @@ function GitHubActivityCard() {
           try {
             switch (event.type) {
               case 'PushEvent':
+                console.log('[GitHub Activity] PushEvent payload:', {
+                  hasCommits: !!event.payload?.commits,
+                  isArray: Array.isArray(event.payload?.commits),
+                  commitsLength: event.payload?.commits?.length,
+                  hasRef: !!event.payload?.ref,
+                  ref: event.payload?.ref,
+                  size: event.payload?.size
+                });
                 if (!event.payload?.commits || !Array.isArray(event.payload.commits) || !event.payload?.ref) {
+                  console.log('[GitHub Activity] PushEvent rejected - missing data');
                   return null;
                 }
                 return {
