@@ -93,7 +93,8 @@ function GitHubActivityCard() {
         console.log('[GitHub Activity] No token found, using unauthenticated request');
       }
 
-      const url = `https://api.github.com/users/${GITHUB_USERNAME}/events?per_page=30`;
+      // Fetch from authenticated events endpoint (includes private repos when token has access)
+      const url = `https://api.github.com/users/${GITHUB_USERNAME}/events?per_page=100`;
       console.log('[GitHub Activity] Fetching from:', url);
 
       const response = await fetch(url, { headers });
@@ -219,7 +220,7 @@ function GitHubActivityCard() {
           }
         })
         .filter(Boolean) // Remove null entries
-        .slice(0, 10); // Limit to 10 most recent
+        .slice(0, 50); // Limit to 10 most recent
 
       console.log('[GitHub Activity] Transformed activities:', transformedActivities.length);
       console.log('[GitHub Activity] Activities:', transformedActivities);
