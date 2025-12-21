@@ -73,7 +73,9 @@ function GitHubActivityCard() {
     try {
       console.log('[GitHub Activity] Starting fetch...');
       console.log('[GitHub Activity] Username:', GITHUB_USERNAME);
+      console.log('[GitHub Activity] Token value:', import.meta.env.VITE_GITHUB_TOKEN ? `${import.meta.env.VITE_GITHUB_TOKEN.substring(0, 8)}...` : 'undefined');
       console.log('[GitHub Activity] Has token:', !!import.meta.env.VITE_GITHUB_TOKEN);
+      console.log('[GitHub Activity] All env vars:', Object.keys(import.meta.env));
 
       setLoading(true);
       setError(null);
@@ -112,71 +114,86 @@ function GitHubActivityCard() {
 
       // Transform GitHub events to our activity format
       const transformedActivities = events
-        .filter(event => {
-          // Filter for relevant event types
-          return ['PushEvent', 'WatchEvent', 'PullRequestEvent', 'IssuesEvent', 'CreateEvent'].includes(event.type);
-        })
-        .slice(0, 10) // Limit to 10 most recent
         .map(event => {
+          // Skip if missing required data
+          if (!event || !event.type || !event.repo || !event.created_at) {
+            return null;
+          }
+
           const baseActivity = {
             id: event.id,
             repo: event.repo.name,
             timestamp: new Date(event.created_at)
           };
 
-          switch (event.type) {
-            case 'PushEvent':
-              return {
-                ...baseActivity,
-                type: 'push',
-                message: event.payload.commits[0]?.message || 'Pushed commits',
-                commits: event.payload.size,
-                branch: event.payload.ref.replace('refs/heads/', '')
-              };
-
-            case 'WatchEvent':
-              return {
-                ...baseActivity,
-                type: 'star',
-                message: 'Starred repository',
-                stars: event.repo.stargazers_count || 0
-              };
-
-            case 'PullRequestEvent':
-              return {
-                ...baseActivity,
-                type: 'pull_request',
-                message: event.payload.pull_request.title,
-                status: event.payload.pull_request.merged ? 'merged' : event.payload.pull_request.state,
-                additions: event.payload.pull_request.additions,
-                deletions: event.payload.pull_request.deletions
-              };
-
-            case 'IssuesEvent':
-              return {
-                ...baseActivity,
-                type: 'issue',
-                message: `${event.payload.action} issue: ${event.payload.issue.title}`,
-                status: event.payload.issue.state,
-                comments: event.payload.issue.comments
-              };
-
-            case 'CreateEvent':
-              if (event.payload.ref_type === 'repository') {
+          try {
+            switch (event.type) {
+              case 'PushEvent':
+                if (!event.payload?.commits || !Array.isArray(event.payload.commits) || !event.payload?.ref) {
+                  return null;
+                }
                 return {
                   ...baseActivity,
-                  type: 'create',
-                  message: 'Created new repository',
-                  language: event.repo.language || 'Unknown'
+                  type: 'push',
+                  message: event.payload.commits[0]?.message || 'Pushed commits',
+                  commits: event.payload.size || event.payload.commits.length,
+                  branch: event.payload.ref.replace('refs/heads/', '')
                 };
-              }
-              return null;
 
-            default:
-              return null;
+              case 'WatchEvent':
+                return {
+                  ...baseActivity,
+                  type: 'star',
+                  message: 'Starred repository',
+                  stars: event.repo?.stargazers_count || 0
+                };
+
+              case 'PullRequestEvent':
+                if (!event.payload?.pull_request) {
+                  return null;
+                }
+                return {
+                  ...baseActivity,
+                  type: 'pull_request',
+                  message: event.payload.pull_request.title || 'Pull request',
+                  status: event.payload.pull_request.merged ? 'merged' : event.payload.pull_request.state,
+                  additions: event.payload.pull_request.additions || 0,
+                  deletions: event.payload.pull_request.deletions || 0
+                };
+
+              case 'IssuesEvent':
+                if (!event.payload?.issue) {
+                  return null;
+                }
+                return {
+                  ...baseActivity,
+                  type: 'issue',
+                  message: `${event.payload.action || 'updated'} issue: ${event.payload.issue.title || 'Issue'}`,
+                  status: event.payload.issue.state,
+                  comments: event.payload.issue.comments || 0
+                };
+
+              case 'CreateEvent':
+                if (event.payload?.ref_type === 'repository') {
+                  return {
+                    ...baseActivity,
+                    type: 'create',
+                    message: 'Created new repository',
+                    language: event.repo?.language || 'Unknown'
+                  };
+                }
+                return null;
+
+              default:
+                return null;
+            }
+          } catch (err) {
+            console.error('[GitHub Activity] Error transforming event:', event.type, err);
+            return null;
           }
         })
-        .filter(Boolean); // Remove null entries
+        .filter(Boolean) // Remove null entries
+        .slice(0, 10); // Limit to 10 most recent
 
       setActivities(transformedActivities);
       setLastUpdate(new Date());
