@@ -430,10 +430,26 @@ function GitHubActivityCard() {
               // Get repo URL
               const repoUrl = `https://github.com/${group.repo}`;
 
+              // Generate unique color based on repo name
+              const generateRepoColor = (repoName) => {
+                let hash = 0;
+                for (let i = 0; i < repoName.length; i++) {
+                  hash = repoName.charCodeAt(i) + ((hash << 5) - hash);
+                }
+                // Generate pleasant pastel colors with good contrast
+                const hue = Math.abs(hash % 360);
+                const saturation = 65 + (Math.abs(hash) % 20); // 65-85%
+                const lightness = 55 + (Math.abs(hash >> 8) % 15); // 55-70%
+                return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+              };
+
+              const repoColor = generateRepoColor(group.repo);
+
               return (
                 <div
                   key={group.repo}
                   className="repo-group-item"
+                  style={{ '--repo-color': repoColor }}
                 >
                   <div className="repo-group-header">
                     <div className="repo-info">
