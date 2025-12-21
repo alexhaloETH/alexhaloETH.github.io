@@ -37,6 +37,7 @@ const commonEmojis = ['🥚', '🥛', '🧈', '🍞', '🧀', '🥓', '🍅', '�
 
 function PantryCard() {
   const [activeTab, setActiveTab] = useState('recipes');
+  const [recipeFilter, setRecipeFilter] = useState('all'); // 'all', 'ready', 'almost', 'missing'
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [pantryItems, setPantryItems] = useState(initialPantryItems);
   const [shoppingList, setShoppingList] = useState(initialShoppingList);
@@ -67,6 +68,23 @@ function PantryCard() {
   const almostRecipes = sortedRecipes.filter(
     (r) => !r.canMake && r.matchPercentage >= 60
   );
+  const missingRecipes = sortedRecipes.filter(
+    (r) => !r.canMake && r.matchPercentage < 60
+  );
+
+  // Filtered recipes based on selected filter
+  const filteredRecipes = useMemo(() => {
+    switch (recipeFilter) {
+      case 'ready':
+        return availableRecipes;
+      case 'almost':
+        return almostRecipes;
+      case 'missing':
+        return missingRecipes;
+      default:
+        return sortedRecipes;
+    }
+  }, [recipeFilter, availableRecipes, almostRecipes, missingRecipes, sortedRecipes]);
 
   // Pantry item handlers
   const handleUpdateQuantity = (id, newQuantity) => {
@@ -166,6 +184,35 @@ function PantryCard() {
               ) : (
                 <>
                   <div className="recipes-header">
+                    <div className="recipe-filters">
+                      <button
+                        className={`filter-btn ${recipeFilter === 'all' ? 'active' : ''}`}
+                        onClick={() => setRecipeFilter('all')}
+                      >
+                        All ({sortedRecipes.length})
+                      </button>
+                      <button
+                        className={`filter-btn ready ${recipeFilter === 'ready' ? 'active' : ''}`}
+                        onClick={() => setRecipeFilter('ready')}
+                      >
+                        <span className="dot" />
+                        Ready ({availableRecipes.length})
+                      </button>
+                      <button
+                        className={`filter-btn almost ${recipeFilter === 'almost' ? 'active' : ''}`}
+                        onClick={() => setRecipeFilter('almost')}
+                      >
+                        <span className="dot" />
+                        Almost ({almostRecipes.length})
+                      </button>
+                      <button
+                        className={`filter-btn missing ${recipeFilter === 'missing' ? 'active' : ''}`}
+                        onClick={() => setRecipeFilter('missing')}
+                      >
+                        <span className="dot" />
+                        Missing ({missingRecipes.length})
+                      </button>
+                    </div>
                     <button className="add-recipe-btn" onClick={() => setShowAddRecipeModal(true)}>
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <line x1="12" y1="5" x2="12" y2="19" />
@@ -175,41 +222,15 @@ function PantryCard() {
                     </button>
                   </div>
 
-                  {availableRecipes.length > 0 && (
-                    <div className="recipe-section">
-                      <h4 className="section-label ready">
-                        <span className="dot" />
-                        Ready to Cook
-                      </h4>
-                      <div className="recipes-grid">
-                        {availableRecipes.map((recipe) => (
-                          <RecipeCard
-                            key={recipe.id}
-                            recipe={recipe}
-                            onClick={() => setSelectedRecipe(recipe)}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {almostRecipes.length > 0 && (
-                    <div className="recipe-section">
-                      <h4 className="section-label almost">
-                        <span className="dot" />
-                        Almost There
-                      </h4>
-                      <div className="recipes-grid">
-                        {almostRecipes.map((recipe) => (
-                          <RecipeCard
-                            key={recipe.id}
-                            recipe={recipe}
-                            onClick={() => setSelectedRecipe(recipe)}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  <div className="recipes-grid">
+                    {filteredRecipes.map((recipe) => (
+                      <RecipeCard
+                        key={recipe.id}
+                        recipe={recipe}
+                        onClick={() => setSelectedRecipe(recipe)}
+                      />
+                    ))}
+                  </div>
                 </>
               )}
             </motion.div>

@@ -69,6 +69,16 @@ function RecipeDetail({ recipe, pantryItems, onBack, onDelete }) {
             {recipe.servings && (
               <span className="servings">{recipe.servings} serving{recipe.servings > 1 ? 's' : ''}</span>
             )}
+            {recipe.url && (
+              <a href={recipe.url} target="_blank" rel="noopener noreferrer" className="recipe-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                  <polyline points="15 3 21 3 21 9" />
+                  <line x1="10" y1="14" x2="21" y2="3" />
+                </svg>
+                Recipe
+              </a>
+            )}
           </div>
         </div>
       </div>
@@ -84,12 +94,15 @@ function RecipeDetail({ recipe, pantryItems, onBack, onDelete }) {
           return (
             <div
               key={i}
-              className={`ingredient-row ${hasEnough ? 'have' : 'need'}`}
+              className={`ingredient-row ${hasEnough ? 'have' : 'need'} ${ing.optional ? 'optional' : ''}`}
             >
               <span className="ing-icon">
                 {pantryItem?.icon || '📦'}
               </span>
-              <span className="ing-name">{ing.name}</span>
+              <span className="ing-name">
+                {ing.name}
+                {ing.optional && <span className="optional-badge">Optional</span>}
+              </span>
               <span className="ing-amount">
                 {ing.amount} {ing.unit}
               </span>
@@ -109,7 +122,7 @@ function RecipeDetail({ recipe, pantryItems, onBack, onDelete }) {
         })}
       </div>
 
-      {recipe.canMake && recipe.steps && (
+      {recipe.steps && (
         <button className="start-cooking-btn" onClick={handleStartCooking}>
           <span>Start Cooking</span>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
