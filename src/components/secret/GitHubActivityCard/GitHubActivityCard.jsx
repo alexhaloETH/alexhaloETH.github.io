@@ -62,13 +62,12 @@ function GitHubActivityCard() {
       type: 'issue',
       repo: 'alexhaloETH/smart-contracts',
       message: 'Opened issue: Gas optimization for batch transfers',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 72), // 3 days ago
+      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 72),
       status: 'open',
       comments: 4
     }
   ];
 
-  // Fetch real GitHub activity
   const fetchGitHubActivity = async () => {
     try {
       console.log('[GitHub Activity] Starting fetch...');
