@@ -224,7 +224,36 @@ function GitHubActivityCard() {
       console.log('[GitHub Activity] Transformed activities:', transformedActivities.length);
       console.log('[GitHub Activity] Activities:', transformedActivities);
 
-      setActivities(transformedActivities);
+      // Group activities by repository
+      const groupedActivities = transformedActivities.reduce((groups, activity) => {
+        const repo = activity.repo;
+        if (!groups[repo]) {
+          groups[repo] = {
+            repo,
+            activities: [],
+            timestamp: activity.timestamp,
+            types: {}
+          };
+        }
+        groups[repo].activities.push(activity);
+
+        // Count activity types
+        const type = activity.type;
+        groups[repo].types[type] = (groups[repo].types[type] || 0) + 1;
+
+        // Keep the most recent timestamp
+        if (activity.timestamp > groups[repo].timestamp) {
+          groups[repo].timestamp = activity.timestamp;
+        }
+
+        return groups;
+      }, {});
+
+      // Convert to array and sort by most recent
+      const groupedArray = Object.values(groupedActivities)
+        .sort((a, b) => b.timestamp - a.timestamp);
+
+      setActivities(groupedArray);
       setLastUpdate(new Date());
       setLoading(false);
     } catch (err) {
@@ -381,35 +410,53 @@ function GitHubActivityCard() {
           </div>
         ) : (
           <div className="activity-list">
-            {activities.map((activity) => (
-              <div
-                key={activity.id}
-                className="activity-item"
-                style={{ '--activity-color': getActivityColor(activity.type) }}
-              >
-                <div className="activity-icon" style={{ color: getActivityColor(activity.type) }}>
-                  {getActivityIcon(activity.type)}
-                </div>
+            {activities.map((group) => {
+              const typeLabels = {
+                push: 'push',
+                star: 'star',
+                pull_request: 'PR',
+                issue: 'issue',
+                create: 'created'
+              };
 
-                <div className="activity-content">
-                  <div className="activity-header">
-                    <span className="activity-repo">{activity.repo}</span>
-                    <span className="activity-time">{getRelativeTime(activity.timestamp)}</span>
+              // Build summary string
+              const summary = Object.entries(group.types)
+                .map(([type, count]) => `${count} ${typeLabels[type]}${count > 1 ? 'es' : ''}`)
+                .join(', ');
+
+              // Get the most recent activity for additional details
+              const latestActivity = group.activities[0];
+
+              // Get repo URL
+              const repoUrl = `https://github.com/${group.repo}`;
+
+              return (
+                <div
+                  key={group.repo}
+                  className="repo-group-item"
+                >
+                  <div className="repo-group-header">
+                    <div className="repo-info">
+                      <svg className="repo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
+                      </svg>
+                      <a
+                        href={repoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="repo-name"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {group.repo}
+                      </a>
+                    </div>
+                    <span className="repo-time">{getRelativeTime(group.timestamp)}</span>
                   </div>
 
-                  <div className="activity-message">{activity.message}</div>
+                  <div className="repo-summary">{summary}</div>
 
-                  <div className="activity-meta">
-                    {activity.commits && (
-                      <span className="meta-badge">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <circle cx="12" cy="12" r="10" />
-                          <polyline points="12 6 12 12 16 14" />
-                        </svg>
-                        {activity.commits} commit{activity.commits > 1 ? 's' : ''}
-                      </span>
-                    )}
-                    {activity.branch && (
+                  <div className="repo-meta">
+                    {latestActivity.branch && (
                       <span className="meta-badge">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <line x1="6" y1="3" x2="6" y2="15" />
@@ -417,22 +464,22 @@ function GitHubActivityCard() {
                           <circle cx="6" cy="18" r="3" />
                           <path d="M18 9a9 9 0 0 1-9 9" />
                         </svg>
-                        {activity.branch}
+                        {latestActivity.branch}
                       </span>
                     )}
-                    {activity.sha && (
-                      <span className="meta-badge commit-sha" title={`Commit SHA: ${activity.sha}`}>
+                    {latestActivity.sha && (
+                      <span className="meta-badge commit-sha" title={`Latest commit: ${latestActivity.sha}`}>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <circle cx="12" cy="12" r="3" />
                           <line x1="3" y1="12" x2="9" y2="12" />
                           <line x1="15" y1="12" x2="21" y2="12" />
                         </svg>
-                        {activity.sha.substring(0, 7)}
+                        {latestActivity.sha.substring(0, 7)}
                       </span>
                     )}
-                    {activity.compareUrl && (
+                    {latestActivity.compareUrl && (
                       <a
-                        href={activity.compareUrl}
+                        href={latestActivity.compareUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="meta-badge view-commits"
@@ -446,38 +493,10 @@ function GitHubActivityCard() {
                         View commits
                       </a>
                     )}
-                    {activity.status && (
-                      <span className={`meta-badge status-${activity.status}`}>
-                        {activity.status}
-                      </span>
-                    )}
-                    {activity.additions && activity.deletions && (
-                      <span className="meta-badge">
-                        <span className="additions">+{activity.additions}</span>
-                        <span className="deletions">-{activity.deletions}</span>
-                      </span>
-                    )}
-                    {activity.language && (
-                      <span className="meta-badge">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <polyline points="16 18 22 12 16 6" />
-                          <polyline points="8 6 2 12 8 18" />
-                        </svg>
-                        {activity.language}
-                      </span>
-                    )}
-                    {activity.comments && (
-                      <span className="meta-badge">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                        </svg>
-                        {activity.comments}
-                      </span>
-                    )}
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
