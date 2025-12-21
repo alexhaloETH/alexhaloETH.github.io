@@ -71,6 +71,10 @@ function GitHubActivityCard() {
   // Fetch real GitHub activity
   const fetchGitHubActivity = async () => {
     try {
+      console.log('[GitHub Activity] Starting fetch...');
+      console.log('[GitHub Activity] Username:', GITHUB_USERNAME);
+      console.log('[GitHub Activity] Has token:', !!import.meta.env.VITE_GITHUB_TOKEN);
+
       setLoading(true);
       setError(null);
 
@@ -82,18 +86,29 @@ function GitHubActivityCard() {
       // Add token if available (injected at build time via GitHub Actions)
       if (import.meta.env.VITE_GITHUB_TOKEN) {
         headers['Authorization'] = `token ${import.meta.env.VITE_GITHUB_TOKEN}`;
+        console.log('[GitHub Activity] Token added to headers');
+      } else {
+        console.log('[GitHub Activity] No token found, using unauthenticated request');
       }
 
-      const response = await fetch(
-        `https://api.github.com/users/${GITHUB_USERNAME}/events?per_page=30`,
-        { headers }
-      );
+      const url = `https://api.github.com/users/${GITHUB_USERNAME}/events?per_page=30`;
+      console.log('[GitHub Activity] Fetching from:', url);
+
+      const response = await fetch(url, { headers });
+
+      console.log('[GitHub Activity] Response status:', response.status);
+      console.log('[GitHub Activity] Response headers:', {
+        rateLimit: response.headers.get('X-RateLimit-Limit'),
+        rateRemaining: response.headers.get('X-RateLimit-Remaining'),
+        rateReset: response.headers.get('X-RateLimit-Reset')
+      });
 
       if (!response.ok) {
         throw new Error(`GitHub API error: ${response.status}`);
       }
 
       const events = await response.json();
+      console.log('[GitHub Activity] Received events:', events.length);
 
       // Transform GitHub events to our activity format
       const transformedActivities = events
