@@ -5,11 +5,12 @@ const AuthContext = createContext(null);
 // Mock password for development - in production this will be verified by backend
 const MOCK_PASSWORD = 'demo123';
 
-export function AuthProvider({ children }) {
+export function AuthProvider({ children, showNotification }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showSecretPortal, setShowSecretPortal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [isLoadingDashboard, setIsLoadingDashboard] = useState(false);
+  const [isExitingDashboard, setIsExitingDashboard] = useState(false);
 
   const triggerSecretEntry = useCallback(() => {
     setShowLoginModal(true);
@@ -26,16 +27,33 @@ export function AuthProvider({ children }) {
       setTimeout(() => {
         setIsLoadingDashboard(false);
         setShowSecretPortal(true);
+        // Show welcome notification after dashboard loads
+        if (showNotification) {
+          setTimeout(() => {
+            showNotification({
+              title: 'Access Granted',
+              message: 'Welcome back to Command Center',
+              type: 'success',
+              duration: 5000
+            });
+          }, 300);
+        }
       }, 2000);
 
       return { success: true };
     }
     return { success: false, error: 'Invalid password' };
-  }, []);
+  }, [showNotification]);
 
   const logout = useCallback(() => {
-    setIsAuthenticated(false);
-    setShowSecretPortal(false);
+    setIsExitingDashboard(true);
+
+    // Show exit animation for 1.5 seconds before closing portal
+    setTimeout(() => {
+      setIsAuthenticated(false);
+      setShowSecretPortal(false);
+      setIsExitingDashboard(false);
+    }, 1500);
   }, []);
 
   const closeLoginModal = useCallback(() => {
@@ -43,8 +61,14 @@ export function AuthProvider({ children }) {
   }, []);
 
   const exitSecretPortal = useCallback(() => {
-    setShowSecretPortal(false);
-    setIsLoadingDashboard(false);
+    setIsExitingDashboard(true);
+
+    // Show exit animation for 1.5 seconds before closing portal
+    setTimeout(() => {
+      setShowSecretPortal(false);
+      setIsLoadingDashboard(false);
+      setIsExitingDashboard(false);
+    }, 1500);
   }, []);
 
   return (
@@ -54,6 +78,7 @@ export function AuthProvider({ children }) {
         showSecretPortal,
         showLoginModal,
         isLoadingDashboard,
+        isExitingDashboard,
         triggerSecretEntry,
         login,
         logout,

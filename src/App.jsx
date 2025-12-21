@@ -10,8 +10,10 @@ import UnityBackground from './components/UnityBackground/UnityBackground.jsx'
 import LoginModal from './components/LoginModal/LoginModal.jsx'
 import SecretDashboard from './components/SecretDashboard/SecretDashboard.jsx'
 import LoadingAnimation from './components/LoadingAnimation/LoadingAnimation.jsx'
+import ExitAnimation from './components/ExitAnimation/ExitAnimation.jsx'
 import SecretBackground from './components/SecretBackground/SecretBackground.jsx'
 import { AuthProvider, useAuth } from './contexts/AuthContext.jsx'
+import { NotificationProvider, useNotification } from './contexts/NotificationContext.jsx'
 import useIdleDetection from './hooks/useIdleDetection'
 import { checkUnitySupport } from './utils/deviceDetection'
 import { IDLE_TIMEOUT } from './utils/constants'
@@ -23,19 +25,22 @@ const WorldCard = lazy(() => import('./components/MapCard/WorldCard.jsx'))
 function AppContent() {
   const [unityEnabled, setUnityEnabled] = useState(false)
   const [unityMounted, setUnityMounted] = useState(false)
-  const [toastMessage, setToastMessage] = useState(null)
   const isIdle = useIdleDetection(IDLE_TIMEOUT, unityEnabled)
-  const { showSecretPortal, isLoadingDashboard } = useAuth()
+  const { showSecretPortal, isLoadingDashboard, isExitingDashboard } = useAuth()
+  const { notification, showNotification, closeNotification } = useNotification()
 
   const handleToggle3D = useCallback(() => {
     if (!unityEnabled) {
       const support = checkUnitySupport()
       if (!support.supported) {
-        if (support.reason === 'mobile') {
-          setToastMessage('3D background is not available on mobile devices. Please visit on a desktop browser.')
-        } else {
-          setToastMessage('3D background requires WebGL2 which is not supported on this device/browser.')
-        }
+        showNotification({
+          title: '3D Not Available',
+          message: support.reason === 'mobile'
+            ? '3D background is not available on mobile devices. Please visit on a desktop browser.'
+            : '3D background requires WebGL2 which is not supported on this device/browser.',
+          type: 'warning',
+          duration: 5000
+        })
         return
       }
       setUnityMounted(true)
@@ -43,19 +48,33 @@ function AppContent() {
     } else {
       setUnityEnabled(false)
     }
-  }, [unityEnabled])
+  }, [unityEnabled, showNotification])
 
   return (
     <>
-      {toastMessage && (
-        <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
-      )}
+      {/* Global notification system */}
+      <AnimatePresence>
+        {notification && (
+          <Toast
+            title={notification.title}
+            message={notification.message}
+            type={notification.type}
+            duration={notification.duration}
+            onClose={closeNotification}
+          />
+        )}
+      </AnimatePresence>
 
       <LoginModal />
 
       {/* Show loading animation while transitioning to secret dashboard */}
       <AnimatePresence>
         {isLoadingDashboard && <LoadingAnimation />}
+      </AnimatePresence>
+
+      {/* Show exit animation while transitioning back to portfolio */}
+      <AnimatePresence>
+        {isExitingDashboard && <ExitAnimation />}
       </AnimatePresence>
 
       {/* Background layer - hide stars and unity when in secret portal */}
@@ -118,7 +137,17 @@ function AppContent() {
 
 function App() {
   return (
-    <AuthProvider>
+    <NotificationProvider>
+      <AppWithNotifications />
+    </NotificationProvider>
+  )
+}
+
+function AppWithNotifications() {
+  const { showNotification } = useNotification()
+
+  return (
+    <AuthProvider showNotification={showNotification}>
       <AppContent />
     </AuthProvider>
   )
