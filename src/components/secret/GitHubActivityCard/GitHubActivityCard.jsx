@@ -219,8 +219,8 @@ function GitHubActivityCard() {
           }
         })
         .filter(Boolean) // Remove null entries
-        .slice(0, 50); // Limit to 10 most recent
-
+        .slice(0, 150); 
+        
       console.log('[GitHub Activity] Transformed activities:', transformedActivities.length);
       console.log('[GitHub Activity] Activities:', transformedActivities);
 
