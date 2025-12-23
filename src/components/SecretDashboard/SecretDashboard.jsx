@@ -3,12 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import HomeAutomationCard from '../secret/HomeAutomationCard/HomeAutomationCard';
 import PantryCard from '../secret/PantryCard/PantryCard';
 import TradingBotsCard from '../secret/TradingBotsCard/TradingBotsCard';
-import QuickActionsCard from '../secret/QuickActionsCard/QuickActionsCard';
 import SystemStatusCard from '../secret/SystemStatusCard/SystemStatusCard';
 import ExchangeAccountsCard from '../secret/ExchangeAccountsCard/ExchangeAccountsCard';
 import TasksCard from '../secret/TasksCard/TasksCard';
 import CommandTerminalCard from '../secret/CommandTerminalCard/CommandTerminalCard';
-import SkillTreeCard from '../secret/SkillTreeCard/SkillTreeCard';
+//import SkillTreeCard from '../secret/SkillTreeCard/SkillTreeCard';
 import { useAuth } from '../../contexts/AuthContext';
 import './SecretDashboard.css';
 
@@ -152,9 +151,6 @@ function SecretDashboard() {
                     <motion.div variants={cardVariants}>
                       <PantryCard />
                     </motion.div>
-                    <motion.div variants={cardVariants}>
-                      <QuickActionsCard />
-                    </motion.div>
                   </div>
                 </section>
               </motion.div>
@@ -210,11 +206,11 @@ function SecretDashboard() {
                     </svg>
                     Developer
                   </h2>
-                  <div className="section-grid">
+                  {/* <div className="section-grid">
                     <motion.div variants={cardVariants} className="wide-card-wrapper">
                       <SkillTreeCard />
                     </motion.div>
-                  </div>
+                  </div> */}
                 </section>
               </motion.div>
             </motion.div>
