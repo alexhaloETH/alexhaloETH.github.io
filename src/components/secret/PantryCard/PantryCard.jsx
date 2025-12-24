@@ -1,8 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import BaseCard from '../../BaseCard/BaseCard';
 import {
-  pantryItems as initialPantryItems,
   shoppingList as initialShoppingList,
   recipes as initialRecipes,
   canMakeRecipe,
@@ -15,6 +14,13 @@ import {
   RecipeCard,
   RecipeDetail,
 } from './components';
+import { useNotification } from '../../../contexts/NotificationContext';
+import {
+  getAllPantryItems,
+  createPantryItem,
+  updatePantryItem,
+  deletePantryItem,
+} from '../../../utils/pantryApi';
 import './PantryCard.css';
 
 const tabs = [
@@ -36,18 +42,42 @@ const categories = [
 const commonEmojis = ['🥚', '🥛', '🧈', '🍞', '🧀', '🥓', '🍅', '🧅', '🧄', '🍝', '🍚', '🍗', '🫑', '🍄', '🫒', '🥔', '🥕', '🥒', '🥬', '🌽', '🥦', '🍎', '🍌', '🍊', '🍓', '🍇', '🥩', '🦐', '🌾', '🧂', '🌶️', '🫗', '🍯', '🥑', '🍋', '🐟', '☕', '🥜', '🥥', '🫘'];
 
 function PantryCard() {
+  const { showNotification } = useNotification();
   const [activeTab, setActiveTab] = useState('recipes');
   const [recipeFilter, setRecipeFilter] = useState('all'); // 'all', 'ready', 'almost', 'missing'
   const [selectedRecipe, setSelectedRecipe] = useState(null);
-  const [pantryItems, setPantryItems] = useState(initialPantryItems);
+  const [pantryItems, setPantryItems] = useState([]);
   const [shoppingList, setShoppingList] = useState(initialShoppingList);
   const [recipes, setRecipes] = useState(initialRecipes);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Modal states
   const [editingItem, setEditingItem] = useState(null);
   const [showAddPantryModal, setShowAddPantryModal] = useState(false);
   const [showAddRecipeModal, setShowAddRecipeModal] = useState(false);
   const [showAddShoppingModal, setShowAddShoppingModal] = useState(false);
+
+  // Fetch pantry items on mount
+  useEffect(() => {
+    const fetchPantryItems = async () => {
+      try {
+        setIsLoading(true);
+        const items = await getAllPantryItems();
+        setPantryItems(items);
+      } catch (error) {
+        showNotification({
+          title: 'Error',
+          message: 'Failed to load pantry items. Make sure the backend is running on localhost:8080',
+          type: 'error',
+        });
+        console.error('Failed to fetch pantry items:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPantryItems();
+  }, [showNotification]);
 
   const sortedRecipes = useMemo(() => {
     return recipes
@@ -87,22 +117,82 @@ function PantryCard() {
   }, [recipeFilter, availableRecipes, almostRecipes, missingRecipes, sortedRecipes]);
 
   // Pantry item handlers
-  const handleUpdateQuantity = (id, newQuantity) => {
+  const handleUpdateQuantity = async (id, newQuantity) => {
+    const item = pantryItems.find(i => i.id === id);
+    if (!item) return;
+
+    const updatedItem = { ...item, quantity: Math.max(0, newQuantity) };
+
+    // Optimistic update
     setPantryItems(items =>
-      items.map(item =>
-        item.id === id ? { ...item, quantity: Math.max(0, newQuantity) } : item
-      )
+      items.map(i => i.id === id ? updatedItem : i)
     );
+
+    try {
+      await updatePantryItem(id, updatedItem);
+      showNotification({
+        title: 'Success',
+        message: 'Pantry item updated',
+        type: 'success',
+      });
+    } catch (error) {
+      // Revert on error
+      setPantryItems(items =>
+        items.map(i => i.id === id ? item : i)
+      );
+      showNotification({
+        title: 'Error',
+        message: 'Failed to update pantry item',
+        type: 'error',
+      });
+    }
   };
 
-  const handleDeletePantryItem = (id) => {
+  const handleDeletePantryItem = async (id) => {
+    const itemToDelete = pantryItems.find(i => i.id === id);
+
+    // Optimistic delete
     setPantryItems(items => items.filter(item => item.id !== id));
+
+    try {
+      await deletePantryItem(id);
+      showNotification({
+        title: 'Success',
+        message: 'Pantry item deleted',
+        type: 'success',
+      });
+    } catch (error) {
+      // Revert on error
+      if (itemToDelete) {
+        setPantryItems(items => [...items, itemToDelete]);
+      }
+      showNotification({
+        title: 'Error',
+        message: 'Failed to delete pantry item',
+        type: 'error',
+      });
+    }
   };
 
-  const handleAddPantryItem = (newItem) => {
-    const id = Math.max(...pantryItems.map(i => i.id), 0) + 1;
-    setPantryItems([...pantryItems, { ...newItem, id }]);
-    setShowAddPantryModal(false);
+  const handleAddPantryItem = async (newItem) => {
+    try {
+      await createPantryItem(newItem);
+      // Refetch all items to get the server-generated ID
+      const items = await getAllPantryItems();
+      setPantryItems(items);
+      setShowAddPantryModal(false);
+      showNotification({
+        title: 'Success',
+        message: 'Pantry item added',
+        type: 'success',
+      });
+    } catch (error) {
+      showNotification({
+        title: 'Error',
+        message: 'Failed to add pantry item',
+        type: 'error',
+      });
+    }
   };
 
   // Shopping list handlers
@@ -267,7 +357,7 @@ function PantryCard() {
                         {item.quantity} {item.unit}
                       </span>
                     </div>
-                    <div
+                    <div  //this is where the status dot is rendered
                       className={`item-status ${
                         item.quantity < 3 ? 'low' : 'ok'
                       }`}
