@@ -1,42 +1,147 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import BaseCard from '../../BaseCard/BaseCard';
 import { EditTaskModal, AddTaskModal } from './components';
+import { useNotification } from '../../../contexts/NotificationContext';
+import {
+  getAllTasks,
+  createTask,
+  updateTask as updateTaskAPI,
+  deleteTask as deleteTaskAPI,
+} from '../../../utils/taskApi';
 import './TasksCard.css';
 
-const initialTasks = [
-  { id: 1, text: 'Review PR for Blob Arena', completed: false, priority: 'high', dueDate: 'Today' },
-  { id: 2, text: 'Update portfolio website', completed: true, priority: 'medium', dueDate: 'Today' },
-  { id: 3, text: 'Research Starknet upgrades', completed: false, priority: 'medium', dueDate: 'Tomorrow' },
-  { id: 4, text: 'Team sync call', completed: false, priority: 'high', dueDate: 'Today' },
-  { id: 5, text: 'Write dev blog post', completed: false, priority: 'low', dueDate: 'This week' },
-  { id: 6, text: 'Fix trading bot memory leak', completed: false, priority: 'high', dueDate: 'Tomorrow' },
-];
-
 function TasksCard() {
-  const [tasks, setTasks] = useState(initialTasks);
+  const { showNotification } = useNotification();
+  const [tasks, setTasks] = useState([]);
   const [filter, setFilter] = useState('all');
   const [editingTask, setEditingTask] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const toggleTask = (id) => {
-    setTasks(tasks.map((task) =>
-      task.id === id ? { ...task, completed: !task.completed } : task
+  // Fetch tasks on mount
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        setIsLoading(true);
+        const fetchedTasks = await getAllTasks();
+        setTasks(fetchedTasks);
+      } catch (error) {
+        showNotification({
+          title: 'Error',
+          message: 'Failed to load tasks. Make sure the backend is running on localhost:8080',
+          type: 'error',
+        });
+        console.error('Failed to fetch tasks:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTasks();
+  }, [showNotification]);
+
+  const toggleTask = async (id) => {
+    const task = tasks.find(t => t.id === id);
+    if (!task) return;
+
+    const updatedTask = { ...task, completed: !task.completed };
+
+    // Optimistic update
+    setTasks(tasks.map((t) =>
+      t.id === id ? updatedTask : t
     ));
+
+    try {
+      await updateTaskAPI(id, updatedTask);
+    } catch (error) {
+      // Revert on error
+      setTasks(tasks.map((t) =>
+        t.id === id ? task : t
+      ));
+      showNotification({
+        title: 'Error',
+        message: 'Failed to update task',
+        type: 'error',
+      });
+    }
   };
 
-  const addTask = (newTask) => {
-    setTasks([...tasks, newTask]);
+  const addTask = async (newTask) => {
+    try {
+      await createTask(newTask);
+      // Refetch all tasks
+      const fetchedTasks = await getAllTasks();
+      setTasks(fetchedTasks);
+      setShowAddModal(false);
+      showNotification({
+        title: 'Success',
+        message: 'Task added',
+        type: 'success',
+      });
+    } catch (error) {
+      showNotification({
+        title: 'Error',
+        message: 'Failed to add task',
+        type: 'error',
+      });
+    }
   };
 
-  const updateTask = (updatedTask) => {
+  const updateTask = async (updatedTask) => {
+    const originalTask = tasks.find(t => t.id === updatedTask.id);
+
+    // Optimistic update
     setTasks(tasks.map((task) =>
       task.id === updatedTask.id ? updatedTask : task
     ));
+
+    try {
+      await updateTaskAPI(updatedTask.id, updatedTask);
+      setEditingTask(null);
+      showNotification({
+        title: 'Success',
+        message: 'Task updated',
+        type: 'success',
+      });
+    } catch (error) {
+      // Revert on error
+      setTasks(tasks.map((task) =>
+        task.id === updatedTask.id ? originalTask : task
+      ));
+      showNotification({
+        title: 'Error',
+        message: 'Failed to update task',
+        type: 'error',
+      });
+    }
   };
 
-  const deleteTask = (id) => {
+  const deleteTask = async (id) => {
+    const taskToDelete = tasks.find(t => t.id === id);
+
+    // Optimistic delete
     setTasks(tasks.filter((task) => task.id !== id));
+
+    try {
+      await deleteTaskAPI(id);
+      setEditingTask(null);
+      showNotification({
+        title: 'Success',
+        message: 'Task deleted',
+        type: 'success',
+      });
+    } catch (error) {
+      // Revert on error
+      if (taskToDelete) {
+        setTasks([...tasks, taskToDelete]);
+      }
+      showNotification({
+        title: 'Error',
+        message: 'Failed to delete task',
+        type: 'error',
+      });
+    }
   };
 
   const filteredTasks = tasks.filter((task) => {
@@ -124,7 +229,29 @@ function TasksCard() {
         {completedCount > 0 && (
           <button
             className="clear-completed"
-            onClick={() => setTasks(tasks.filter((t) => !t.completed))}
+            onClick={async () => {
+              const completedTasks = tasks.filter((t) => t.completed);
+              // Optimistically remove completed tasks
+              setTasks(tasks.filter((t) => !t.completed));
+
+              try {
+                // Delete all completed tasks
+                await Promise.all(completedTasks.map(t => deleteTaskAPI(t.id)));
+                showNotification({
+                  title: 'Success',
+                  message: 'Completed tasks cleared',
+                  type: 'success',
+                });
+              } catch (error) {
+                // Revert on error
+                setTasks([...tasks]);
+                showNotification({
+                  title: 'Error',
+                  message: 'Failed to clear completed tasks',
+                  type: 'error',
+                });
+              }
+            }}
           >
             Clear completed
           </button>

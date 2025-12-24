@@ -75,10 +75,13 @@ export const transformToBackendFormat = (frontendItem) => {
   const measurementId = measurements.indexOf(frontendItem.unit);
   const iconId = emojis.indexOf(frontendItem.icon);
 
-  return {
-    name: frontendItem.name,
-    amount: frontendItem.quantity,
+  const result = {
+    name: frontendItem.name || '',
+    amount: Math.max(0, parseInt(frontendItem.quantity) || 1),
     measurement_id: measurementId >= 0 ? measurementId : 0,
-    icon_id: iconId >= 0 ? iconId : emojis.length - 1, // Default to 📦
+    icon_id: iconId >= 0 ? iconId : 40, // Default to 📦 (index 40)
   };
+
+  console.log('Transform to backend:', { frontendItem, result });
+  return result;
 };

@@ -2,7 +2,6 @@ import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import BaseCard from '../../BaseCard/BaseCard';
 import {
-  shoppingList as initialShoppingList,
   recipes as initialRecipes,
   canMakeRecipe,
 } from '../../../data/secret/pantry';
@@ -21,6 +20,12 @@ import {
   updatePantryItem,
   deletePantryItem,
 } from '../../../utils/pantryApi';
+import {
+  getAllShoppingItems,
+  createShoppingItem,
+  updateShoppingItem,
+  deleteShoppingItem,
+} from '../../../utils/shoppingApi';
 import './PantryCard.css';
 
 const tabs = [
@@ -47,7 +52,7 @@ function PantryCard() {
   const [recipeFilter, setRecipeFilter] = useState('all'); // 'all', 'ready', 'almost', 'missing'
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [pantryItems, setPantryItems] = useState([]);
-  const [shoppingList, setShoppingList] = useState(initialShoppingList);
+  const [shoppingList, setShoppingList] = useState([]);
   const [recipes, setRecipes] = useState(initialRecipes);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -57,26 +62,30 @@ function PantryCard() {
   const [showAddRecipeModal, setShowAddRecipeModal] = useState(false);
   const [showAddShoppingModal, setShowAddShoppingModal] = useState(false);
 
-  // Fetch pantry items on mount
+  // Fetch pantry and shopping items on mount
   useEffect(() => {
-    const fetchPantryItems = async () => {
+    const fetchData = async () => {
       try {
         setIsLoading(true);
-        const items = await getAllPantryItems();
-        setPantryItems(items);
+        const [pantry, shopping] = await Promise.all([
+          getAllPantryItems(),
+          getAllShoppingItems(),
+        ]);
+        setPantryItems(pantry);
+        setShoppingList(shopping);
       } catch (error) {
         showNotification({
           title: 'Error',
-          message: 'Failed to load pantry items. Make sure the backend is running on localhost:8080',
+          message: 'Failed to load items. Make sure the backend is running on localhost:8080',
           type: 'error',
         });
-        console.error('Failed to fetch pantry items:', error);
+        console.error('Failed to fetch items:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchPantryItems();
+    fetchData();
   }, [showNotification]);
 
   const sortedRecipes = useMemo(() => {
@@ -196,22 +205,77 @@ function PantryCard() {
   };
 
   // Shopping list handlers
-  const handleToggleShoppingItem = (id) => {
+  const handleToggleShoppingItem = async (id) => {
+    const item = shoppingList.find(i => i.id === id);
+    if (!item) return;
+
+    const updatedItem = { ...item, checked: !item.checked };
+
+    // Optimistic update
     setShoppingList(items =>
-      items.map(item =>
-        item.id === id ? { ...item, checked: !item.checked } : item
-      )
+      items.map(i => i.id === id ? updatedItem : i)
     );
+
+    try {
+      await updateShoppingItem(id, updatedItem);
+    } catch (error) {
+      // Revert on error
+      setShoppingList(items =>
+        items.map(i => i.id === id ? item : i)
+      );
+      showNotification({
+        title: 'Error',
+        message: 'Failed to update shopping item',
+        type: 'error',
+      });
+    }
   };
 
-  const handleDeleteShoppingItem = (id) => {
+  const handleDeleteShoppingItem = async (id) => {
+    const itemToDelete = shoppingList.find(i => i.id === id);
+
+    // Optimistic delete
     setShoppingList(items => items.filter(item => item.id !== id));
+
+    try {
+      await deleteShoppingItem(id);
+      showNotification({
+        title: 'Success',
+        message: 'Shopping item deleted',
+        type: 'success',
+      });
+    } catch (error) {
+      // Revert on error
+      if (itemToDelete) {
+        setShoppingList(items => [...items, itemToDelete]);
+      }
+      showNotification({
+        title: 'Error',
+        message: 'Failed to delete shopping item',
+        type: 'error',
+      });
+    }
   };
 
-  const handleAddShoppingItem = (newItem) => {
-    const id = Math.max(...shoppingList.map(i => i.id), 0) + 1;
-    setShoppingList([...shoppingList, { ...newItem, id, checked: false }]);
-    setShowAddShoppingModal(false);
+  const handleAddShoppingItem = async (newItem) => {
+    try {
+      await createShoppingItem({ ...newItem, checked: false });
+      // Refetch all items to get the server-generated ID
+      const items = await getAllShoppingItems();
+      setShoppingList(items);
+      setShowAddShoppingModal(false);
+      showNotification({
+        title: 'Success',
+        message: 'Shopping item added',
+        type: 'success',
+      });
+    } catch (error) {
+      showNotification({
+        title: 'Error',
+        message: 'Failed to add shopping item',
+        type: 'error',
+      });
+    }
   };
 
   // Recipe handlers
