@@ -1,64 +1,64 @@
 .skills-content {
-  width: 100%;
-  height: 100%;
   display: flex;
   flex-direction: column;
   gap: clamp(10px, 1.5%, 14px);
+  height: 100%;
   min-height: 0;
   overflow: hidden;
+  width: 100%;
 }
 
 .skills-header {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
+  display: flex;
   flex-shrink: 0;
   gap: 12px;
+  justify-content: space-between;
 }
 
 .skills-title {
   font-size: clamp(16px, 2.5vw, 20px);
   font-weight: 600;
-  opacity: 0.95;
   margin: 0;
+  opacity: 0.95;
 }
 
 .skills-tabs {
+  background: rgb(255 255 255 / 3%);
+  border: 1px solid rgb(255 255 255 / 6%);
+  border-radius: 8px;
   display: flex;
   gap: 4px;
-  background: rgba(255, 255, 255, 0.03);
   padding: 4px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .skills-tab {
-  position: relative;
-  padding: 6px 12px;
-  font-size: clamp(10px, 1.4vw, 12px);
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.5);
   background: transparent;
   border: none;
   border-radius: 6px;
+  color: rgb(255 255 255 / 50%);
   cursor: pointer;
+  font-size: clamp(10px, 1.4vw, 12px);
+  font-weight: 500;
+  padding: 6px 12px;
+  position: relative;
   transition: color 0.2s ease;
   white-space: nowrap;
 }
 
 .skills-tab:hover {
-  color: rgba(255, 255, 255, 0.7);
+  color: rgb(255 255 255 / 70%);
 }
 
 .skills-tab.active {
-  color: rgba(255, 255, 255, 0.95);
+  color: rgb(255 255 255 / 95%);
 }
 
 .tab-indicator {
-  position: absolute;
-  inset: 0;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgb(255 255 255 / 8%);
   border-radius: 6px;
+  inset: 0;
+  position: absolute;
   z-index: -1;
 }
 
@@ -66,11 +66,10 @@
 .skills-main {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden auto;
   padding: 4px 8px;
+  scrollbar-color: rgb(255 255 255 / 15%) rgb(255 255 255 / 5%);
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.15) rgba(255, 255, 255, 0.05);
 }
 
 .skills-main::-webkit-scrollbar {
@@ -78,12 +77,12 @@
 }
 
 .skills-main::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgb(255 255 255 / 5%);
   border-radius: 4px;
 }
 
 .skills-main::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgb(255 255 255 / 15%);
   border-radius: 4px;
 }
 
@@ -102,78 +101,78 @@
 }
 
 .section-label {
+  color: var(--accent-color, #4ade80);
   font-size: clamp(10px, 1.4vw, 12px);
   font-weight: 600;
-  text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--accent-color, #4ade80);
   opacity: 0.8;
+  text-transform: uppercase;
 }
 
 /* Skills cloud - flowing layout */
 .skills-cloud {
+  align-content: flex-start;
   display: flex;
   flex-wrap: wrap;
   gap: clamp(8px, 1.2%, 12px);
-  align-content: flex-start;
 }
 
 /* Individual skill pill */
 .skill-pill {
-  position: relative;
-  display: flex;
   align-items: center;
-  padding: 0;
   background: transparent;
   border: none;
   cursor: pointer;
+  display: flex;
   outline: none;
+  padding: 0;
+  position: relative;
 }
 
 .pill-content {
-  position: relative;
-  display: flex;
   align-items: center;
-  gap: clamp(8px, 1.2%, 12px);
-  padding: clamp(8px, 1.2%, 12px) clamp(14px, 2%, 20px);
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.08) 0%,
-    rgba(255, 255, 255, 0.04) 100%
+    rgb(255 255 255 / 8%) 0%,
+    rgb(255 255 255 / 4%) 100%
   );
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgb(255 255 255 / 10%);
   border-radius: 50px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  gap: clamp(8px, 1.2%, 12px);
   overflow: hidden;
+  padding: clamp(8px, 1.2%, 12px) clamp(14px, 2%, 20px);
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1;
 }
 
 .skill-pill:hover .pill-content {
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.12) 0%,
-    rgba(255, 255, 255, 0.06) 100%
+    rgb(255 255 255 / 12%) 0%,
+    rgb(255 255 255 / 6%) 100%
   );
   border-color: color-mix(in srgb, var(--skill-color) 50%, transparent);
   box-shadow:
-    0 4px 20px -4px rgba(0, 0, 0, 0.3),
+    0 4px 20px -4px rgb(0 0 0 / 30%),
     0 0 0 1px color-mix(in srgb, var(--skill-color) 20%, transparent);
 }
 
 /* Glow effect behind pill */
 .pill-glow {
-  position: absolute;
-  inset: -4px;
   background: radial-gradient(
     ellipse at center,
     var(--skill-color) 0%,
     transparent 70%
   );
-  opacity: 0;
   filter: blur(12px);
+  inset: -4px;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
   transition: opacity 0.3s ease;
   z-index: 0;
-  pointer-events: none;
 }
 
 .skill-pill:hover .pill-glow {
@@ -184,12 +183,12 @@
 .skill-pill.selected .pill-content {
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.15) 0%,
-    rgba(255, 255, 255, 0.08) 100%
+    rgb(255 255 255 / 15%) 0%,
+    rgb(255 255 255 / 8%) 100%
   );
   border-color: color-mix(in srgb, var(--skill-color) 60%, transparent);
   box-shadow:
-    0 4px 20px -4px rgba(0, 0, 0, 0.4),
+    0 4px 20px -4px rgb(0 0 0 / 40%),
     0 0 0 1px color-mix(in srgb, var(--skill-color) 30%, transparent);
 }
 
@@ -199,12 +198,12 @@
 
 /* Icon styling */
 .pill-icon {
-  width: clamp(20px, 2.8vw, 26px);
+  filter: brightness(0.95);
+  flex-shrink: 0;
   height: clamp(20px, 2.8vw, 26px);
   object-fit: contain;
-  filter: brightness(0.95);
   transition: filter 0.2s ease, transform 0.2s ease;
-  flex-shrink: 0;
+  width: clamp(20px, 2.8vw, 26px);
 }
 
 .skill-pill:hover .pill-icon {
@@ -213,56 +212,56 @@
 }
 
 .pill-emoji {
+  flex-shrink: 0;
   font-size: clamp(18px, 2.5vw, 24px);
   line-height: 1;
-  flex-shrink: 0;
 }
 
 /* Name styling */
 .pill-name {
+  color: rgb(255 255 255 / 85%);
   font-size: clamp(12px, 1.6vw, 14px);
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.85);
-  white-space: nowrap;
   transition: color 0.2s ease;
+  white-space: nowrap;
 }
 
 .skill-pill:hover .pill-name {
-  color: rgba(255, 255, 255, 1);
+  color: rgb(255 255 255 / 100%);
 }
 
 /* Footer */
 .skills-footer {
+  border-top: 1px solid rgb(255 255 255 / 5%);
   flex-shrink: 0;
   padding-top: 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
   text-align: center;
 }
 
 .skills-hint {
+  color: rgb(255 255 255 / 35%);
   font-size: clamp(10px, 1.4vw, 12px);
-  color: rgba(255, 255, 255, 0.35);
   font-weight: 400;
 }
 
 /* Mobile adjustments */
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .skills-header {
-    flex-direction: column;
     align-items: flex-start;
+    flex-direction: column;
     gap: 10px;
   }
 
   .skills-tabs {
-    width: 100%;
     justify-content: space-between;
+    width: 100%;
   }
 
   .skills-tab {
     flex: 1;
-    text-align: center;
-    padding: 8px 6px;
     font-size: 11px;
+    padding: 8px 6px;
+    text-align: center;
   }
 
   .skills-sections {
@@ -282,13 +281,13 @@
   }
 
   .pill-content {
-    padding: 8px 14px;
     gap: 8px;
+    padding: 8px 14px;
   }
 
   .pill-icon {
-    width: 20px;
     height: 20px;
+    width: 20px;
   }
 
   .pill-name {

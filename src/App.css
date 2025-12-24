@@ -1,25 +1,27 @@
 /* ==================== */
+
 /* Background Layer     */
+
 /* ==================== */
 .background-container {
+  height: 100%;
+  left: 0;
+  overflow: hidden;
   position: fixed;
   top: 0;
-  left: 0;
   width: 100%;
-  height: 100%;
   z-index: 0;
-  overflow: hidden;
 }
 
 /* Background layer wrapper for transitions */
 .background-layer {
+  height: 100%;
+  left: 0;
+  opacity: 1;
   position: absolute;
   top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 1;
   transition: opacity 1s ease-in-out;
+  width: 100%;
 }
 
 .background-layer.hidden {
@@ -29,45 +31,47 @@
 
 /* Faint light overlay on top of background */
 .background-light-overlay {
+  background: radial-gradient(ellipse at center, rgb(255 255 255 / 0.8%) 0%, transparent 90%);
+  height: 100%;
+  left: 0;
+  pointer-events: none;
   position: absolute;
   top: 0;
-  left: 0;
   width: 100%;
-  height: 100%;
-  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.008) 0%, transparent 90%);
-  pointer-events: none;
   z-index: 1;
 }
 
 /* Overlay for Unity background */
 .background-overlay {
+  background: rgb(10 10 10 / 80%);
+  height: 100%;
+  left: 0;
+  pointer-events: none;
   position: absolute;
   top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(10, 10, 10, 0.8);
-  pointer-events: none;
   transition: background 2s ease;
+  width: 100%;
 }
 
 /* Screensaver mode - reduce overlay opacity to show more Unity */
 .background-overlay.screensaver {
-  background: rgba(10, 10, 10, 0.3);
+  background: rgb(10 10 10 / 30%);
 }
 
 /* ==================== */
+
 /* Main Portfolio       */
+
 /* ==================== */
 .portfolio {
-  position: relative;
-  z-index: 1;
-  min-height: 100vh;
-  height: 100%;
-  padding: 20px;
   display: flex;
   flex-direction: column;
+  height: 100%;
+  min-height: 100vh;
+  padding: 20px;
+  position: relative;
   transition: opacity 2s ease;
+  z-index: 1;
 }
 
 /* Screensaver mode - fade out content */
@@ -77,36 +81,38 @@
 }
 
 /* ==================== */
+
 /* Header               */
+
 /* ==================== */
 .header {
-  display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 8px 24px;
-  margin-bottom: 5px;
+  display: flex;
   flex-shrink: 0;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  padding: 8px 24px;
 }
 
 .header-name {
+  color: var(--text-primary);
   font-size: 1.1rem;
   font-weight: 600;
   letter-spacing: 0.5px;
-  color: var(--text-primary);
 }
 
 /* Toggle Button */
 .toggle-btn {
-  display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   color: var(--text-secondary);
-  font-size: 0.85rem;
   cursor: pointer;
+  display: flex;
+  font-size: 0.85rem;
+  gap: 8px;
+  padding: 8px 16px;
   transition: all 0.2s ease;
 }
 
@@ -121,39 +127,43 @@
 }
 
 .toggle-btn .icon {
-  width: 16px;
   height: 16px;
+  width: 16px;
 }
 
 /* ==================== */
+
 /* Card Grid            */
+
 /* ==================== */
 .card-grid {
   display: grid;
+  flex: 1;
+  gap: clamp(12px, 2%, 16px);
   grid-template-columns: 1fr 1.2fr 1.4fr;
   grid-template-rows: minmax(clamp(250px, 35vh, 320px), 1fr) minmax(clamp(280px, 40vh, 360px), 1.2fr);
-  gap: clamp(12px, 2%, 16px);
-  padding: 0 4px;
-  flex: 1;
   min-height: 0;
+  padding: 0 4px;
 }
 
 /* ==================== */
+
 /* Individual Card      */
+
 /* ==================== */
 .card {
-  background-color: var(--bg-card);
   backdrop-filter: blur(10px);
+  background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  padding: clamp(16px, 3%, 24px);
-  transition: border-color 0.2s ease;
-  overflow: hidden;
-  position: relative;
   display: flex;
   flex-direction: column;
   min-height: 0;
   min-width: 0;
+  overflow: hidden;
+  padding: clamp(16px, 3%, 24px);
+  position: relative;
+  transition: border-color 0.2s ease;
 }
 
 .card:hover {
@@ -173,21 +183,23 @@
 
 
 /* ==================== */
+
 /* Responsive           */
+
 /* ==================== */
-@media (max-width: 1200px) {
+@media (width <= 1200px) {
   .card-grid {
+    gap: clamp(12px, 1.8%, 14px);
     grid-template-columns: 1fr 1fr 1fr;
     grid-template-rows: minmax(clamp(220px, 30vh, 280px), auto) minmax(clamp(250px, 35vh, 320px), auto);
-    gap: clamp(12px, 1.8%, 14px);
   }
 }
 
-@media (max-width: 1024px) {
+@media (width <= 1024px) {
   .card-grid {
+    gap: clamp(10px, 1.5%, 14px);
     grid-template-columns: 1fr 1fr;
     grid-template-rows: auto;
-    gap: clamp(10px, 1.5%, 14px);
   }
 
   .card.wide {
@@ -199,16 +211,16 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .card-grid {
+    gap: 12px;
     grid-template-columns: 1fr;
     grid-template-rows: auto;
-    gap: 12px;
   }
 
   .card {
-    min-height: clamp(280px, 40vh, 380px);
     height: auto;
+    min-height: clamp(280px, 40vh, 380px);
   }
 
   .card.wide {
@@ -233,7 +245,7 @@
 }
 
 /* Portrait aspect ratio - ensure cards take more space */
-@media (max-aspect-ratio: 3/4) {
+@media (aspect-ratio <= 3/4) {
   .card-grid {
     grid-template-rows: auto;
   }

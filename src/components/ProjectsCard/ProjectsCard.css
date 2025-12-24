@@ -1,67 +1,67 @@
 .projects-carousel {
-  width: 100%;
-  height: 100%;
   display: flex;
   flex-direction: column;
   gap: clamp(12px, 2%, 16px);
-  overflow: hidden;
+  height: 100%;
   min-height: 0;
+  overflow: hidden;
+  width: 100%;
 }
 
 /* Header with title and nav */
 .carousel-header {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
+  display: flex;
   flex-shrink: 0;
+  justify-content: space-between;
 }
 
 .carousel-title {
   font-size: clamp(16px, 2.5vw, 20px);
   font-weight: 600;
-  opacity: 0.95;
   margin: 0;
+  opacity: 0.95;
 }
 
 .carousel-nav {
-  display: flex;
   align-items: center;
+  display: flex;
   gap: 12px;
 }
 
 .nav-arrow {
-  display: flex;
   align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgb(255 255 255 / 5%);
+  border: 1px solid rgb(255 255 255 / 10%);
   border-radius: 8px;
   color: var(--text-secondary);
   cursor: pointer;
+  display: flex;
+  height: 32px;
+  justify-content: center;
   transition: all 0.2s ease;
+  width: 32px;
 }
 
 .nav-arrow:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgb(255 255 255 / 10%);
   border-color: var(--accent-color);
   color: var(--accent-color);
 }
 
 .nav-arrow:disabled {
-  opacity: 0.3;
   cursor: not-allowed;
+  opacity: 0.3;
 }
 
 .nav-arrow svg {
-  width: 16px;
   height: 16px;
+  width: 16px;
 }
 
 .carousel-counter {
-  font-size: clamp(11px, 1.6vw, 13px);
   color: var(--text-secondary);
+  font-size: clamp(11px, 1.6vw, 13px);
   min-width: 40px;
   text-align: center;
 }
@@ -70,11 +70,10 @@
 .carousel-slide {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden auto;
   padding-right: 4px;
+  scrollbar-color: rgb(255 255 255 / 15%) rgb(255 255 255 / 5%);
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.15) rgba(255, 255, 255, 0.05);
 }
 
 .carousel-slide::-webkit-scrollbar {
@@ -82,17 +81,17 @@
 }
 
 .carousel-slide::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgb(255 255 255 / 5%);
   border-radius: 4px;
 }
 
 .carousel-slide::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgb(255 255 255 / 15%);
   border-radius: 4px;
 }
 
 .carousel-slide::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgb(255 255 255 / 25%);
 }
 
 .project-content {
@@ -103,41 +102,41 @@
 
 /* Image gallery */
 .project-gallery {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgb(255 255 255 / 3%);
+  border: 1px solid rgb(255 255 255 / 8%);
   border-radius: 10px;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
   overflow: hidden;
   position: relative;
 }
 
 .project-image {
+  background: rgb(0 0 0 / 20%);
+  height: 100%;
+  left: 0;
+  object-fit: contain;
   position: absolute;
   top: 0;
-  left: 0;
   width: 100%;
-  height: 100%;
-  object-fit: contain;
-  background: rgba(0, 0, 0, 0.2);
 }
 
 .project-placeholder {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 12px;
   color: var(--text-secondary);
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  justify-content: center;
   opacity: 0.5;
 }
 
 .project-placeholder svg {
-  width: 48px;
   height: 48px;
+  width: 48px;
 }
 
 .project-placeholder span {
@@ -146,30 +145,30 @@
 
 /* Gallery controls */
 .gallery-controls {
-  position: absolute;
-  bottom: 12px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 6px 12px;
-  background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(8px);
+  background: rgb(0 0 0 / 60%);
   border-radius: 20px;
+  bottom: 12px;
+  display: flex;
+  gap: 12px;
+  left: 50%;
+  padding: 6px 12px;
+  position: absolute;
+  transform: translateX(-50%);
 }
 
 .gallery-arrow {
-  display: flex;
   align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
   background: transparent;
   border: none;
   color: var(--text-secondary);
   cursor: pointer;
+  display: flex;
+  height: 24px;
+  justify-content: center;
   transition: color 0.2s ease;
+  width: 24px;
 }
 
 .gallery-arrow:hover {
@@ -177,8 +176,8 @@
 }
 
 .gallery-arrow svg {
-  width: 14px;
   height: 14px;
+  width: 14px;
 }
 
 .gallery-dots {
@@ -187,13 +186,13 @@
 }
 
 .gallery-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgb(255 255 255 / 30%);
   border: none;
+  border-radius: 50%;
   cursor: pointer;
+  height: 6px;
   transition: all 0.2s ease;
+  width: 6px;
 }
 
 .gallery-dot.active {
@@ -203,19 +202,19 @@
 
 /* Project info */
 .project-info {
-  flex: 1;
-  min-width: 0;
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: clamp(12px, 2%, 16px);
+  min-width: 0;
 }
 
 .project-header {
-  display: flex;
-  justify-content: space-between;
   align-items: flex-start;
-  gap: 12px;
+  display: flex;
   flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
 }
 
 .project-name {
@@ -226,33 +225,33 @@
 }
 
 .project-status {
+  border-radius: 6px;
   font-size: clamp(9px, 1.4vw, 11px);
   font-weight: 600;
-  text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: clamp(4px, 0.8%, 6px) clamp(8px, 1.5%, 12px);
-  border-radius: 6px;
+  text-transform: uppercase;
   white-space: nowrap;
 }
 
 .project-status.live {
-  background: rgba(74, 222, 128, 0.15);
+  background: rgb(74 222 128 / 15%);
+  border: 1px solid rgb(74 222 128 / 30%);
   color: var(--accent-color);
-  border: 1px solid rgba(74, 222, 128, 0.3);
 }
 
 .project-status.dev {
-  background: rgba(34, 211, 238, 0.15);
+  background: rgb(34 211 238 / 15%);
+  border: 1px solid rgb(34 211 238 / 30%);
   color: var(--accent-cyan);
-  border: 1px solid rgba(34, 211, 238, 0.3);
 }
 
 .project-description {
+  color: var(--text-secondary);
+  flex: 1;
   font-size: clamp(12px, 1.8vw, 14px);
   line-height: 1.6;
-  color: var(--text-secondary);
   margin: 0;
-  flex: 1;
 }
 
 /* Tech stack */
@@ -264,12 +263,12 @@
 }
 
 .tech-label {
+  color: var(--text-secondary);
   font-size: clamp(10px, 1.4vw, 12px);
   font-weight: 600;
-  text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--text-secondary);
   opacity: 0.7;
+  text-transform: uppercase;
 }
 
 .tech-tags {
@@ -279,31 +278,31 @@
 }
 
 .tech-tag {
-  font-size: clamp(10px, 1.5vw, 12px);
-  padding: clamp(4px, 0.8%, 6px) clamp(10px, 1.5%, 14px);
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgb(255 255 255 / 5%);
+  border: 1px solid rgb(255 255 255 / 10%);
   border-radius: 6px;
   color: var(--text-primary);
+  font-size: clamp(10px, 1.5vw, 12px);
   opacity: 0.85;
+  padding: clamp(4px, 0.8%, 6px) clamp(10px, 1.5%, 14px);
   transition: all 0.2s ease;
 }
 
 .tech-tag:hover {
-  background: rgba(74, 222, 128, 0.1);
-  border-color: rgba(74, 222, 128, 0.3);
+  background: rgb(74 222 128 / 10%);
+  border-color: rgb(74 222 128 / 30%);
   color: var(--accent-color);
 }
 
 /* Project indicators at bottom */
 .carousel-indicators {
   display: flex;
-  gap: 8px;
   flex-shrink: 0;
+  gap: 8px;
+  -ms-overflow-style: none;
   overflow-x: auto;
   padding: 4px 0;
   scrollbar-width: none;
-  -ms-overflow-style: none;
 }
 
 .carousel-indicators::-webkit-scrollbar {
@@ -311,35 +310,35 @@
 }
 
 .indicator {
+  background: rgb(255 255 255 / 3%);
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 8px;
+  cursor: pointer;
   flex: 1;
   min-width: 0;
   padding: clamp(8px, 1.5%, 12px);
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .indicator:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.15);
+  background: rgb(255 255 255 / 6%);
+  border-color: rgb(255 255 255 / 15%);
 }
 
 .indicator.active {
-  background: rgba(74, 222, 128, 0.1);
-  border-color: rgba(74, 222, 128, 0.3);
+  background: rgb(74 222 128 / 10%);
+  border-color: rgb(74 222 128 / 30%);
 }
 
 .indicator-label {
+  color: var(--text-secondary);
+  display: block;
   font-size: clamp(10px, 1.4vw, 12px);
   font-weight: 500;
-  color: var(--text-secondary);
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  display: block;
   transition: color 0.2s ease;
+  white-space: nowrap;
 }
 
 .indicator.active .indicator-label {
@@ -347,7 +346,7 @@
 }
 
 /* Responsive */
-@media (max-width: 1024px) {
+@media (width <= 1024px) {
   .project-content {
     flex-direction: column;
   }
@@ -362,7 +361,7 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .carousel-header {
     flex-wrap: wrap;
     gap: 12px;
