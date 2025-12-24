@@ -2,7 +2,6 @@ import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import BaseCard from '../../BaseCard/BaseCard';
 import {
-  recipes as initialRecipes,
   canMakeRecipe,
 } from '../../../data/secret/pantry';
 import {
@@ -26,6 +25,11 @@ import {
   updateShoppingItem,
   deleteShoppingItem,
 } from '../../../utils/shoppingApi';
+import {
+  getAllRecipes,
+  createRecipe as createRecipeAPI,
+  deleteRecipe as deleteRecipeAPI,
+} from '../../../utils/recipeApi';
 import './PantryCard.css';
 
 const tabs = [
@@ -53,7 +57,7 @@ function PantryCard() {
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [pantryItems, setPantryItems] = useState([]);
   const [shoppingList, setShoppingList] = useState([]);
-  const [recipes, setRecipes] = useState(initialRecipes);
+  const [recipes, setRecipes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Modal states
@@ -62,17 +66,19 @@ function PantryCard() {
   const [showAddRecipeModal, setShowAddRecipeModal] = useState(false);
   const [showAddShoppingModal, setShowAddShoppingModal] = useState(false);
 
-  // Fetch pantry and shopping items on mount
+  // Fetch pantry, shopping items, and recipes on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        const [pantry, shopping] = await Promise.all([
+        const [pantry, shopping, fetchedRecipes] = await Promise.all([
           getAllPantryItems(),
           getAllShoppingItems(),
+          getAllRecipes(),
         ]);
         setPantryItems(pantry);
         setShoppingList(shopping);
+        setRecipes(fetchedRecipes);
       } catch (error) {
         showNotification({
           title: 'Error',
@@ -279,15 +285,44 @@ function PantryCard() {
   };
 
   // Recipe handlers
-  const handleAddRecipe = (newRecipe) => {
-    const id = Math.max(...recipes.map(r => r.id), 0) + 1;
-    setRecipes([...recipes, { ...newRecipe, id }]);
-    setShowAddRecipeModal(false);
+  const handleAddRecipe = async (newRecipe) => {
+    try {
+      await createRecipeAPI(newRecipe);
+      // Refetch all recipes
+      const fetchedRecipes = await getAllRecipes();
+      setRecipes(fetchedRecipes);
+      setShowAddRecipeModal(false);
+      showNotification({
+        title: 'Success',
+        message: 'Recipe added',
+        type: 'success',
+      });
+    } catch (error) {
+      showNotification({
+        title: 'Error',
+        message: 'Failed to add recipe',
+        type: 'error',
+      });
+    }
   };
 
-  const handleDeleteRecipe = (id) => {
-    setRecipes(recipes.filter(r => r.id !== id));
-    setSelectedRecipe(null);
+  const handleDeleteRecipe = async (id) => {
+    try {
+      await deleteRecipeAPI(id);
+      setRecipes(recipes.filter(r => r.id !== id));
+      setSelectedRecipe(null);
+      showNotification({
+        title: 'Success',
+        message: 'Recipe deleted',
+        type: 'success',
+      });
+    } catch (error) {
+      showNotification({
+        title: 'Error',
+        message: 'Failed to delete recipe',
+        type: 'error',
+      });
+    }
   };
 
   return (
