@@ -88,13 +88,13 @@ function ExchangeAccountsCard() {
   const [isPrivate, setIsPrivate] = useState(false);
 
   useEffect(() => {
-    setIsPrivate(getPrivacyMode());
+    setIsPrivate(getPrivacyMode('exchange'));
   }, []);
 
   const togglePrivacy = () => {
     const newState = !isPrivate;
     setIsPrivate(newState);
-    setPrivacyMode(newState);
+    setPrivacyMode(newState, 'exchange');
   };
 
   const connectedCount = exchanges.filter((e) => e.status === 'connected').length;

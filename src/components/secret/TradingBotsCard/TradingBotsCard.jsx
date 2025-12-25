@@ -1,28 +1,63 @@
 import { useState, useEffect } from 'react';
 import BaseCard from '../../BaseCard/BaseCard';
-import { getPrivacyMode, setPrivacyMode } from '../../../utils/privacy';
+import { getPrivacyMode, setPrivacyMode, formatMoney, formatPercentage } from '../../../utils/privacy';
 import './TradingBotsCard.css';
 
-const bots = [
-  { id: 1, name: 'ETH/USDT Bot', status: 'running', change: '+2.4%', changeType: 'positive' },
-  { id: 2, name: 'BTC Scalper', status: 'paused', change: '0.0%', changeType: 'neutral' },
-  { id: 3, name: 'STRK Grid', status: 'running', change: '+5.1%', changeType: 'positive' },
+const timePeriods = ['1d', '8h', '7d', '1M'];
+
+// Mock data with different stats per time period
+const botsData = [
+  {
+    id: 1,
+    name: 'ETH/USDT Bot',
+    status: 'running',
+    stats: {
+      '1d': { profit: 15.30, change: 0.8 },
+      '8h': { profit: 5.20, change: 0.3 },
+      '7d': { profit: 124.50, change: 2.4 },
+      '1m': { profit: 487.20, change: 9.1 }
+    }
+  },
+  {
+    id: 2,
+    name: 'BTC Scalper',
+    status: 'paused',
+    stats: {
+      '1d': { profit: 0, change: 0 },
+      '8h': { profit: 0, change: 0 },
+      '7d': { profit: 0, change: 0 },
+      '1M': { profit: 0, change: 0 }
+    }
+  },
+  {
+    id: 3,
+    name: 'STRK Grid',
+    status: 'running',
+    stats: {
+      '1d': { profit: 8.50, change: 1.2 },
+      '8h': { profit: 3.80, change: 0.5 },
+      '7d': { profit: 45.80, change: 5.1 },
+      '1M': { profit: 156.40, change: 18.3 }
+    }
+  },
 ];
 
 function TradingBotsCard() {
   const [isPrivate, setIsPrivate] = useState(false);
+  const [showPercentage, setShowPercentage] = useState(true);
+  const [selectedPeriod, setSelectedPeriod] = useState('7d');
 
   useEffect(() => {
-    setIsPrivate(getPrivacyMode());
+    setIsPrivate(getPrivacyMode('trading'));
   }, []);
 
   const togglePrivacy = () => {
     const newState = !isPrivate;
     setIsPrivate(newState);
-    setPrivacyMode(newState);
+    setPrivacyMode(newState, 'trading');
   };
 
-  const activeBots = bots.filter(bot => bot.status === 'running').length;
+  const activeBots = botsData.filter(bot => bot.status === 'running').length;
 
   return (
     <BaseCard className="card trading-bots-card">
@@ -49,24 +84,61 @@ function TradingBotsCard() {
         </button>
       </div>
       <div className="card-content">
+        <div className="bots-controls-wrapper">
+          <div className="bots-controls">
+            <button
+              className={`control-btn ${showPercentage ? 'active' : ''}`}
+              onClick={() => setShowPercentage(true)}
+            >
+              %
+            </button>
+            <button
+              className={`control-btn ${!showPercentage ? 'active' : ''}`}
+              onClick={() => setShowPercentage(false)}
+            >
+              $
+            </button>
+          </div>
+          <div className="time-period-controls">
+            {timePeriods.map((period) => (
+              <button
+                key={period}
+                className={`period-btn ${selectedPeriod === period ? 'active' : ''}`}
+                onClick={() => setSelectedPeriod(period)}
+              >
+                {period}
+              </button>
+            ))}
+          </div>
+        </div>
         <div className="bots-grid">
-          {bots.map((bot) => (
-            <div key={bot.id} className="bot-item">
-              <div className="bot-info">
-                <span className="bot-name">{bot.name}</span>
-                <span className={`bot-status ${bot.status}`}>{bot.status}</span>
+          {botsData.map((bot) => {
+            const stats = bot.stats[selectedPeriod];
+            const changeType = stats.change > 0 ? 'positive' : stats.change < 0 ? 'negative' : 'neutral';
+
+            return (
+              <div key={bot.id} className="bot-item">
+                <div className="bot-info">
+                  <span className="bot-name">{bot.name}</span>
+                  <span className={`bot-status ${bot.status}`}>{bot.status}</span>
+                </div>
+                <div className="bot-stats">
+                  <span className={`stat ${changeType}`}>
+                    {showPercentage
+                      ? formatPercentage(stats.change, isPrivate)
+                      : formatMoney(stats.profit, isPrivate)
+                    }
+                  </span>
+                  <span className="stat-label">{selectedPeriod}</span>
+                </div>
               </div>
-              <div className="bot-stats">
-                <span className={`stat ${bot.changeType}`}>{isPrivate ? '***%' : bot.change}</span>
-                <span className="stat-label">24h</span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
       <div className="card-footer">
         <span className="status-dot connected" />
-        <span>{activeBots} of {bots.length} bots active</span>
+        <span>{activeBots} of {botsData.length} bots active</span>
       </div>
     </BaseCard>
   );

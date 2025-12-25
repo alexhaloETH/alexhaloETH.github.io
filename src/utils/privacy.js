@@ -1,30 +1,33 @@
 // Privacy utility for hiding/showing sensitive monetary information
-const PRIVACY_STORAGE_KEY = 'dashboard_privacy_mode';
+const PRIVACY_STORAGE_KEY_PREFIX = 'dashboard_privacy_';
 
 /**
- * Get the current privacy mode state from localStorage
+ * Get the current privacy mode state from localStorage for a specific component
+ * @param {string} componentId - Unique identifier for the component (e.g., 'exchange', 'trading')
  * @returns {boolean} True if privacy mode is enabled
  */
-export const getPrivacyMode = () => {
-  const stored = localStorage.getItem(PRIVACY_STORAGE_KEY);
+export const getPrivacyMode = (componentId = 'global') => {
+  const stored = localStorage.getItem(`${PRIVACY_STORAGE_KEY_PREFIX}${componentId}`);
   return stored === 'true';
 };
 
 /**
- * Set the privacy mode state in localStorage
+ * Set the privacy mode state in localStorage for a specific component
  * @param {boolean} enabled - Whether privacy mode should be enabled
+ * @param {string} componentId - Unique identifier for the component
  */
-export const setPrivacyMode = (enabled) => {
-  localStorage.setItem(PRIVACY_STORAGE_KEY, enabled.toString());
+export const setPrivacyMode = (enabled, componentId = 'global') => {
+  localStorage.setItem(`${PRIVACY_STORAGE_KEY_PREFIX}${componentId}`, enabled.toString());
 };
 
 /**
- * Toggle privacy mode and return the new state
+ * Toggle privacy mode and return the new state for a specific component
+ * @param {string} componentId - Unique identifier for the component
  * @returns {boolean} The new privacy mode state
  */
-export const togglePrivacyMode = () => {
-  const newState = !getPrivacyMode();
-  setPrivacyMode(newState);
+export const togglePrivacyMode = (componentId = 'global') => {
+  const newState = !getPrivacyMode(componentId);
+  setPrivacyMode(newState, componentId);
   return newState;
 };
 
