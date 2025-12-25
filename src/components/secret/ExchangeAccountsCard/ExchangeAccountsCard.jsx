@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import BaseCard from '../../BaseCard/BaseCard';
+import { getPrivacyMode, setPrivacyMode, formatMoney, formatPercentage, formatNumber } from '../../../utils/privacy';
 import './ExchangeAccountsCard.css';
 
 // Mock data - will be replaced with real API connections
@@ -84,6 +85,17 @@ const ExchangeIcon = ({ exchange }) => {
 
 function ExchangeAccountsCard() {
   const [expandedExchange, setExpandedExchange] = useState(null);
+  const [isPrivate, setIsPrivate] = useState(false);
+
+  useEffect(() => {
+    setIsPrivate(getPrivacyMode());
+  }, []);
+
+  const togglePrivacy = () => {
+    const newState = !isPrivate;
+    setIsPrivate(newState);
+    setPrivacyMode(newState);
+  };
 
   const connectedCount = exchanges.filter((e) => e.status === 'connected').length;
   const totalBalance = exchanges
@@ -100,8 +112,21 @@ function ExchangeAccountsCard() {
         </div>
         <div className="header-content">
           <h3>Exchange Accounts</h3>
-          <span className="header-subtitle">Total: ${totalBalance.toLocaleString()}</span>
+          <span className="header-subtitle">Total: {formatMoney(totalBalance, isPrivate)}</span>
         </div>
+        <button className="privacy-toggle" onClick={togglePrivacy} title={isPrivate ? 'Show balances' : 'Hide balances'}>
+          {isPrivate ? (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+              <line x1="1" y1="1" x2="23" y2="23" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          )}
+        </button>
       </div>
       <div className="card-content">
         <div className="exchanges-list">
@@ -128,9 +153,9 @@ function ExchangeAccountsCard() {
                 <div className="exchange-balance">
                   {exchange.status !== 'disconnected' ? (
                     <>
-                      <span className="balance">${exchange.balance.toLocaleString()}</span>
+                      <span className="balance">{formatMoney(exchange.balance, isPrivate)}</span>
                       <span className={`change ${exchange.change >= 0 ? 'positive' : 'negative'}`}>
-                        {exchange.change >= 0 ? '+' : ''}{exchange.change}%
+                        {formatPercentage(exchange.change, isPrivate)}
                       </span>
                     </>
                   ) : (
@@ -153,7 +178,7 @@ function ExchangeAccountsCard() {
                           <div key={asset.symbol} className="asset-item">
                             <div className="asset-info">
                               <span className="asset-symbol">{asset.symbol}</span>
-                              <span className="asset-amount">{asset.amount} {asset.symbol}</span>
+                              <span className="asset-amount">{isPrivate ? '****' : asset.amount} {asset.symbol}</span>
                             </div>
                             <div className="asset-allocation">
                               <div className="allocation-bar">
@@ -165,9 +190,9 @@ function ExchangeAccountsCard() {
                               <span className="allocation-percent">{asset.allocation}%</span>
                             </div>
                             <div className="asset-value">
-                              <span className="value">${asset.value.toLocaleString()}</span>
+                              <span className="value">{formatMoney(asset.value, isPrivate)}</span>
                               <span className={`asset-change ${asset.change >= 0 ? 'positive' : 'negative'}`}>
-                                {asset.change >= 0 ? '+' : ''}{asset.change}%
+                                {formatPercentage(asset.change, isPrivate)}
                               </span>
                             </div>
                           </div>
