@@ -193,3 +193,38 @@
   opacity: 0.5;
   text-align: center;
 }
+
+.login-error-message {
+  align-items: center;
+  animation: shake 0.4s ease-in-out;
+  background: rgb(239 68 68 / 10%);
+  border: 1px solid rgb(239 68 68 / 30%);
+  border-radius: 10px;
+  color: #ef4444;
+  display: flex;
+  font-size: 13px;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 12px 16px;
+}
+
+.login-error-message svg {
+  flex-shrink: 0;
+  height: 20px;
+  width: 20px;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-8px);
+  }
+
+  75% {
+    transform: translateX(8px);
+  }
+}

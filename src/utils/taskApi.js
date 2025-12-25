@@ -1,3 +1,5 @@
+import { getAuthHeaders, getAuthHeadersOnly } from './auth';
+
 const API_BASE_URL = 'http://localhost:8080/api';
 
 // Priority mapping: high=2, medium=1, low=0
@@ -56,7 +58,9 @@ const transformToBackendFormat = (frontendItem) => {
 // Get all tasks
 export const getAllTasks = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/tasks`);
+    const response = await fetch(`${API_BASE_URL}/tasks`, {
+      headers: getAuthHeadersOnly(),
+    });
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -71,7 +75,9 @@ export const getAllTasks = async () => {
 // Get a single task
 export const getTask = async (id) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/tasks/${id}`);
+    const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
+      headers: getAuthHeadersOnly(),
+    });
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -91,9 +97,7 @@ export const createTask = async (task) => {
 
     const response = await fetch(`${API_BASE_URL}/tasks`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(backendTask),
     });
 
@@ -117,9 +121,7 @@ export const updateTask = async (id, updatedTask) => {
     const backendTask = transformToBackendFormat(updatedTask);
     const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(backendTask),
     });
     if (!response.ok) {
@@ -138,6 +140,7 @@ export const deleteTask = async (id) => {
   try {
     const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
       method: 'DELETE',
+      headers: getAuthHeadersOnly(),
     });
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);

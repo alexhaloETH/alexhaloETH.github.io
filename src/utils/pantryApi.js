@@ -1,11 +1,14 @@
 import { transformPantryItem, transformToBackendFormat } from './pantryMappings';
+import { getAuthHeaders, getAuthHeadersOnly } from './auth';
 
 const API_BASE_URL = 'http://localhost:8080/api';
 
 // Get all pantry items
 export const getAllPantryItems = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/pantry`);
+    const response = await fetch(`${API_BASE_URL}/pantry`, {
+      headers: getAuthHeadersOnly(),
+    });
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -20,7 +23,9 @@ export const getAllPantryItems = async () => {
 // Get a single pantry item
 export const getPantryItem = async (id) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/pantry/${id}`);
+    const response = await fetch(`${API_BASE_URL}/pantry/${id}`, {
+      headers: getAuthHeadersOnly(),
+    });
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -40,9 +45,7 @@ export const createPantryItem = async (item) => {
 
     const response = await fetch(`${API_BASE_URL}/pantry`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(backendItem),
     });
 
@@ -65,6 +68,7 @@ export const deletePantryItem = async (id) => {
   try {
     const response = await fetch(`${API_BASE_URL}/pantry/${id}`, {
       method: 'DELETE',
+      headers: getAuthHeadersOnly(),
     });
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -83,9 +87,7 @@ export const updatePantryItem = async (id, updatedItem) => {
     const backendItem = transformToBackendFormat(updatedItem);
     const response = await fetch(`${API_BASE_URL}/pantry/${id}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(backendItem),
     });
     if (!response.ok) {

@@ -1,4 +1,5 @@
 import { transformPantryItem, transformToBackendFormat } from './pantryMappings';
+import { getAuthHeaders, getAuthHeadersOnly } from './auth';
 
 const API_BASE_URL = 'http://localhost:8080/api';
 
@@ -25,7 +26,9 @@ const transformToBackendShoppingFormat = (frontendItem) => {
 // Get all shopping items
 export const getAllShoppingItems = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/shopping`);
+    const response = await fetch(`${API_BASE_URL}/shopping`, {
+      headers: getAuthHeadersOnly(),
+    });
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -40,7 +43,9 @@ export const getAllShoppingItems = async () => {
 // Get a single shopping item
 export const getShoppingItem = async (id) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/shopping/${id}`);
+    const response = await fetch(`${API_BASE_URL}/shopping/${id}`, {
+      headers: getAuthHeadersOnly(),
+    });
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -60,9 +65,7 @@ export const createShoppingItem = async (item) => {
 
     const response = await fetch(`${API_BASE_URL}/shopping`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(backendItem),
     });
 
@@ -86,9 +89,7 @@ export const updateShoppingItem = async (id, updatedItem) => {
     const backendItem = transformToBackendShoppingFormat(updatedItem);
     const response = await fetch(`${API_BASE_URL}/shopping/${id}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(backendItem),
     });
     if (!response.ok) {
@@ -107,6 +108,7 @@ export const deleteShoppingItem = async (id) => {
   try {
     const response = await fetch(`${API_BASE_URL}/shopping/${id}`, {
       method: 'DELETE',
+      headers: getAuthHeadersOnly(),
     });
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
