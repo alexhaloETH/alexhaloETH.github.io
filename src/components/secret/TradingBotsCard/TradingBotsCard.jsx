@@ -3,7 +3,7 @@ import BaseCard from '../../BaseCard/BaseCard';
 import { getPrivacyMode, setPrivacyMode, formatMoney, formatPercentage } from '../../../utils/privacy';
 import './TradingBotsCard.css';
 
-const timePeriods = ['1d', '8h', '7d', '1M'];
+const timePeriods = ['1h', '8h', '1d', '7d', '1M'];
 
 // Mock data with different stats per time period
 const botsData = [
@@ -12,10 +12,11 @@ const botsData = [
     name: 'ETH/USDT Bot',
     status: 'running',
     stats: {
-      '1d': { profit: 15.30, change: 0.8 },
+      '1h': { profit: 2.10, change: 0.1 },
       '8h': { profit: 5.20, change: 0.3 },
+      '1d': { profit: 15.30, change: 0.8 },
       '7d': { profit: 124.50, change: 2.4 },
-      '1m': { profit: 487.20, change: 9.1 }
+      '1M': { profit: 487.20, change: 9.1 }
     }
   },
   {
@@ -23,8 +24,9 @@ const botsData = [
     name: 'BTC Scalper',
     status: 'paused',
     stats: {
-      '1d': { profit: 0, change: 0 },
+      '1h': { profit: 0, change: 0 },
       '8h': { profit: 0, change: 0 },
+      '1d': { profit: 0, change: 0 },
       '7d': { profit: 0, change: 0 },
       '1M': { profit: 0, change: 0 }
     }
@@ -34,8 +36,9 @@ const botsData = [
     name: 'STRK Grid',
     status: 'running',
     stats: {
-      '1d': { profit: 8.50, change: 1.2 },
+      '1h': { profit: 1.20, change: 0.2 },
       '8h': { profit: 3.80, change: 0.5 },
+      '1d': { profit: 8.50, change: 1.2 },
       '7d': { profit: 45.80, change: 5.1 },
       '1M': { profit: 156.40, change: 18.3 }
     }
