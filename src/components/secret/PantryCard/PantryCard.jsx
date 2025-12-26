@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import BaseCard from '../../BaseCard/BaseCard';
 import {
   canMakeRecipe,
-} from '../../../data/secret/pantry';
+} from '../../../data/secret/recipeUtils';
 import {
   EditPantryItemModal,
   AddPantryItemModal,

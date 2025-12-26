@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import BaseCard from '../../BaseCard/BaseCard';
-import { getPrivacyMode, setPrivacyMode, formatMoney, formatPercentage, formatNumber } from '../../../utils/privacy';
+import { getPrivacyMode, setPrivacyMode, formatMoney, formatPercentage } from '../../../utils/privacy';
 import './ExchangeAccountsCard.css';
 
 // Mock data - will be replaced with real API connections

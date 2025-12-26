@@ -258,7 +258,4 @@
     min-height: clamp(320px, 50vh, 450px);
   }
 
-  .card-skills {
-    min-height: clamp(350px, 55vh, 480px);
-  }
 }

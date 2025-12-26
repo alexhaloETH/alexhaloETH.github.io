@@ -35,18 +35,3 @@ export const getAuthHeadersOnly = () => {
     'Authorization': `Bearer ${token}`,
   };
 };
-
-/**
- * Check if user is authenticated
- * @returns {boolean} True if token exists
- */
-export const isAuthenticated = () => {
-  return !!localStorage.getItem('dashboard_token');
-};
-
-/**
- * Clear authentication token
- */
-export const clearAuth = () => {
-  localStorage.removeItem('dashboard_token');
-};

@@ -21,17 +21,6 @@ export const setPrivacyMode = (enabled, componentId = 'global') => {
 };
 
 /**
- * Toggle privacy mode and return the new state for a specific component
- * @param {string} componentId - Unique identifier for the component
- * @returns {boolean} The new privacy mode state
- */
-export const togglePrivacyMode = (componentId = 'global') => {
-  const newState = !getPrivacyMode(componentId);
-  setPrivacyMode(newState, componentId);
-  return newState;
-};
-
-/**
  * Format a monetary value, hiding it if privacy mode is enabled
  * @param {number} value - The monetary value to format
  * @param {boolean} isPrivate - Whether privacy mode is enabled
@@ -57,18 +46,4 @@ export const formatPercentage = (value, isPrivate) => {
   }
   const sign = value >= 0 ? '+' : '';
   return `${sign}${value}%`;
-};
-
-/**
- * Format a numeric value, hiding it if privacy mode is enabled
- * @param {number} value - The numeric value to format
- * @param {boolean} isPrivate - Whether privacy mode is enabled
- * @param {number} decimals - Number of decimal places
- * @returns {string} Formatted or hidden number
- */
-export const formatNumber = (value, isPrivate, decimals = 2) => {
-  if (isPrivate) {
-    return '*'.repeat(4);
-  }
-  return value.toFixed(decimals);
 };

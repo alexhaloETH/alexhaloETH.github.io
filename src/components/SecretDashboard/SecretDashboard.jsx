@@ -7,7 +7,6 @@ import SystemStatusCard from '../secret/SystemStatusCard/SystemStatusCard';
 import ExchangeAccountsCard from '../secret/ExchangeAccountsCard/ExchangeAccountsCard';
 import TasksCard from '../secret/TasksCard/TasksCard';
 import CommandTerminalCard from '../secret/CommandTerminalCard/CommandTerminalCard';
-//import SkillTreeCard from '../secret/SkillTreeCard/SkillTreeCard';
 import { useAuth } from '../../contexts/AuthContext';
 import './SecretDashboard.css';
 
