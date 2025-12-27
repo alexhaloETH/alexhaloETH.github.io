@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import BaseCard from '../../BaseCard/BaseCard';
-import { EditTaskModal, AddTaskModal, EditNoteModal, AddNoteModal } from './components';
+import { EditTaskModal, AddTaskModal, EditNoteModal, AddNoteModal, EditMissionModal, AddMissionModal } from './components';
 import { useNotification } from '../../../contexts/NotificationContext';
 import {
   getAllTasks,
@@ -15,10 +15,18 @@ import {
   updateNote as updateNoteAPI,
   deleteNote as deleteNoteAPI,
 } from '../../../utils/notesApi';
+import {
+  getAllMissions,
+  createMission,
+  updateMission as updateMissionAPI,
+  completeMission as completeMissionAPI,
+  deleteMission as deleteMissionAPI,
+} from '../../../utils/missionsApi';
 import './TasksCard.css';
 
 const tabs = [
   { id: 'tasks', label: 'Tasks', icon: '✓' },
+  { id: 'missions', label: 'Missions', icon: '🎯' },
   { id: 'notes', label: 'Notes', icon: '📝' },
   { id: 'ideas', label: 'Ideas', icon: '💡' },
 ];
@@ -38,6 +46,11 @@ function TasksCard() {
   const [editingNote, setEditingNote] = useState(null);
   const [showAddNoteModal, setShowAddNoteModal] = useState(false);
 
+  // Missions state
+  const [missions, setMissions] = useState([]);
+  const [editingMission, setEditingMission] = useState(null);
+  const [showAddMissionModal, setShowAddMissionModal] = useState(false);
+
   const [isLoading, setIsLoading] = useState(true);
 
   // Fetch tasks and notes on mount
@@ -45,12 +58,14 @@ function TasksCard() {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        const [fetchedTasks, fetchedNotes] = await Promise.all([
+        const [fetchedTasks, fetchedNotes, fetchedMissions] = await Promise.all([
           getAllTasks(),
           getAllNotes(),
+          getAllMissions(),
         ]);
         setTasks(fetchedTasks);
         setNotes(fetchedNotes);
+        setMissions(fetchedMissions);
       } catch (error) {
         showNotification({
           title: 'Error',
@@ -264,6 +279,102 @@ function TasksCard() {
     }
   };
 
+  // Mission handlers
+  const toggleMission = async (id) => {
+    const mission = missions.find(m => m.id === id);
+    if (!mission) return;
+
+    const newCompleted = !mission.completed;
+    setMissions(missions.map((m) =>
+      m.id === id ? { ...m, completed: newCompleted } : m
+    ));
+
+    try {
+      await completeMissionAPI(id, newCompleted);
+    } catch (error) {
+      setMissions(missions.map((m) =>
+        m.id === id ? mission : m
+      ));
+      showNotification({
+        title: 'Error',
+        message: 'Failed to update mission',
+        type: 'error',
+      });
+    }
+  };
+
+  const addMission = async (newMission) => {
+    try {
+      await createMission(newMission);
+      const fetchedMissions = await getAllMissions();
+      setMissions(fetchedMissions);
+      setShowAddMissionModal(false);
+      showNotification({
+        title: 'Success',
+        message: 'Mission added',
+        type: 'success',
+      });
+    } catch (error) {
+      showNotification({
+        title: 'Error',
+        message: 'Failed to add mission',
+        type: 'error',
+      });
+    }
+  };
+
+  const updateMission = async (updatedMission) => {
+    const originalMission = missions.find(m => m.id === updatedMission.id);
+
+    setMissions(missions.map((mission) =>
+      mission.id === updatedMission.id ? updatedMission : mission
+    ));
+
+    try {
+      await updateMissionAPI(updatedMission.id, updatedMission);
+      setEditingMission(null);
+      showNotification({
+        title: 'Success',
+        message: 'Mission updated',
+        type: 'success',
+      });
+    } catch (error) {
+      setMissions(missions.map((mission) =>
+        mission.id === updatedMission.id ? originalMission : mission
+      ));
+      showNotification({
+        title: 'Error',
+        message: 'Failed to update mission',
+        type: 'error',
+      });
+    }
+  };
+
+  const deleteMission = async (id) => {
+    const missionToDelete = missions.find(m => m.id === id);
+
+    setMissions(missions.filter((mission) => mission.id !== id));
+
+    try {
+      await deleteMissionAPI(id);
+      setEditingMission(null);
+      showNotification({
+        title: 'Success',
+        message: 'Mission deleted',
+        type: 'success',
+      });
+    } catch (error) {
+      if (missionToDelete) {
+        setMissions([...missions, missionToDelete]);
+      }
+      showNotification({
+        title: 'Error',
+        message: 'Failed to delete mission',
+        type: 'error',
+      });
+    }
+  };
+
   // Filtered data
   const filteredTasks = tasks.filter((task) => {
     if (filter === 'active') return !task.completed;
@@ -293,6 +404,7 @@ function TasksCard() {
             <h3>Task Manager</h3>
             <span className="tasks-subtitle">
               {activeTab === 'tasks' && `${activeCount} tasks remaining`}
+              {activeTab === 'missions' && `${missions.length} missions`}
               {activeTab === 'notes' && `${regularNotes.length} notes`}
               {activeTab === 'ideas' && `${ideaNotes.length} ideas`}
             </span>
@@ -456,6 +568,66 @@ function TasksCard() {
               </div>
             </motion.div>
           )}
+
+          {activeTab === 'missions' && (
+            <motion.div
+              key="missions"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="missions-view"
+            >
+              <button className="add-mission-btn" onClick={() => setShowAddMissionModal(true)}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                <span>Add new mission</span>
+              </button>
+              <div className="missions-grid">
+                {missions.map((mission) => (
+                  <div
+                    key={mission.id}
+                    className={`mission-card ${mission.completed ? 'completed' : ''}`}
+                  >
+                    <div className="mission-header">
+                      <button
+                        className={`mission-checkbox ${mission.completed ? 'checked' : ''}`}
+                        onClick={() => toggleMission(mission.id)}
+                      >
+                        {mission.completed && (
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                            <polyline points="20,6 9,17 4,12" />
+                          </svg>
+                        )}
+                      </button>
+                      <h4 onClick={() => toggleMission(mission.id)}>{mission.name}</h4>
+                    </div>
+                    {mission.description && (
+                      <p className="mission-description">{mission.description}</p>
+                    )}
+                    <div className="mission-footer">
+                      <span className={`recurrence-badge ${mission.recurrenceType}`}>
+                        {mission.recurrenceType}
+                      </span>
+                      <button
+                        className="edit-mission-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingMission(mission);
+                        }}
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
         </AnimatePresence>
       </div>
 
@@ -487,6 +659,20 @@ function TasksCard() {
             onClose={() => setShowAddNoteModal(false)}
             onAdd={addNote}
             isIdea={activeTab === 'ideas'}
+          />
+        )}
+        {editingMission && (
+          <EditMissionModal
+            mission={editingMission}
+            onClose={() => setEditingMission(null)}
+            onSave={updateMission}
+            onDelete={deleteMission}
+          />
+        )}
+        {showAddMissionModal && (
+          <AddMissionModal
+            onClose={() => setShowAddMissionModal(false)}
+            onAdd={addMission}
           />
         )}
       </AnimatePresence>
