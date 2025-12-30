@@ -1,6 +1,6 @@
 import { getAuthHeaders, getAuthHeadersOnly } from './auth';
 
-const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api`;
+const API_BASE_URL = 'http://localhost:8080/api';
 
 // Transform mission from backend to frontend format
 const transformMission = (backendMission) => {

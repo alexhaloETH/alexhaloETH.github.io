@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import BaseCard from '../../BaseCard/BaseCard';
-import { EditTaskModal, AddTaskModal, EditNoteModal, AddNoteModal, EditMissionModal, AddMissionModal, ImageGallery } from './components';
+import { EditTaskModal, AddTaskModal, EditNoteModal, AddNoteModal, EditMissionModal, AddMissionModal } from './components';
 import { useNotification } from '../../../contexts/NotificationContext';
 import {
   getAllTasks,
@@ -22,11 +22,6 @@ import {
   completeMission as completeMissionAPI,
   deleteMission as deleteMissionAPI,
 } from '../../../utils/missionsApi';
-import {
-  uploadImage,
-  getEntityImages,
-  deleteImage,
-} from '../../../utils/imagesApi';
 import './TasksCard.css';
 
 const tabs = [
@@ -186,23 +181,11 @@ function TasksCard() {
   // Note handlers
   const addNote = async (newNote) => {
     try {
-      const { images, ...noteData } = newNote;
-      const data = {
-        ...noteData,
+      const noteData = {
+        ...newNote,
         category: activeTab === 'ideas' ? 'ideas' : 'notes',
       };
-
-      // Create the note first
-      const createdNote = await createNoteAPI(data);
-
-      // Upload images if any
-      if (images && images.length > 0) {
-        const entityType = activeTab === 'ideas' ? 'idea' : 'note';
-        await Promise.all(
-          images.map((image) => uploadImage(entityType, createdNote.id, image))
-        );
-      }
-
+      await createNoteAPI(noteData);
       const fetchedNotes = await getAllNotes();
       setNotes(fetchedNotes);
       setShowAddNoteModal(false);
@@ -212,7 +195,6 @@ function TasksCard() {
         type: 'success',
       });
     } catch (error) {
-      console.error('Error adding note:', error);
       showNotification({
         title: 'Error',
         message: activeTab === 'ideas' ? 'Failed to add idea' : 'Failed to add note',
@@ -223,23 +205,13 @@ function TasksCard() {
 
   const updateNote = async (updatedNote) => {
     const originalNote = notes.find(n => n.id === updatedNote.id);
-    const { images, ...noteData } = updatedNote;
 
     setNotes(notes.map((note) =>
-      note.id === updatedNote.id ? noteData : note
+      note.id === updatedNote.id ? updatedNote : note
     ));
 
     try {
-      await updateNoteAPI(updatedNote.id, noteData);
-
-      // Upload new images if any
-      if (images && images.length > 0) {
-        const entityType = noteData.category === 'ideas' ? 'idea' : 'note';
-        await Promise.all(
-          images.map((image) => uploadImage(entityType, noteData.id, image))
-        );
-      }
-
+      await updateNoteAPI(updatedNote.id, updatedNote);
       setEditingNote(null);
       showNotification({
         title: 'Success',
@@ -333,18 +305,7 @@ function TasksCard() {
 
   const addMission = async (newMission) => {
     try {
-      const { images, ...missionData } = newMission;
-
-      // Create the mission first
-      const createdMission = await createMission(missionData);
-
-      // Upload images if any
-      if (images && images.length > 0) {
-        await Promise.all(
-          images.map((image) => uploadImage('mission', createdMission.id, image))
-        );
-      }
-
+      await createMission(newMission);
       const fetchedMissions = await getAllMissions();
       setMissions(fetchedMissions);
       setShowAddMissionModal(false);
@@ -354,7 +315,6 @@ function TasksCard() {
         type: 'success',
       });
     } catch (error) {
-      console.error('Error adding mission:', error);
       showNotification({
         title: 'Error',
         message: 'Failed to add mission',
@@ -365,22 +325,13 @@ function TasksCard() {
 
   const updateMission = async (updatedMission) => {
     const originalMission = missions.find(m => m.id === updatedMission.id);
-    const { images, ...missionData } = updatedMission;
 
     setMissions(missions.map((mission) =>
-      mission.id === updatedMission.id ? missionData : mission
+      mission.id === updatedMission.id ? updatedMission : mission
     ));
 
     try {
-      await updateMissionAPI(updatedMission.id, missionData);
-
-      // Upload new images if any
-      if (images && images.length > 0) {
-        await Promise.all(
-          images.map((image) => uploadImage('mission', missionData.id, image))
-        );
-      }
-
+      await updateMissionAPI(updatedMission.id, updatedMission);
       setEditingMission(null);
       showNotification({
         title: 'Success',
@@ -607,10 +558,6 @@ function TasksCard() {
                       </button>
                     </div>
                     <p className="note-content">{note.content}</p>
-                    <ImageGallery
-                      entityType={note.category === 'ideas' ? 'idea' : 'note'}
-                      entityId={note.id}
-                    />
                     <div className="note-footer">
                       <span className="note-date">
                         {new Date(note.updated_at).toLocaleDateString()}
@@ -659,10 +606,6 @@ function TasksCard() {
                     {mission.description && (
                       <p className="mission-description">{mission.description}</p>
                     )}
-                    <ImageGallery
-                      entityType="mission"
-                      entityId={mission.id}
-                    />
                     <div className="mission-footer">
                       <span className={`recurrence-badge ${mission.recurrenceType}`}>
                         {mission.recurrenceType}

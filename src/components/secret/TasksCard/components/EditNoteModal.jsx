@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import ImageUpload from './ImageUpload';
-import ImageGallery from './ImageGallery';
 
 const colorOptions = [
   { value: '#10b981', label: 'Green' },
@@ -17,17 +15,6 @@ function EditNoteModal({ note, onClose, onSave, onDelete }) {
   const [content, setContent] = useState(note.content);
   const [color, setColor] = useState(note.color);
   const [pinned, setPinned] = useState(note.pinned);
-  const [newImages, setNewImages] = useState([]);
-  const [refreshGallery, setRefreshGallery] = useState(0);
-
-  const handleImageSelect = (files) => {
-    const fileArray = Array.isArray(files) ? files : [files];
-    setNewImages([...newImages, ...fileArray]);
-  };
-
-  const handleRemoveNewImage = (index) => {
-    setNewImages(newImages.filter((_, i) => i !== index));
-  };
 
   const handleSave = () => {
     if (!title.trim() || !content.trim()) return;
@@ -37,7 +24,6 @@ function EditNoteModal({ note, onClose, onSave, onDelete }) {
       content: content.trim(),
       color,
       pinned,
-      images: newImages,
     });
   };
 
@@ -137,38 +123,6 @@ function EditNoteModal({ note, onClose, onSave, onDelete }) {
               />
               <span>Pin this {isIdea ? 'idea' : 'note'}</span>
             </label>
-          </div>
-
-          <div className="form-group">
-            <label>Existing Images</label>
-            <ImageGallery
-              entityType={isIdea ? 'idea' : 'note'}
-              entityId={note.id}
-              editable={true}
-              key={refreshGallery}
-              onImageDelete={() => setRefreshGallery(refreshGallery + 1)}
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Add New Images</label>
-            <ImageUpload onImageSelect={handleImageSelect} multiple />
-            {newImages.length > 0 && (
-              <div className="image-preview-grid">
-                {newImages.map((image, index) => (
-                  <div key={index} className="image-preview-item">
-                    <img src={URL.createObjectURL(image)} alt={`Preview ${index + 1}`} />
-                    <button
-                      className="image-preview-remove"
-                      onClick={() => handleRemoveNewImage(index)}
-                      type="button"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         </div>
 

@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import ImageUpload from './ImageUpload';
 
 const colorOptions = [
   { value: '#10b981', label: 'Green' },
@@ -16,16 +15,6 @@ function AddNoteModal({ onClose, onAdd, isIdea = false }) {
   const [content, setContent] = useState('');
   const [color, setColor] = useState('#10b981');
   const [pinned, setPinned] = useState(false);
-  const [images, setImages] = useState([]);
-
-  const handleImageSelect = (files) => {
-    const fileArray = Array.isArray(files) ? files : [files];
-    setImages([...images, ...fileArray]);
-  };
-
-  const handleRemoveImage = (index) => {
-    setImages(images.filter((_, i) => i !== index));
-  };
 
   const handleAdd = () => {
     if (!title.trim() || !content.trim()) return;
@@ -34,7 +23,6 @@ function AddNoteModal({ onClose, onAdd, isIdea = false }) {
       content: content.trim(),
       color,
       pinned,
-      images,
     });
   };
 
@@ -132,27 +120,6 @@ function AddNoteModal({ onClose, onAdd, isIdea = false }) {
               />
               <span>Pin this {isIdea ? 'idea' : 'note'}</span>
             </label>
-          </div>
-
-          <div className="form-group">
-            <label>Images</label>
-            <ImageUpload onImageSelect={handleImageSelect} multiple />
-            {images.length > 0 && (
-              <div className="image-preview-grid">
-                {images.map((image, index) => (
-                  <div key={index} className="image-preview-item">
-                    <img src={URL.createObjectURL(image)} alt={`Preview ${index + 1}`} />
-                    <button
-                      className="image-preview-remove"
-                      onClick={() => handleRemoveImage(index)}
-                      type="button"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         </div>
 

@@ -1,10 +1,9 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, lazy, Suspense } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import HeroCard from './components/HeroCard/HeroCard.jsx'
 import SkillsCard from './components/SkillsCard/SkillsCard.jsx'
 import ExperienceCard from './components/ExperienceCard/ExperienceCard.jsx'
 import ProjectsCard from './components/ProjectsCard/ProjectsCard.jsx'
-import WorldCard from './components/MapCard/WorldCard.jsx'
 import Toast from './components/Toast/Toast.jsx'
 import StarsBackground from './components/StarsBackground/StarsBackground.jsx'
 import UnityBackground from './components/UnityBackground/UnityBackground.jsx'
@@ -19,6 +18,9 @@ import useIdleDetection from './hooks/useIdleDetection'
 import { checkUnitySupport } from './utils/deviceDetection'
 import { IDLE_TIMEOUT } from './utils/constants'
 import './App.css'
+
+// Lazy load the WorldCard to prevent blocking initial render
+const WorldCard = lazy(() => import('./components/MapCard/WorldCard.jsx'))
 
 function AppContent() {
   const [unityEnabled, setUnityEnabled] = useState(false)
@@ -123,7 +125,9 @@ function AppContent() {
             <SkillsCard />
             <ExperienceCard />
             <ProjectsCard />
-            <WorldCard />
+            <Suspense fallback={<div className="card" style={{ background: 'rgba(20, 20, 20, 0.8)' }} />}>
+              <WorldCard />
+            </Suspense>
           </main>
         </div>
       )}

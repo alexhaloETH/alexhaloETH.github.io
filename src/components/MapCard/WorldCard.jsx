@@ -12,7 +12,6 @@ const textVariants = {
 };
 
 function WorldCard() {
-  const [initialized, setInitialized] = useState(false);
   const [ready, setReady] = useState(false);
   const [index, setIndex] = useState(0);
 
@@ -27,32 +26,6 @@ function WorldCard() {
 
     return () => clearInterval(id);
   }, [ready]);
-
-  const handleLoadMap = () => {
-    setInitialized(true);
-  };
-
-  if (!initialized) {
-    return (
-      <BaseCard className="card card-world card-world-uninitialized" variant="no-padding">
-        <div className="world-content world-placeholder">
-          <div className="world-placeholder-content">
-            <h2 className="world-placeholder-title">Work Travel Map</h2>
-            <p className="world-placeholder-desc">
-              View locations I've visited and worked from around the world
-            </p>
-            <button className="world-load-btn" onClick={handleLoadMap}>
-              <svg className="world-load-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                <circle cx="12" cy="10" r="3" />
-              </svg>
-              Show Travel Map
-            </button>
-          </div>
-        </div>
-      </BaseCard>
-    );
-  }
 
   return (
     <BaseCard className={`card card-world ${ready ? "is-ready" : "is-loading"}`} variant="no-padding">
