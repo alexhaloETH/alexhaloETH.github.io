@@ -26,6 +26,7 @@ function SystemStatusCard() {
           percentage: status.cpu_usage,
           type: 'default',
         },
+        
         {
           id: 2,
           name: 'RAM',
