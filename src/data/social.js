@@ -49,5 +49,5 @@ export const heroData = {
   },
   currentProject: "Grug's Lair", // TODO: Update with current project
   gameJamsCount: 3,
-  gameJamsLabel: "Game Jams · More Coming Soon",
+  gameJamsLabel: "Game Jams · More Coming Soon d",
 };
