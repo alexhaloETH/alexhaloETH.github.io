@@ -1,7 +1,7 @@
 import { transformPantryItem, transformToBackendFormat } from './pantryMappings';
 import { getAuthHeaders, getAuthHeadersOnly } from './auth';
 
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api`;
 
 // Transform shopping item from backend to frontend
 const transformShoppingItem = (backendItem) => {

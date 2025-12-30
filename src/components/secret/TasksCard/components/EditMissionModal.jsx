@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import ImageUpload from './ImageUpload';
+import ImageGallery from './ImageGallery';
 
 const recurrenceOptions = [
   { value: 'daily', label: 'Daily', icon: '📅' },
@@ -12,6 +14,17 @@ function EditMissionModal({ mission, onClose, onSave, onDelete }) {
   const [name, setName] = useState(mission.name);
   const [description, setDescription] = useState(mission.description || '');
   const [recurrenceType, setRecurrenceType] = useState(mission.recurrenceType);
+  const [newImages, setNewImages] = useState([]);
+  const [refreshGallery, setRefreshGallery] = useState(0);
+
+  const handleImageSelect = (files) => {
+    const fileArray = Array.isArray(files) ? files : [files];
+    setNewImages([...newImages, ...fileArray]);
+  };
+
+  const handleRemoveNewImage = (index) => {
+    setNewImages(newImages.filter((_, i) => i !== index));
+  };
 
   const handleSave = () => {
     if (!name.trim()) return;
@@ -19,7 +32,8 @@ function EditMissionModal({ mission, onClose, onSave, onDelete }) {
       ...mission,
       name: name.trim(),
       description: description.trim(),
-      recurrenceType
+      recurrenceType,
+      images: newImages,
     });
     onClose();
   };
@@ -105,6 +119,38 @@ function EditMissionModal({ mission, onClose, onSave, onDelete }) {
               <span>Last completed: {new Date(mission.lastCompletedAt).toLocaleDateString()}</span>
             </div>
           )}
+
+          <div className="form-group">
+            <label>Existing Images</label>
+            <ImageGallery
+              entityType="mission"
+              entityId={mission.id}
+              editable={true}
+              key={refreshGallery}
+              onImageDelete={() => setRefreshGallery(refreshGallery + 1)}
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Add New Images</label>
+            <ImageUpload onImageSelect={handleImageSelect} multiple />
+            {newImages.length > 0 && (
+              <div className="image-preview-grid">
+                {newImages.map((image, index) => (
+                  <div key={index} className="image-preview-item">
+                    <img src={URL.createObjectURL(image)} alt={`Preview ${index + 1}`} />
+                    <button
+                      className="image-preview-remove"
+                      onClick={() => handleRemoveNewImage(index)}
+                      type="button"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="modal-footer">

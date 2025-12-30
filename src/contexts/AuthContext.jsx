@@ -21,6 +21,10 @@ export function AuthProvider({ children, showNotification }) {
 
   const login = useCallback(async (password) => {
     try {
+      // Create an AbortController for timeout handling
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
       // Call backend API to authenticate
       const response = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
@@ -28,8 +32,10 @@ export function AuthProvider({ children, showNotification }) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ password }),
+        signal: controller.signal,
       });
 
+      clearTimeout(timeoutId);
       const data = await response.json();
 
       if (!response.ok) {
@@ -65,6 +71,10 @@ export function AuthProvider({ children, showNotification }) {
       return { success: true };
     } catch (error) {
       console.error('Login error:', error);
+      // Check if the error is a timeout/abort error
+      if (error.name === 'AbortError') {
+        return { success: false, error: 'Connection timeout. Is the server running?' };
+      }
       return { success: false, error: 'Failed to connect to server' };
     }
   }, [showNotification]);

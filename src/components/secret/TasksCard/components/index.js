@@ -4,3 +4,5 @@ export { default as EditNoteModal } from './EditNoteModal';
 export { default as AddNoteModal } from './AddNoteModal';
 export { default as EditMissionModal } from './EditMissionModal';
 export { default as AddMissionModal } from './AddMissionModal';
+export { default as ImageGallery } from './ImageGallery';
+export { default as ImageUpload } from './ImageUpload';
