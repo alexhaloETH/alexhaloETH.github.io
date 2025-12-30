@@ -12,6 +12,7 @@ function SystemStatusCard() {
   ]);
   const [uptime, setUptime] = useState('0s');
   const [isConnected, setIsConnected] = useState(false);
+  const [connectedIps, setConnectedIps] = useState([]);
 
   const fetchSystemStatus = async () => {
     try {
@@ -49,6 +50,7 @@ function SystemStatusCard() {
       ]);
 
       setUptime(status.uptime_formatted);
+      setConnectedIps(status.connected_ips || []);
       setIsConnected(true);
     } catch (error) {
       console.error('Failed to fetch system status:', error);
@@ -86,6 +88,19 @@ function SystemStatusCard() {
             </div>
           ))}
         </div>
+        {connectedIps.length > 0 && (
+          <div className="connected-ips">
+            <h4 className="ips-title">Recent Connections</h4>
+            <div className="ips-list">
+              {connectedIps.map((ip, index) => (
+                <div key={index} className="ip-item">
+                  <span className="ip-dot" />
+                  <span className="ip-address">{ip}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
       <div className="card-footer">
         <span className={'status-dot ' + (isConnected ? 'connected' : 'error')} />
