@@ -30,6 +30,7 @@ jobs:
       - name: Build with GitHub token
         env:
           VITE_GITHUB_TOKEN: ${{ secrets.GH_PERSONAL_TOKEN }}
+          VITE_API_URL: https://features-full-complications-fossil.trycloudflare.com
         run: npm run build
 
       - uses: actions/upload-pages-artifact@v3
