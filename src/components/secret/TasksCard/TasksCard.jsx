@@ -333,17 +333,7 @@ function TasksCard() {
 
   const addMission = async (newMission) => {
     try {
-      const { images, ...missionData } = newMission;
-
-      // Create the mission first
-      const createdMission = await createMission(missionData);
-
-      // Upload images if any
-      if (images && images.length > 0) {
-        await Promise.all(
-          images.map((image) => uploadImage('mission', createdMission.id, image))
-        );
-      }
+      await createMission(newMission);
 
       const fetchedMissions = await getAllMissions();
       setMissions(fetchedMissions);
@@ -365,21 +355,13 @@ function TasksCard() {
 
   const updateMission = async (updatedMission) => {
     const originalMission = missions.find(m => m.id === updatedMission.id);
-    const { images, ...missionData } = updatedMission;
 
     setMissions(missions.map((mission) =>
-      mission.id === updatedMission.id ? missionData : mission
+      mission.id === updatedMission.id ? updatedMission : mission
     ));
 
     try {
-      await updateMissionAPI(updatedMission.id, missionData);
-
-      // Upload new images if any
-      if (images && images.length > 0) {
-        await Promise.all(
-          images.map((image) => uploadImage('mission', missionData.id, image))
-        );
-      }
+      await updateMissionAPI(updatedMission.id, updatedMission);
 
       setEditingMission(null);
       showNotification({

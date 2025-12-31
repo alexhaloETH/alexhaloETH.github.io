@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import ImageUpload from './ImageUpload';
 
 const recurrenceOptions = [
   { value: 'daily', label: 'Daily', icon: '📅' },
@@ -13,16 +12,6 @@ function AddMissionModal({ onClose, onAdd }) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [recurrenceType, setRecurrenceType] = useState('daily');
-  const [images, setImages] = useState([]);
-
-  const handleImageSelect = (files) => {
-    const fileArray = Array.isArray(files) ? files : [files];
-    setImages([...images, ...fileArray]);
-  };
-
-  const handleRemoveImage = (index) => {
-    setImages(images.filter((_, i) => i !== index));
-  };
 
   const handleAdd = () => {
     if (!name.trim()) return;
@@ -30,7 +19,6 @@ function AddMissionModal({ onClose, onAdd }) {
       name: name.trim(),
       description: description.trim(),
       recurrenceType,
-      images,
     });
     onClose();
   };
@@ -109,27 +97,6 @@ function AddMissionModal({ onClose, onAdd }) {
               {recurrenceType === 'biweekly' && 'Resets every 2 weeks'}
               {recurrenceType === 'monthly' && 'Resets on the 1st of each month'}
             </span>
-          </div>
-
-          <div className="form-group">
-            <label>Images</label>
-            <ImageUpload onImageSelect={handleImageSelect} multiple />
-            {images.length > 0 && (
-              <div className="image-preview-grid">
-                {images.map((image, index) => (
-                  <div key={index} className="image-preview-item">
-                    <img src={URL.createObjectURL(image)} alt={`Preview ${index + 1}`} />
-                    <button
-                      className="image-preview-remove"
-                      onClick={() => handleRemoveImage(index)}
-                      type="button"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         </div>
 
