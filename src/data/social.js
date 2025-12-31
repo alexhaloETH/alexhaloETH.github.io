@@ -42,6 +42,7 @@ export const heroData = {
   name: "Alexhalo",
   subtitle: "UWE Games Tech Graduate",
   subtitleLine2: "TIGA Award Winner",
+  
   bio: {
     prefix: "I like to ",
     highlight: "automate",
