@@ -197,7 +197,7 @@ function SecretDashboard() {
                 </section>
 
                 {/* Developer Row */}
-                <section className="dashboard-section">
+                {/* <section className="dashboard-section">
                   <h2 className="section-title">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <polyline points="16 18 22 12 16 6" />
@@ -205,12 +205,12 @@ function SecretDashboard() {
                     </svg>
                     Developer
                   </h2>
-                  {/* <div className="section-grid">
+                  <div className="section-grid">
                     <motion.div variants={cardVariants} className="wide-card-wrapper">
                       <SkillTreeCard />
                     </motion.div>
-                  </div> */}
-                </section>
+                  </div>
+                </section> */}
               </motion.div>
             </motion.div>
           )}
