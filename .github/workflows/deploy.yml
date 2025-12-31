@@ -2,7 +2,7 @@ name: Deploy Vite site
 
 on:
   push:
-    branches: ["latest-working-ver"]
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
