@@ -12,8 +12,8 @@ export const uploadImage = async (entityType, entityId, file) => {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({
-        entityType,
-        entityId,
+        entity_type: entityType,
+        entity_id: entityId,
         filename: file.name,
         data: base64Data,
       }),
@@ -69,7 +69,7 @@ export const deleteImage = async (imageId) => {
 export const getImageUrl = (filepath) => {
   // Extract filename from filepath (removes ./uploads/ prefix)
   const filename = filepath.split('/').pop();
-  return `http://localhost:8080/uploads/${filename}`;
+  return `${import.meta.env.VITE_API_URL}/uploads/${filename}`;
 };
 
 // Helper function to convert file to base64

@@ -42,7 +42,6 @@ export const heroData = {
   name: "Alexhalo",
   subtitle: "UWE Games Tech Graduate",
   subtitleLine2: "TIGA Award Winner",
-  
   bio: {
     prefix: "I like to ",
     highlight: "automate",
@@ -50,5 +49,5 @@ export const heroData = {
   },
   currentProject: "Grug's Lair", // TODO: Update with current project
   gameJamsCount: 3,
-  gameJamsLabel: "Game Jams · More Coming Soon d",
+  gameJamsLabel: "Game Jams · More Coming Soon",
 };
