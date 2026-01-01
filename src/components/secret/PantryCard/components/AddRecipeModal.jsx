@@ -8,11 +8,11 @@ function AddRecipeModal({ onClose, onAdd, emojis }) {
   const [servings, setServings] = useState(2);
   const [icon, setIcon] = useState('🍳');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [ingredients, setIngredients] = useState([{ name: '', amount: 1, unit: 'pcs' }]);
+  const [ingredients, setIngredients] = useState([{ name: '', amount: 1, unit: 'pcs', optional: false }]);
   const [steps, setSteps] = useState([{ instruction: '', tip: '' }]);
 
   const handleAddIngredient = () => {
-    setIngredients([...ingredients, { name: '', amount: 1, unit: 'pcs' }]);
+    setIngredients([...ingredients, { name: '', amount: 1, unit: 'pcs', optional: false }]);
   };
 
   const handleRemoveIngredient = (index) => {
@@ -60,7 +60,7 @@ function AddRecipeModal({ onClose, onAdd, emojis }) {
         name: i.name,
         amount: Number(i.amount),
         unit: i.unit,
-        optional: false
+        optional: i.optional || false
       })),
       steps: validSteps.map(s => ({
         instruction: s.instruction,
@@ -213,6 +213,14 @@ function AddRecipeModal({ onClose, onAdd, emojis }) {
                     <option value="cloves">cloves</option>
                     <option value="slices">slices</option>
                   </select>
+                  <label className="optional-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={ing.optional || false}
+                      onChange={(e) => handleIngredientChange(index, 'optional', e.target.checked)}
+                    />
+                    <span>Optional</span>
+                  </label>
                   <button
                     type="button"
                     className="remove-row-btn"

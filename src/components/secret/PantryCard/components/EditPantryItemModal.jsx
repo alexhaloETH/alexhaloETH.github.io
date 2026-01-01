@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 
 function EditPantryItemModal({ item, onClose, onSave, onDelete }) {
   const [quantity, setQuantity] = useState(item.quantity);
+  const [status, setStatus] = useState(item.status || 'green');
 
   return (
     <motion.div
@@ -52,6 +53,33 @@ function EditPantryItemModal({ item, onClose, onSave, onDelete }) {
             <button onClick={() => setQuantity(q => q + 10)}>+10</button>
             <button onClick={() => setQuantity(q => Math.max(0, q - 5))}>-5</button>
           </div>
+
+          <div className="status-selector">
+            <label>Status</label>
+            <div className="status-buttons">
+              <button
+                className={`status-btn green ${status === 'green' ? 'active' : ''}`}
+                onClick={() => setStatus('green')}
+              >
+                <span className="status-dot green"></span>
+                Fresh
+              </button>
+              <button
+                className={`status-btn yellow ${status === 'yellow' ? 'active' : ''}`}
+                onClick={() => setStatus('yellow')}
+              >
+                <span className="status-dot yellow"></span>
+                Soon
+              </button>
+              <button
+                className={`status-btn red ${status === 'red' ? 'active' : ''}`}
+                onClick={() => setStatus('red')}
+              >
+                <span className="status-dot red"></span>
+                Bad
+              </button>
+            </div>
+          </div>
         </div>
 
         <div className="modal-footer">
@@ -62,7 +90,7 @@ function EditPantryItemModal({ item, onClose, onSave, onDelete }) {
             </svg>
             Delete
           </button>
-          <button className="save-btn" onClick={() => onSave(quantity)}>
+          <button className="save-btn" onClick={() => onSave(quantity, status)}>
             Save Changes
           </button>
         </div>

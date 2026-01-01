@@ -67,6 +67,7 @@ export const transformPantryItem = (backendItem) => {
     unit: measurements[backendItem.measurement_id] || 'pcs',
     icon: emojis[backendItem.icon_id] || '📦',
     category: 'pantry', // Backend doesn't have category yet
+    status: backendItem.status || 'green',
   };
 };
 
@@ -80,6 +81,7 @@ export const transformToBackendFormat = (frontendItem) => {
     amount: Math.max(0, parseInt(frontendItem.quantity) || 1),
     measurement_id: measurementId >= 0 ? measurementId : 0,
     icon_id: iconId >= 0 ? iconId : 40, // Default to 📦 (index 40)
+    status: frontendItem.status || 'green',
   };
 
   console.log('Transform to backend:', { frontendItem, result });

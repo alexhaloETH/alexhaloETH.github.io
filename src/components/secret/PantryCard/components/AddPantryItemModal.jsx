@@ -12,7 +12,7 @@ function AddPantryItemModal({ onClose, onAdd, categories, emojis }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!name.trim()) return;
-    onAdd({ name: name.trim(), quantity, unit, category, icon });
+    onAdd({ name: name.trim(), quantity, unit, category, icon, status: 'green' });
   };
 
   return (

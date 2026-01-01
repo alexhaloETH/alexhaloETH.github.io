@@ -132,11 +132,15 @@ function PantryCard() {
   }, [recipeFilter, availableRecipes, almostRecipes, missingRecipes, sortedRecipes]);
 
   // Pantry item handlers
-  const handleUpdateQuantity = async (id, newQuantity) => {
+  const handleUpdateQuantity = async (id, newQuantity, newStatus) => {
     const item = pantryItems.find(i => i.id === id);
     if (!item) return;
 
-    const updatedItem = { ...item, quantity: Math.max(0, newQuantity) };
+    const updatedItem = {
+      ...item,
+      quantity: Math.max(0, newQuantity),
+      status: newStatus || item.status || 'green'
+    };
 
     // Optimistic update
     setPantryItems(items =>
@@ -456,10 +460,8 @@ function PantryCard() {
                         {item.quantity} {item.unit}
                       </span>
                     </div>
-                    <div  //this is where the status dot is rendered
-                      className={`item-status ${
-                        item.quantity < 3 ? 'low' : 'ok'
-                      }`}
+                    <div
+                      className={`item-status ${item.status || 'green'}`}
                     />
                   </div>
                 ))}
@@ -521,8 +523,8 @@ function PantryCard() {
           <EditPantryItemModal
             item={editingItem}
             onClose={() => setEditingItem(null)}
-            onSave={(newQty) => {
-              handleUpdateQuantity(editingItem.id, newQty);
+            onSave={(newQty, newStatus) => {
+              handleUpdateQuantity(editingItem.id, newQty, newStatus);
               setEditingItem(null);
             }}
             onDelete={() => {

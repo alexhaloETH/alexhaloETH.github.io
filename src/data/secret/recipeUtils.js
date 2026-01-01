@@ -4,6 +4,11 @@ export function canMakeRecipe(recipe, pantry) {
   let canMake = true;
 
   for (const ingredient of recipe.ingredients) {
+    // Skip optional ingredients in the availability check
+    if (ingredient.optional) {
+      continue;
+    }
+
     const pantryItem = pantry.find(
       (item) => item.name.toLowerCase() === ingredient.name.toLowerCase()
     );
