@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 
-function EditRecipeModal({ recipe, onClose, onUpdate, emojis }) {
+function EditRecipeModal({ recipe, onClose, onUpdate, emojis, existingRecipes = [] }) {
   const [name, setName] = useState(recipe.name);
   const [time, setTime] = useState(recipe.time);
   const [difficulty, setDifficulty] = useState(recipe.difficulty);
@@ -12,8 +12,17 @@ function EditRecipeModal({ recipe, onClose, onUpdate, emojis }) {
   const [steps, setSteps] = useState(recipe.steps || [{ instruction: '', tip: '' }]);
   const [tags, setTags] = useState(recipe.tags || []);
   const [tagInput, setTagInput] = useState('');
+  const [showTagSuggestions, setShowTagSuggestions] = useState(false);
   const [alexScore, setAlexScore] = useState(recipe.alex_score || 5);
   const [notes, setNotes] = useState(recipe.notes || '');
+  const [url, setUrl] = useState(recipe.url || '');
+
+  // Extract all unique tags from existing recipes
+  const allExistingTags = [...new Set(
+    existingRecipes
+      .filter(r => r.tags && Array.isArray(r.tags))
+      .flatMap(r => r.tags)
+  )].sort();
 
   const handleAddIngredient = () => {
     setIngredients([...ingredients, { name: '', amount: 1, unit: 'pcs', optional: false }]);
@@ -43,10 +52,12 @@ function EditRecipeModal({ recipe, onClose, onUpdate, emojis }) {
     ));
   };
 
-  const handleAddTag = () => {
-    if (tagInput.trim() && !tags.includes(tagInput.trim())) {
-      setTags([...tags, tagInput.trim()]);
+  const handleAddTag = (tagToAdd = null) => {
+    const tag = tagToAdd || tagInput.trim();
+    if (tag && !tags.includes(tag)) {
+      setTags([...tags, tag]);
       setTagInput('');
+      setShowTagSuggestions(false);
     }
   };
 
@@ -60,6 +71,17 @@ function EditRecipeModal({ recipe, onClose, onUpdate, emojis }) {
       handleAddTag();
     }
   };
+
+  const handleTagInputChange = (e) => {
+    setTagInput(e.target.value);
+    setShowTagSuggestions(e.target.value.length > 0);
+  };
+
+  // Filter suggestions based on input
+  const filteredSuggestions = allExistingTags.filter(tag =>
+    tag.toLowerCase().includes(tagInput.toLowerCase()) &&
+    !tags.includes(tag)
+  );
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -77,7 +99,7 @@ function EditRecipeModal({ recipe, onClose, onUpdate, emojis }) {
       difficulty,
       servings,
       icon,
-      url: recipe.url || null,
+      url: url.trim() || null,
       ingredients: validIngredients.map(i => ({
         name: i.name,
         amount: Number(i.amount),
@@ -200,6 +222,18 @@ function EditRecipeModal({ recipe, onClose, onUpdate, emojis }) {
                 />
               </div>
             </div>
+
+            <div className="form-row">
+              <div className="form-group flex-grow">
+                <label>Recipe URL (optional)</label>
+                <input
+                  type="url"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  placeholder="https://example.com/recipe"
+                />
+              </div>
+            </div>
           </div>
 
           {/* Ingredients */}
@@ -307,18 +341,58 @@ function EditRecipeModal({ recipe, onClose, onUpdate, emojis }) {
           {/* Tags */}
           <div className="form-section">
             <h4>Tags</h4>
-            <div className="tags-input-container">
-              <input
-                type="text"
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyPress={handleTagKeyPress}
-                placeholder="Add tags (e.g. Breakfast, Meat, Dairy)"
-              />
-              <button type="button" className="add-row-btn" onClick={handleAddTag}>
-                + Add
-              </button>
+            <div className="tags-autocomplete-container">
+              <div className="tags-input-wrapper">
+                <input
+                  type="text"
+                  value={tagInput}
+                  onChange={handleTagInputChange}
+                  onKeyPress={handleTagKeyPress}
+                  onFocus={() => setShowTagSuggestions(tagInput.length > 0)}
+                  onBlur={() => setTimeout(() => setShowTagSuggestions(false), 200)}
+                  placeholder="Type to search or create new tag..."
+                  className="tags-input"
+                />
+                <button type="button" className="add-tag-btn" onClick={() => handleAddTag()}>
+                  + Add
+                </button>
+              </div>
+
+              {showTagSuggestions && (filteredSuggestions.length > 0 || allExistingTags.length > 0) && (
+                <div className="tags-suggestions">
+                  {filteredSuggestions.length > 0 ? (
+                    <>
+                      <div className="suggestions-label">Existing tags:</div>
+                      {filteredSuggestions.map((tag, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          className="tag-suggestion"
+                          onClick={() => handleAddTag(tag)}
+                        >
+                          {tag}
+                        </button>
+                      ))}
+                    </>
+                  ) : tagInput.length === 0 && allExistingTags.filter(t => !tags.includes(t)).length > 0 ? (
+                    <>
+                      <div className="suggestions-label">All available tags:</div>
+                      {allExistingTags.filter(t => !tags.includes(t)).map((tag, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          className="tag-suggestion"
+                          onClick={() => handleAddTag(tag)}
+                        >
+                          {tag}
+                        </button>
+                      ))}
+                    </>
+                  ) : null}
+                </div>
+              )}
             </div>
+
             {tags.length > 0 && (
               <div className="tags-display">
                 {tags.map((tag, index) => (

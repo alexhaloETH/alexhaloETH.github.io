@@ -613,6 +613,7 @@ function PantryCard() {
             onClose={() => setShowAddRecipeModal(false)}
             onAdd={handleAddRecipe}
             emojis={commonEmojis}
+            existingRecipes={recipes}
           />
         )}
       </AnimatePresence>
@@ -625,6 +626,7 @@ function PantryCard() {
             onClose={() => setEditingRecipe(null)}
             onUpdate={handleUpdateRecipe}
             emojis={commonEmojis}
+            existingRecipes={recipes}
           />
         )}
       </AnimatePresence>
