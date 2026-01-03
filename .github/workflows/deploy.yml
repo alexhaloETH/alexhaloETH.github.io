@@ -30,7 +30,7 @@ jobs:
       - name: Build with GitHub token
         env:
           VITE_GITHUB_TOKEN: ${{ secrets.GH_PERSONAL_TOKEN }}
-          VITE_API_URL: https://red_remedies-consultancy-practical.trycloudflare.com
+          VITE_API_URL: https://red-remedies-consultancy-practical.trycloudflare.com
         run: npm run build
 
       - uses: actions/upload-pages-artifact@v3
