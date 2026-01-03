@@ -9,6 +9,7 @@ import {
   AddPantryItemModal,
   AddShoppingItemModal,
   AddRecipeModal,
+  EditRecipeModal,
   RecipeCard,
   RecipeDetail,
 } from './components';
@@ -28,6 +29,7 @@ import {
 import {
   getAllRecipes,
   createRecipe as createRecipeAPI,
+  updateRecipe as updateRecipeAPI,
   deleteRecipe as deleteRecipeAPI,
 } from '../../../utils/recipeApi';
 import './PantryCard.css';
@@ -54,6 +56,7 @@ function PantryCard() {
   const { showNotification } = useNotification();
   const [activeTab, setActiveTab] = useState('recipes');
   const [recipeFilter, setRecipeFilter] = useState('all'); // 'all', 'ready', 'almost', 'missing'
+  const [recipeSort, setRecipeSort] = useState('match'); // 'match', 'score', 'name'
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [pantryItems, setPantryItems] = useState([]);
   const [shoppingList, setShoppingList] = useState([]);
@@ -62,6 +65,7 @@ function PantryCard() {
 
   // Modal states
   const [editingItem, setEditingItem] = useState(null);
+  const [editingRecipe, setEditingRecipe] = useState(null);
   const [showAddPantryModal, setShowAddPantryModal] = useState(false);
   const [showAddRecipeModal, setShowAddRecipeModal] = useState(false);
   const [showAddShoppingModal, setShowAddShoppingModal] = useState(false);
@@ -103,11 +107,21 @@ function PantryCard() {
         return { ...recipe, canMake, missing, matchPercentage, matchedCount };
       })
       .sort((a, b) => {
-        if (a.canMake && !b.canMake) return -1;
-        if (!a.canMake && b.canMake) return 1;
-        return b.matchPercentage - a.matchPercentage;
+        // Apply the selected sort
+        if (recipeSort === 'score') {
+          const scoreA = a.alex_score || 0;
+          const scoreB = b.alex_score || 0;
+          return scoreB - scoreA;
+        } else if (recipeSort === 'name') {
+          return a.name.localeCompare(b.name);
+        } else {
+          // Default 'match' sort
+          if (a.canMake && !b.canMake) return -1;
+          if (!a.canMake && b.canMake) return 1;
+          return b.matchPercentage - a.matchPercentage;
+        }
       });
-  }, [pantryItems, recipes]);
+  }, [pantryItems, recipes, recipeSort]);
 
   const availableRecipes = sortedRecipes.filter((r) => r.canMake);
   const almostRecipes = sortedRecipes.filter(
@@ -310,6 +324,28 @@ function PantryCard() {
     }
   };
 
+  const handleUpdateRecipe = async (updatedRecipe) => {
+    try {
+      await updateRecipeAPI(selectedRecipe.id, updatedRecipe);
+      const refreshedRecipes = await getAllRecipes();
+      setRecipes(refreshedRecipes);
+      const updated = refreshedRecipes.find(r => r.id === selectedRecipe.id);
+      setSelectedRecipe(updated);
+      setEditingRecipe(null);
+      showNotification({
+        title: 'Success',
+        message: 'Recipe updated',
+        type: 'success',
+      });
+    } catch (error) {
+      showNotification({
+        title: 'Error',
+        message: 'Failed to update recipe',
+        type: 'error',
+      });
+    }
+  };
+
   const handleDeleteRecipe = async (id) => {
     try {
       await deleteRecipeAPI(id);
@@ -372,6 +408,7 @@ function PantryCard() {
                   recipe={selectedRecipe}
                   pantryItems={pantryItems}
                   onBack={() => setSelectedRecipe(null)}
+                  onEdit={() => setEditingRecipe(selectedRecipe)}
                   onDelete={() => handleDeleteRecipe(selectedRecipe.id)}
                 />
               ) : (
@@ -406,13 +443,24 @@ function PantryCard() {
                         Missing ({missingRecipes.length})
                       </button>
                     </div>
-                    <button className="add-recipe-btn" onClick={() => setShowAddRecipeModal(true)}>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <line x1="12" y1="5" x2="12" y2="19" />
-                        <line x1="5" y1="12" x2="19" y2="12" />
-                      </svg>
-                      Add Recipe
-                    </button>
+                    <div className="recipe-header-actions">
+                      <select
+                        className="recipe-sort-select"
+                        value={recipeSort}
+                        onChange={(e) => setRecipeSort(e.target.value)}
+                      >
+                        <option value="match">Sort by Match</option>
+                        <option value="score">Sort by Alex Score</option>
+                        <option value="name">Sort by Name</option>
+                      </select>
+                      <button className="add-recipe-btn" onClick={() => setShowAddRecipeModal(true)}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <line x1="12" y1="5" x2="12" y2="19" />
+                          <line x1="5" y1="12" x2="19" y2="12" />
+                        </svg>
+                        Add Recipe
+                      </button>
+                    </div>
                   </div>
 
                   <div className="recipes-grid">
@@ -564,6 +612,18 @@ function PantryCard() {
           <AddRecipeModal
             onClose={() => setShowAddRecipeModal(false)}
             onAdd={handleAddRecipe}
+            emojis={commonEmojis}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Edit Recipe Modal */}
+      <AnimatePresence>
+        {editingRecipe && (
+          <EditRecipeModal
+            recipe={editingRecipe}
+            onClose={() => setEditingRecipe(null)}
+            onUpdate={handleUpdateRecipe}
             emojis={commonEmojis}
           />
         )}

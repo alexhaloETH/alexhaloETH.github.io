@@ -1,19 +1,19 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 
-function AddRecipeModal({ onClose, onAdd, emojis }) {
-  const [name, setName] = useState('');
-  const [time, setTime] = useState('15 min');
-  const [difficulty, setDifficulty] = useState('Easy');
-  const [servings, setServings] = useState(2);
-  const [icon, setIcon] = useState('🍳');
+function EditRecipeModal({ recipe, onClose, onUpdate, emojis }) {
+  const [name, setName] = useState(recipe.name);
+  const [time, setTime] = useState(recipe.time);
+  const [difficulty, setDifficulty] = useState(recipe.difficulty);
+  const [servings, setServings] = useState(recipe.servings || 2);
+  const [icon, setIcon] = useState(recipe.icon);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [ingredients, setIngredients] = useState([{ name: '', amount: 1, unit: 'pcs', optional: false }]);
-  const [steps, setSteps] = useState([{ instruction: '', tip: '' }]);
-  const [tags, setTags] = useState([]);
+  const [ingredients, setIngredients] = useState(recipe.ingredients || [{ name: '', amount: 1, unit: 'pcs', optional: false }]);
+  const [steps, setSteps] = useState(recipe.steps || [{ instruction: '', tip: '' }]);
+  const [tags, setTags] = useState(recipe.tags || []);
   const [tagInput, setTagInput] = useState('');
-  const [alexScore, setAlexScore] = useState(5);
-  const [notes, setNotes] = useState('');
+  const [alexScore, setAlexScore] = useState(recipe.alex_score || 5);
+  const [notes, setNotes] = useState(recipe.notes || '');
 
   const handleAddIngredient = () => {
     setIngredients([...ingredients, { name: '', amount: 1, unit: 'pcs', optional: false }]);
@@ -71,13 +71,13 @@ function AddRecipeModal({ onClose, onAdd, emojis }) {
     if (validIngredients.length === 0) return;
     if (validSteps.length === 0) return;
 
-    onAdd({
+    onUpdate({
       name: name.trim(),
       time,
       difficulty,
       servings,
       icon,
-      url: null,
+      url: recipe.url || null,
       ingredients: validIngredients.map(i => ({
         name: i.name,
         amount: Number(i.amount),
@@ -87,8 +87,8 @@ function AddRecipeModal({ onClose, onAdd, emojis }) {
       steps: validSteps.map(s => ({
         instruction: s.instruction,
         tip: s.tip || null,
-        image: null,
-        url: null
+        image: s.image || null,
+        url: s.url || null
       })),
       tags: tags.length > 0 ? tags : null,
       alex_score: alexScore,
@@ -112,7 +112,7 @@ function AddRecipeModal({ onClose, onAdd, emojis }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="modal-header">
-          <h3>Add New Recipe</h3>
+          <h3>Edit Recipe</h3>
           <button className="modal-close" onClick={onClose}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="18" y1="6" x2="6" y2="18" />
@@ -368,7 +368,7 @@ function AddRecipeModal({ onClose, onAdd, emojis }) {
             Cancel
           </button>
           <button type="submit" className="save-btn" disabled={!name.trim()} form="recipe-form">
-            Create Recipe
+            Update Recipe
           </button>
         </div>
       </motion.div>
@@ -376,4 +376,4 @@ function AddRecipeModal({ onClose, onAdd, emojis }) {
   );
 }
 
-export default AddRecipeModal;
+export default EditRecipeModal;

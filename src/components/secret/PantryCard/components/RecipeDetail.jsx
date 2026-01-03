@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import CookingMode from './CookingMode';
 
-function RecipeDetail({ recipe, pantryItems, onBack, onDelete }) {
+function RecipeDetail({ recipe, pantryItems, onBack, onEdit, onDelete }) {
   const [cookingMode, setCookingMode] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState([]);
@@ -49,12 +49,20 @@ function RecipeDetail({ recipe, pantryItems, onBack, onDelete }) {
           </svg>
           Back
         </button>
-        <button className="delete-recipe-btn" onClick={onDelete}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <polyline points="3,6 5,6 21,6" />
-            <path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6m3,0V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2v2" />
-          </svg>
-        </button>
+        <div className="recipe-action-buttons">
+          <button className="edit-recipe-btn" onClick={onEdit}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+            </svg>
+          </button>
+          <button className="delete-recipe-btn" onClick={onDelete}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="3,6 5,6 21,6" />
+              <path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6m3,0V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2v2" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       <div className="recipe-detail-header">
@@ -69,6 +77,9 @@ function RecipeDetail({ recipe, pantryItems, onBack, onDelete }) {
             {recipe.servings && (
               <span className="servings">{recipe.servings} serving{recipe.servings > 1 ? 's' : ''}</span>
             )}
+            {recipe.alex_score && (
+              <span className="alex-score">⭐ {recipe.alex_score}/10</span>
+            )}
             {recipe.url && (
               <a href={recipe.url} target="_blank" rel="noopener noreferrer" className="recipe-link">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -80,6 +91,13 @@ function RecipeDetail({ recipe, pantryItems, onBack, onDelete }) {
               </a>
             )}
           </div>
+          {recipe.tags && recipe.tags.length > 0 && (
+            <div className="recipe-tags">
+              {recipe.tags.map((tag, index) => (
+                <span key={index} className="tag-badge">{tag}</span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -121,6 +139,13 @@ function RecipeDetail({ recipe, pantryItems, onBack, onDelete }) {
           );
         })}
       </div>
+
+      {recipe.notes && (
+        <div className="recipe-notes-section">
+          <h4>Notes</h4>
+          <p className="recipe-notes-text">{recipe.notes}</p>
+        </div>
+      )}
 
       {recipe.steps && (
         <button className="start-cooking-btn" onClick={handleStartCooking}>
