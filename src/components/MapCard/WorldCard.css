@@ -40,8 +40,8 @@
 
 .active-ring {
   fill: none;
-  filter: drop-shadow(0 0 6px rgb(255 255 255 / 25%));
-  stroke: rgb(255 255 255 / 70%);
+  filter: drop-shadow(0 0 6px rgb(var(--white-rgb) / 25%));
+  stroke: rgb(var(--white-rgb) / 70%);
   stroke-width: 1;
 }
 
@@ -91,9 +91,9 @@
   animation: worldShimmer 1.4s ease-in-out infinite;
   background: linear-gradient(
     90deg,
-    rgb(255 255 255 / 3%),
-    rgb(255 255 255 / 8%),
-    rgb(255 255 255 / 3%)
+    rgb(var(--white-rgb) / 3%),
+    rgb(var(--white-rgb) / 8%),
+    rgb(var(--white-rgb) / 3%)
   );
   background-size: 200% 100%;
   border-radius: inherit;
@@ -125,9 +125,9 @@
 .world-spotlight::after {
   background: linear-gradient(
     90deg,
-    rgb(255 255 255 / 8%),
-    rgb(255 255 255 / 2%),
-    rgb(255 255 255 / 0%)
+    rgb(var(--white-rgb) / 8%),
+    rgb(var(--white-rgb) / 2%),
+    rgb(var(--white-rgb) / 0%)
   );
   bottom: 0;
   content: "";
@@ -157,19 +157,19 @@
 }
 
 .place-dot {
-  fill: rgb(255 255 255 / 28%);
+  fill: rgb(var(--white-rgb) / 28%);
   opacity: 0.6;
   transition: fill 450ms ease, opacity 450ms ease, filter 450ms ease;
 }
 
 .place-dot.is-active {
   fill: #fff;
-  filter: drop-shadow(0 0 6px rgb(255 255 255 / 35%));
+  filter: drop-shadow(0 0 6px rgb(var(--white-rgb) / 35%));
   opacity: 1;
 }
 
 .bg-dot {
-  fill: rgb(255 255 255 / 12%);
+  fill: rgb(var(--white-rgb) / 12%);
   opacity: 0.35;
 }
 
@@ -269,7 +269,7 @@
 }
 
 .world-placeholder-desc {
-  color: rgb(255 255 255 / 60%);
+  color: rgb(var(--white-rgb) / 60%);
   font-size: clamp(12px, 2vw, 14px);
   line-height: 1.5;
   margin: 0;
@@ -277,10 +277,10 @@
 
 .world-load-btn {
   align-items: center;
-  background: linear-gradient(135deg, rgb(255 255 255 / 8%), rgb(255 255 255 / 4%));
-  border: 1px solid rgb(255 255 255 / 12%);
+  background: linear-gradient(135deg, rgb(var(--white-rgb) / 8%), rgb(var(--white-rgb) / 4%));
+  border: 1px solid rgb(var(--white-rgb) / 12%);
   border-radius: 8px;
-  color: rgb(255 255 255 / 90%);
+  color: rgb(var(--white-rgb) / 90%);
   cursor: pointer;
   display: inline-flex;
   font-size: clamp(13px, 2.2vw, 15px);
@@ -293,9 +293,9 @@
 }
 
 .world-load-btn:hover {
-  background: linear-gradient(135deg, rgb(255 255 255 / 12%), rgb(255 255 255 / 6%));
-  border-color: rgb(255 255 255 / 18%);
-  box-shadow: 0 4px 16px rgb(0 0 0 / 20%);
+  background: linear-gradient(135deg, rgb(var(--white-rgb) / 12%), rgb(var(--white-rgb) / 6%));
+  border-color: rgb(var(--white-rgb) / 18%);
+  box-shadow: 0 4px 16px rgb(var(--black-rgb) / 20%);
   color: #fff;
   transform: translateY(-1px);
 }

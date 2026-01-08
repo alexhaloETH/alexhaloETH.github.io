@@ -91,7 +91,7 @@ function CommandTerminalCard() {
   };
 
   return (
-    <BaseCard className="card command-terminal-card">
+    <BaseCard className="card secret-card command-terminal-card">
       <TerminalHeader onClear={() => setHistory([])} />
       <TerminalOutput
         history={history}

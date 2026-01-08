@@ -26,4 +26,8 @@ dist-ssr
 # PurgeCSS output (for review only)
 src/purged/
 
+# Local backups
+*.bak
+*.backup
+
 .claude

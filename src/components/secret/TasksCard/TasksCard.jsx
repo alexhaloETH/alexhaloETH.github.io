@@ -61,7 +61,7 @@ function TasksCard() {
   } = useTasksData(showNotification);
 
   return (
-    <BaseCard className="card tasks-card">
+    <BaseCard className="card secret-card tasks-card">
       <TasksHeader
         activeTab={activeTab}
         activeCount={activeCount}

@@ -12,7 +12,7 @@ function SystemStatusCard() {
   } = useSystemStatus();
 
   return (
-    <BaseCard className="card system-status-card">
+    <BaseCard className="card secret-card system-status-card">
       <div className="card-header">
         <div className="card-icon system">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">

@@ -83,7 +83,7 @@ function HomeAutomationCard() {
   ];
 
   return (
-    <BaseCard className="card home-automation-card">
+    <BaseCard className="card secret-card home-automation-card">
       <div className="card-header">
         <div className="card-icon home">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">

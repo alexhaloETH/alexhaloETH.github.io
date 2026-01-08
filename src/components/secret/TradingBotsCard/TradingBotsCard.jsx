@@ -20,7 +20,7 @@ function TradingBotsCard() {
   const activeBots = BOTS_DATA.filter(bot => bot.status === 'running').length;
 
   return (
-    <BaseCard className="card trading-bots-card">
+    <BaseCard className="card secret-card trading-bots-card">
       <div className="card-header">
         <div className="card-icon trading">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">

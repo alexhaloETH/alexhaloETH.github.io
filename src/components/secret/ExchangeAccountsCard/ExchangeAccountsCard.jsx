@@ -23,7 +23,7 @@ function ExchangeAccountsCard() {
     .reduce((sum, e) => sum + e.balance, 0);
 
   return (
-    <BaseCard className="card exchange-accounts-card">
+    <BaseCard className="card secret-card exchange-accounts-card">
       <ExchangeHeader
         totalBalanceLabel={formatMoney(totalBalance, isPrivate)}
         isPrivate={isPrivate}

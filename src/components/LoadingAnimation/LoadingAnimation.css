@@ -67,7 +67,7 @@
 }
 
 .loading-bar-container {
-  background: rgb(255 255 255 / 10%);
+  background: rgb(var(--white-rgb) / 10%);
   border-radius: 2px;
   height: 4px;
   overflow: hidden;

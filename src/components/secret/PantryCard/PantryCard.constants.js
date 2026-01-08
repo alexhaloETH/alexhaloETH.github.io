@@ -20,6 +20,6 @@ const COMMON_EMOJIS = [
   '🌾', '🧂', '🌶️', '🫗', '🍯', '🥑', '🍋', '🐟', '☕', '🥜', '🥥', '🫘',
 ];
 
-const RECIPES_PER_PAGE = 50;
+const RECIPES_PER_PAGE = 30;
 
 export { COMMON_EMOJIS, PANTRY_CATEGORIES, PANTRY_TABS, RECIPES_PER_PAGE };

@@ -99,8 +99,8 @@ function NoteFormModal({
               placeholder={isIdea ? 'Describe your idea...' : 'Write your note...'}
               rows={6}
               style={{
-                background: 'rgb(255 255 255 / 3%)',
-                border: '1px solid rgb(255 255 255 / 10%)',
+                background: 'rgb(var(--white-rgb) / 3%)',
+                border: '1px solid rgb(var(--white-rgb) / 10%)',
                 borderRadius: '8px',
                 color: 'var(--text-primary)',
                 fontSize: '14px',
@@ -111,7 +111,7 @@ function NoteFormModal({
                 transition: 'border-color 0.2s ease',
               }}
               onFocus={(e) => e.target.style.borderColor = 'rgb(16 185 129 / 50%)'}
-              onBlur={(e) => e.target.style.borderColor = 'rgb(255 255 255 / 10%)'}
+              onBlur={(e) => e.target.style.borderColor = 'rgb(var(--white-rgb) / 10%)'}
             />
           </div>
 
