@@ -48,6 +48,7 @@ const categories = [
 ];
 
 const commonEmojis = ['🥚', '🥛', '🧈', '🍞', '🧀', '🥓', '🍅', '🧅', '🧄', '🍝', '🍚', '🍗', '🫑', '🍄', '🫒', '🥔', '🥕', '🥒', '🥬', '🌽', '🥦', '🍎', '🍌', '🍊', '🍓', '🍇', '🥩', '🦐', '🌾', '🧂', '🌶️', '🫗', '🍯', '🥑', '🍋', '🐟', '☕', '🥜', '🥥', '🫘'];
+const RECIPES_PER_PAGE = 50;
 
 function PantryCard() {
   const { showNotification } = useNotification();
@@ -55,6 +56,7 @@ function PantryCard() {
   const [selectedTag, setSelectedTag] = useState('all'); // Tag filter
   const [recipeSort, setRecipeSort] = useState('name'); // 'score', 'name'
   const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [recipePage, setRecipePage] = useState(0);
   const [pantryItems, setPantryItems] = useState([]);
   const [shoppingList, setShoppingList] = useState([]);
   const [recipes, setRecipes] = useState([]);
@@ -129,6 +131,22 @@ function PantryCard() {
       }
     });
   }, [recipes, selectedTag, recipeSort]);
+
+  const totalRecipes = filteredAndSortedRecipes.length;
+  const totalPages = Math.max(1, Math.ceil(totalRecipes / RECIPES_PER_PAGE));
+  const pageStart = recipePage * RECIPES_PER_PAGE;
+  const pageEnd = Math.min(pageStart + RECIPES_PER_PAGE, totalRecipes);
+  const pagedRecipes = filteredAndSortedRecipes.slice(pageStart, pageEnd);
+
+  useEffect(() => {
+    setRecipePage(0);
+  }, [selectedTag, recipeSort, recipes.length]);
+
+  useEffect(() => {
+    if (recipePage > totalPages - 1) {
+      setRecipePage(Math.max(totalPages - 1, 0));
+    }
+  }, [recipePage, totalPages]);
 
 
   // Pantry item handlers
@@ -433,8 +451,35 @@ function PantryCard() {
                     </div>
                   </div>
 
+                  <div className="recipe-pagination">
+                    <span className="recipe-count">
+                      {totalRecipes === 0
+                        ? 'No recipes found'
+                        : `Showing ${pageStart + 1}-${pageEnd} of ${totalRecipes}`}
+                    </span>
+                    <div className="recipe-page-controls">
+                      <button
+                        className="page-btn"
+                        onClick={() => setRecipePage((prev) => Math.max(prev - 1, 0))}
+                        disabled={recipePage === 0}
+                      >
+                        Prev
+                      </button>
+                      <span className="page-indicator">
+                        {totalPages === 0 ? 0 : recipePage + 1} / {totalPages}
+                      </span>
+                      <button
+                        className="page-btn"
+                        onClick={() => setRecipePage((prev) => Math.min(prev + 1, totalPages - 1))}
+                        disabled={recipePage >= totalPages - 1}
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </div>
+
                   <div className="recipes-grid">
-                    {filteredAndSortedRecipes.map((recipe) => (
+                    {pagedRecipes.map((recipe) => (
                       <RecipeCard
                         key={recipe.id}
                         recipe={recipe}

@@ -143,8 +143,8 @@ function SecretDashboard() {
                     </svg>
                     Life
                   </h2>
-                  <div className="section-grid">
-                    <motion.div variants={cardVariants} className="wide-card-wrapper" >
+                  <div className="section-grid two-col">
+                    <motion.div variants={cardVariants}>
                       <TasksCard />
                     </motion.div>
                     <motion.div variants={cardVariants}>
