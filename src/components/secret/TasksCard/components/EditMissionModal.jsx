@@ -100,6 +100,21 @@ function EditMissionModal({ mission, onClose, onSave, onDelete }) {
             </span>
           </div>
 
+          <div className="mission-stats-panel">
+            <div className="mission-stat">
+              <span>Streak</span>
+              <strong>{mission.currentStreak || 0}</strong>
+            </div>
+            <div className="mission-stat">
+              <span>Best</span>
+              <strong>{mission.bestStreak || 0}</strong>
+            </div>
+            <div className="mission-stat">
+              <span>Total</span>
+              <strong>{mission.totalCompletions || 0}</strong>
+            </div>
+          </div>
+
           {mission.completed && mission.lastCompletedAt && (
             <div className="mission-stats">
               <span>Last completed: {new Date(mission.lastCompletedAt).toLocaleDateString()}</span>

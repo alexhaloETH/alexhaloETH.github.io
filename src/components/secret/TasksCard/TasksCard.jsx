@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import BaseCard from '../../BaseCard/BaseCard';
-import { EditTaskModal, AddTaskModal, EditNoteModal, AddNoteModal, EditMissionModal, AddMissionModal, ImageGallery } from './components';
+import { EditTaskModal, AddTaskModal, EditNoteModal, AddNoteModal, EditMissionModal, AddMissionModal, MissionCalendarModal, ImageGallery } from './components';
 import { useNotification } from '../../../contexts/NotificationContext';
 import {
   getAllTasks,
@@ -36,6 +36,56 @@ const tabs = [
   { id: 'ideas', label: 'Ideas', icon: '💡' },
 ];
 
+const getStreakUnit = (recurrenceType, count) => {
+  const plural = count === 1 ? '' : 's';
+  if (recurrenceType === 'daily') return `day${plural}`;
+  if (recurrenceType === 'weekly') return `week${plural}`;
+  if (recurrenceType === 'biweekly') return `cycle${plural}`;
+  if (recurrenceType === 'monthly') return `month${plural}`;
+  return `streak${plural}`;
+};
+
+const formatPeriodTitle = (period, recurrenceType) => {
+  if (!period) return '';
+  const start = period.periodStart ? new Date(period.periodStart) : null;
+  const end = period.periodEnd ? new Date(period.periodEnd) : null;
+  if (!start || Number.isNaN(start.getTime())) return '';
+
+  if (recurrenceType === 'daily') {
+    return start.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  }
+
+  if (!end || Number.isNaN(end.getTime())) {
+    return start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  const startLabel = start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const endLabel = end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return `${startLabel} - ${endLabel}`;
+};
+
+const formatTimeUntil = (isoString) => {
+  if (!isoString) return '—';
+  const target = new Date(isoString).getTime();
+  if (Number.isNaN(target)) return '—';
+  const diffMs = target - Date.now();
+  if (diffMs <= 0) return 'Now';
+  const totalMinutes = Math.ceil(diffMs / 60000);
+  const days = Math.floor(totalMinutes / 1440);
+  const hours = Math.floor((totalMinutes % 1440) / 60);
+  const minutes = totalMinutes % 60;
+  if (days > 0) return `${days}d ${hours}h`;
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}m`;
+};
+
+const formatShortDate = (isoString) => {
+  if (!isoString) return '---';
+  const date = new Date(isoString);
+  if (Number.isNaN(date.getTime())) return '---';
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+};
+
 function TasksCard() {
   const { showNotification } = useNotification();
   const [activeTab, setActiveTab] = useState('tasks');
@@ -55,6 +105,7 @@ function TasksCard() {
   const [missions, setMissions] = useState([]);
   const [editingMission, setEditingMission] = useState(null);
   const [showAddMissionModal, setShowAddMissionModal] = useState(false);
+  const [calendarMission, setCalendarMission] = useState(null);
 
   const [isLoading, setIsLoading] = useState(true);
 
@@ -319,6 +370,8 @@ function TasksCard() {
 
     try {
       await completeMissionAPI(id, newCompleted);
+      const refreshedMissions = await getAllMissions();
+      setMissions(refreshedMissions);
     } catch (error) {
       setMissions(missions.map((m) =>
         m.id === id ? mission : m
@@ -620,50 +673,135 @@ function TasksCard() {
                 <span>Add new mission</span>
               </button>
               <div className="missions-grid">
-                {missions.map((mission) => (
-                  <div
-                    key={mission.id}
-                    className={`mission-card ${mission.completed ? 'completed' : ''}`}
-                  >
-                    <div className="mission-header">
-                      <button
-                        className={`mission-checkbox ${mission.completed ? 'checked' : ''}`}
-                        onClick={() => toggleMission(mission.id)}
-                      >
-                        {mission.completed && (
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                            <polyline points="20,6 9,17 4,12" />
+                {missions.map((mission) => {
+                  const periodsForStats = mission.recentPeriods || [];
+                  const createdAt = mission.createdAt ? new Date(mission.createdAt) : null;
+                  const validPeriods = createdAt && !Number.isNaN(createdAt.getTime())
+                    ? periodsForStats.filter((period) => {
+                      if (!period.periodEnd) return false;
+                      const end = new Date(period.periodEnd);
+                      return !Number.isNaN(end.getTime()) && end >= createdAt;
+                    })
+                    : periodsForStats;
+                  const historyPreview = validPeriods.slice(-12);
+                  const completedCount = validPeriods.filter((period) => period.completed).length;
+                  const consistency = validPeriods.length
+                    ? Math.round((completedCount / validPeriods.length) * 100)
+                    : 0;
+                  const streakUnit = getStreakUnit(mission.recurrenceType, mission.currentStreak || 0);
+                  const resetsIn = formatTimeUntil(mission.nextResetAt);
+                  const lastDone = formatShortDate(mission.lastCompletedAt);
+
+                  return (
+                    <div
+                      key={mission.id}
+                      className={`mission-card ${mission.completed ? 'completed' : ''}`}
+                      onClick={() => setCalendarMission(mission)}
+                    >
+                      <div className="mission-header">
+                        <button
+                          className={`mission-checkbox ${mission.completed ? 'checked' : ''}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleMission(mission.id);
+                          }}
+                        >
+                          {mission.completed && (
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                              <polyline points="20,6 9,17 4,12" />
+                            </svg>
+                          )}
+                        </button>
+                        <h4>{mission.name}</h4>
+                      </div>
+                      {mission.description && (
+                        <p className="mission-description">{mission.description}</p>
+                      )}
+                      <div className="mission-metrics">
+                        <div className="streak-core">
+                          <div className="streak-core-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M12 2s4 4 4 8a4 4 0 0 1-8 0c0-4 4-8 4-8z" />
+                              <path d="M6 18a6 6 0 0 0 12 0" />
+                            </svg>
+                          </div>
+                          <div className="streak-core-value">{mission.currentStreak || 0}</div>
+                          <div className="streak-core-label">{streakUnit}</div>
+                        </div>
+                        <div className="mission-metrics-right">
+                          <div className="metric-grid">
+                            <div className="metric-item">
+                              <span>Best</span>
+                              <strong>{mission.bestStreak || 0}</strong>
+                            </div>
+                            <div className="metric-item">
+                              <span>Total</span>
+                              <strong>{mission.totalCompletions || 0}</strong>
+                            </div>
+                            <div className="metric-item">
+                              <span>Cons.</span>
+                              <strong>{consistency}%</strong>
+                            </div>
+                          </div>
+                          <div className="consistency-bar">
+                            <span className="consistency-fill" style={{ width: `${consistency}%` }} />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="mission-meta">
+                        <div>
+                          <span className="meta-label">Reset</span>
+                          <span className="meta-value">{resetsIn}</span>
+                        </div>
+                        <div>
+                          <span className="meta-label">Last</span>
+                          <span className="meta-value">{lastDone}</span>
+                        </div>
+                      </div>
+                  {historyPreview.length > 0 && (
+                      <div className="mission-history">
+                        <span className="mission-history-label">
+                            Recent {historyPreview.length}
+                        </span>
+                        <div className="mission-history-dots">
+                            {historyPreview.map((period, index) => (
+                              <span
+                                key={period.periodEnd || `${mission.id}-${index}`}
+                                className={`mission-history-dot ${
+                                  period.completed ? 'completed' : period.isCurrent ? 'current' : 'missed'
+                                }`}
+                                title={formatPeriodTitle(period, mission.recurrenceType)}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      <div className="mission-gallery" onClick={(e) => e.stopPropagation()}>
+                        <ImageGallery
+                          entityType="mission"
+                          entityId={mission.id}
+                        />
+                      </div>
+                      <div className="mission-footer">
+                        <span className={`recurrence-badge ${mission.recurrenceType}`}>
+                          {mission.recurrenceType}
+                        </span>
+                        <button
+                          className="edit-mission-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingMission(mission);
+                          }}
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                           </svg>
-                        )}
-                      </button>
-                      <h4 onClick={() => toggleMission(mission.id)}>{mission.name}</h4>
+                        </button>
+                      </div>
                     </div>
-                    {mission.description && (
-                      <p className="mission-description">{mission.description}</p>
-                    )}
-                    <ImageGallery
-                      entityType="mission"
-                      entityId={mission.id}
-                    />
-                    <div className="mission-footer">
-                      <span className={`recurrence-badge ${mission.recurrenceType}`}>
-                        {mission.recurrenceType}
-                      </span>
-                      <button
-                        className="edit-mission-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditingMission(mission);
-                        }}
-                      >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </motion.div>
           )}
@@ -706,6 +844,12 @@ function TasksCard() {
             onClose={() => setEditingMission(null)}
             onSave={updateMission}
             onDelete={deleteMission}
+          />
+        )}
+        {calendarMission && (
+          <MissionCalendarModal
+            mission={calendarMission}
+            onClose={() => setCalendarMission(null)}
           />
         )}
         {showAddMissionModal && (

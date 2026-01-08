@@ -13,6 +13,15 @@ const transformMission = (backendMission) => {
     lastCompletedAt: backendMission.last_completed_at,
     nextResetAt: backendMission.next_reset_at,
     createdAt: backendMission.created_at,
+    currentStreak: backendMission.current_streak ?? 0,
+    bestStreak: backendMission.best_streak ?? 0,
+    totalCompletions: backendMission.total_completions ?? 0,
+    recentPeriods: (backendMission.recent_periods || []).map((period) => ({
+      periodStart: period.period_start,
+      periodEnd: period.period_end,
+      completed: period.completed,
+      isCurrent: period.is_current,
+    })),
   };
 };
 
@@ -106,7 +115,7 @@ export const completeMission = async (id, completed) => {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
-    return data;
+    return transformMission(data);
   } catch (error) {
     console.error(`Error completing mission ${id}:`, error);
     throw error;
