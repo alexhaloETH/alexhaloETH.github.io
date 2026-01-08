@@ -18,7 +18,7 @@ export function checkUnitySupport() {
     if (!gl) {
       return { supported: false, reason: 'webgl2' };
     }
-  } catch (e) {
+  } catch {
     return { supported: false, reason: 'webgl2' };
   }
 

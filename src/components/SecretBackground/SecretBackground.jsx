@@ -1,6 +1,16 @@
 import { motion } from 'framer-motion';
 import './SecretBackground.css';
 
+const PARTICLES = Array.from({ length: 20 }, (_, i) => ({
+  id: i,
+  style: {
+    '--delay': `${i * 0.3}s`,
+    '--duration': `${8 + (i % 5) * 2}s`,
+    '--x': `${Math.random() * 100}%`,
+    '--y': `${Math.random() * 100}%`,
+  },
+}));
+
 function SecretBackground() {
   return (
     <motion.div
@@ -18,13 +28,12 @@ function SecretBackground() {
 
       {/* Floating particles */}
       <div className="particles-container">
-        {[...Array(20)].map((_, i) => (
-          <div key={i} className="particle" style={{
-            '--delay': `${i * 0.3}s`,
-            '--duration': `${8 + (i % 5) * 2}s`,
-            '--x': `${Math.random() * 100}%`,
-            '--y': `${Math.random() * 100}%`,
-          }}></div>
+        {PARTICLES.map((particle) => (
+          <div
+            key={particle.id}
+            className="particle"
+            style={particle.style}
+          />
         ))}
       </div>
 

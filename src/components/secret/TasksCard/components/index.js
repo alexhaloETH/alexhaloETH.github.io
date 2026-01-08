@@ -7,3 +7,7 @@ export { default as AddMissionModal } from './AddMissionModal';
 export { default as MissionCalendarModal } from './MissionCalendarModal';
 export { default as ImageGallery } from './ImageGallery';
 export { default as ImageUpload } from './ImageUpload';
+export { default as TasksHeader } from './TasksHeader';
+export { default as TasksView } from './TasksView';
+export { default as NotesView } from './NotesView';
+export { default as MissionsView } from './MissionsView';

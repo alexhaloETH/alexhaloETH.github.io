@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 
 /**
  * Custom hook to detect user idle state
@@ -9,14 +9,9 @@ import { useState, useEffect, useCallback } from 'react';
 function useIdleDetection(timeout, enabled) {
   const [isIdle, setIsIdle] = useState(false);
 
-  const resetIdle = useCallback(() => {
-    setIsIdle(false);
-  }, []);
-
   useEffect(() => {
     if (!enabled) {
-      setIsIdle(false);
-      return;
+      return undefined;
     }
 
     let timeoutId;
@@ -37,6 +32,7 @@ function useIdleDetection(timeout, enabled) {
     return () => {
       events.forEach(event => window.removeEventListener(event, handleActivity));
       clearTimeout(timeoutId);
+      setIsIdle(false);
     };
   }, [timeout, enabled]);
 

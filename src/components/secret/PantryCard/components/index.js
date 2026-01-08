@@ -6,3 +6,7 @@ export { default as EditRecipeModal } from './EditRecipeModal';
 export { default as RecipeCard } from './RecipeCard';
 export { default as RecipeDetail } from './RecipeDetail';
 export { default as CookingMode } from './CookingMode';
+export { default as PantryHeader } from './PantryHeader';
+export { default as RecipesView } from './RecipesView';
+export { default as PantryView } from './PantryView';
+export { default as ShoppingView } from './ShoppingView';

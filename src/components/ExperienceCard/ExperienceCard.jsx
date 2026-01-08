@@ -1,72 +1,31 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import BaseCard from "../BaseCard/BaseCard";
-import { experiences, TIMELINE_START_YEAR, TIMELINE_END_YEAR } from "../../data/experience";
+import { experiences } from "../../data/experience";
+import ExperienceDetails from "./components/ExperienceDetails";
+import ExperienceHeader from "./components/ExperienceHeader";
+import ExperienceTimeline from "./components/ExperienceTimeline";
 import GitHubActivityCard from "../secret/GitHubActivityCard/GitHubActivityCard";
+import useExperienceSelection from "./useExperienceSelection";
 import "./ExperienceCard.css";
 
-const textVariants = {
-  initial: { opacity: 0, y: 10 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -10 },
-};
-
 function ExperienceCard() {
-  const [viewMode, setViewMode] = useState('experience'); // 'experience' or 'github'
-
-  // Find the current/latest experience (one with endDate null or most recent)
-  const latestExperience = useMemo(() => {
-    const current = experiences.find(exp => exp.endDate === null);
-    if (current) return current;
-    return experiences.reduce((latest, exp) =>
-      exp.startDate > latest.startDate ? exp : latest
-    );
-  }, []);
-
-  const [selectedExperience, setSelectedExperience] = useState(latestExperience);
-
-  // Get the next experience (by start date) after the selected one
-  const getNextExperience = (currentExp) => {
-    const sortedExps = [...experiences].sort((a, b) => a.startDate - b.startDate);
-    const currentIndex = sortedExps.findIndex(exp => exp.id === currentExp.id);
-    return sortedExps[currentIndex + 1] || null;
-  };
-
-  // Calculate position on timeline (0 to 100%)
-  const getTimelinePosition = (date) => {
-    const startTime = new Date(TIMELINE_START_YEAR, 0).getTime();
-    const endTime = new Date(TIMELINE_END_YEAR, 11, 31).getTime();
-    const dateTime = date.getTime();
-
-    return ((dateTime - startTime) / (endTime - startTime)) * 100;
-  };
-
-  const formatDate = (date) => {
-    return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-  };
-
-  const getPeriodText = (exp) => {
-    const start = formatDate(exp.startDate);
-    const end = exp.endDate ? formatDate(exp.endDate) : 'Present';
-    return `${start} - ${end}`;
-  };
+  const [viewMode, setViewMode] = useState('experience');
+  const {
+    selectedExperience,
+    setSelectedExperience,
+    getNextExperience,
+    getTimelinePosition,
+    getPeriodText,
+  } = useExperienceSelection();
 
   return (
     <BaseCard className="card card-experience">
       <div className="experience-content">
-        <div className="experience-header-row">
-          <h2 className="experience-title">
-            {viewMode === 'experience' ? 'Experience' : 'GitHub Activity'}
-          </h2>
-          <button
-            className="view-toggle-btn"
-            onClick={() => setViewMode(viewMode === 'experience' ? 'github' : 'experience')}
-            aria-label={`Switch to ${viewMode === 'experience' ? 'GitHub Activity' : 'Experience'} view`}
-            title={`Switch to ${viewMode === 'experience' ? 'GitHub Activity' : 'Experience'} view`}
-          >
-            🔄
-          </button>
-        </div>
+        <ExperienceHeader
+          viewMode={viewMode}
+          onToggle={() => setViewMode(viewMode === 'experience' ? 'github' : 'experience')}
+        />
 
         <AnimatePresence mode="wait">
           {viewMode === 'experience' ? (
@@ -79,105 +38,19 @@ function ExperienceCard() {
               style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}
             >
               {/* Experience details */}
-              <AnimatePresence mode="wait">
-          <motion.div
-            key={selectedExperience.id}
-            className="experience-details"
-            variants={textVariants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            transition={{ duration: 0.3 }}
-          >
-            {selectedExperience.icon && (
-              <div className="experience-icon">
-                {selectedExperience.icon.startsWith('http') ? (
-                  <img src={selectedExperience.icon} alt={selectedExperience.company} />
-                ) : (
-                  <span>{selectedExperience.icon}</span>
-                )}
-              </div>
-            )}
-            <div className="experience-header">
-              <h3 className="experience-role">{selectedExperience.title}</h3>
-              <span className="experience-period">{getPeriodText(selectedExperience)}</span>
-            </div>
-            <div className="experience-company">{selectedExperience.company}</div>
-            <div className="experience-description">{selectedExperience.description}</div>
-            {selectedExperience.highlights && (
-              <ul className="experience-highlights">
-                {selectedExperience.highlights.map((highlight, index) => (
-                  <li key={index} className="experience-highlight">
-                    {highlight}
-                  </li>
-                ))}
-              </ul>
-            )}
-            {selectedExperience.skills && (
-              <div className="experience-skills">
-                {selectedExperience.skills.map((skill) => (
-                  <span key={skill} className="experience-skill-tag">
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            )}
-          </motion.div>
-        </AnimatePresence>
+              <ExperienceDetails
+                experience={selectedExperience}
+                getPeriodText={getPeriodText}
+              />
 
               {/* Timeline */}
-              <div className="timeline-container">
-          {/* Year labels */}
-          <div className="timeline-years">
-            <div className="timeline-year">{TIMELINE_START_YEAR}</div>
-            <div className="timeline-year">Now</div>
-          </div>
-
-          <div className="timeline-line" />
-
-          {/* Animated fill line */}
-          <motion.div
-            key={selectedExperience.id}
-            className="timeline-fill"
-            initial={{
-              left: `${getTimelinePosition(selectedExperience.startDate)}%`,
-              right: `${100 - getTimelinePosition(selectedExperience.startDate)}%`,
-              opacity: 1
-            }}
-            animate={{
-              left: `${getTimelinePosition(selectedExperience.startDate)}%`,
-              right: getNextExperience(selectedExperience)
-                ? `${100 - getTimelinePosition(getNextExperience(selectedExperience).startDate)}%`
-                : '0%',
-              opacity: 1
-            }}
-            transition={{
-              duration: 0.8,
-              ease: "easeInOut"
-            }}
-          />
-
-          {/* Experience dots */}
-          <div className="timeline-dots">
-            {experiences.map((exp) => {
-              const position = getTimelinePosition(exp.startDate);
-              const isSelected = selectedExperience.id === exp.id;
-              const isCurrent = exp.endDate === null;
-
-              return (
-                <button
-                  key={exp.id}
-                  className={`timeline-dot ${isSelected ? 'active' : ''} ${isCurrent ? 'current' : ''}`}
-                  style={{ left: `${position}%` }}
-                  onClick={() => setSelectedExperience(exp)}
-                  aria-label={`View ${exp.title} at ${exp.company}`}
-                >
-                  {isCurrent && <div className="pulse-ring" />}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+              <ExperienceTimeline
+                experiences={experiences}
+                selectedExperience={selectedExperience}
+                onSelect={setSelectedExperience}
+                getTimelinePosition={getTimelinePosition}
+                getNextExperience={getNextExperience}
+              />
             </motion.div>
           ) : (
             <motion.div

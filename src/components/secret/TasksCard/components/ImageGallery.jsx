@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { getEntityImages, getImageUrl, deleteImage } from '../../../../utils/imagesApi';
 import './ImageGallery.css';
 
@@ -6,11 +6,7 @@ const ImageGallery = ({ entityType, entityId, editable = false, onImageDelete })
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadImages();
-  }, [entityType, entityId]);
-
-  const loadImages = async () => {
+  const loadImages = useCallback(async () => {
     try {
       const fetchedImages = await getEntityImages(entityType, entityId);
       setImages(fetchedImages);
@@ -19,7 +15,11 @@ const ImageGallery = ({ entityType, entityId, editable = false, onImageDelete })
     } finally {
       setLoading(false);
     }
-  };
+  }, [entityId, entityType]);
+
+  useEffect(() => {
+    loadImages();
+  }, [loadImages]);
 
   const handleDelete = async (imageId) => {
     try {
