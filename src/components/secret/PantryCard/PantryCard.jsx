@@ -32,6 +32,12 @@ function PantryCard() {
     pantryItems,
     shoppingList,
     recipes,
+    recipeSearch,
+    setRecipeSearch,
+    recipeSearchMode,
+    setRecipeSearchMode,
+    showRecipeSearch,
+    setShowRecipeSearch,
     allTags,
     pagedRecipes,
     totalRecipes,
@@ -59,12 +65,31 @@ function PantryCard() {
     handleDeleteRecipe,
   } = usePantryData(showNotification);
 
+  const isSearchOpen = showRecipeSearch && activeTab === 'recipes';
+
+  const handleFindRecipe = () => {
+    if (activeTab !== 'recipes') {
+      setActiveTab('recipes');
+      setShowRecipeSearch(true);
+      return;
+    }
+
+    setShowRecipeSearch((prev) => {
+      if (prev) {
+        setRecipeSearch('');
+      }
+      return !prev;
+    });
+  };
+
   return (
     <BaseCard className="card secret-card pantry-card wide">
       <PantryHeader
         activeTab={activeTab}
         onTabChange={setActiveTab}
         recipeCount={recipes.length}
+        onFindRecipe={handleFindRecipe}
+        isSearchOpen={isSearchOpen}
       />
 
       <div className="pantry-content">
@@ -98,6 +123,11 @@ function PantryCard() {
                 onPageChange={setRecipePage}
                 pagedRecipes={pagedRecipes}
                 onSelectRecipe={setSelectedRecipe}
+                recipeSearch={recipeSearch}
+                onRecipeSearchChange={setRecipeSearch}
+                recipeSearchMode={recipeSearchMode}
+                onRecipeSearchModeChange={setRecipeSearchMode}
+                showRecipeSearch={showRecipeSearch}
               />
             </motion.div>
           )}

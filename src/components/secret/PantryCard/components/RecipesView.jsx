@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import RecipeCard from './RecipeCard';
 import RecipeDetail from './RecipeDetail';
 
@@ -7,6 +8,11 @@ function RecipesView({
   onBack,
   onEdit,
   onDelete,
+  recipeSearch,
+  onRecipeSearchChange,
+  recipeSearchMode,
+  onRecipeSearchModeChange,
+  showRecipeSearch,
   selectedTag,
   onTagChange,
   allTags,
@@ -23,6 +29,14 @@ function RecipesView({
   pagedRecipes,
   onSelectRecipe,
 }) {
+  const searchInputRef = useRef(null);
+
+  useEffect(() => {
+    if (showRecipeSearch && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [showRecipeSearch]);
+
   if (selectedRecipe) {
     return (
       <RecipeDetail
@@ -70,6 +84,57 @@ function RecipesView({
           </button>
         </div>
       </div>
+
+      {showRecipeSearch && (
+        <div className="recipe-search-panel">
+          <div className="recipe-search-modes">
+            <button
+              type="button"
+              className={`search-mode-btn ${recipeSearchMode === 'name' ? 'active' : ''}`}
+              onClick={() => onRecipeSearchModeChange('name')}
+              aria-pressed={recipeSearchMode === 'name'}
+            >
+              Name
+            </button>
+            <button
+              type="button"
+              className={`search-mode-btn ${recipeSearchMode === 'ingredients' ? 'active' : ''}`}
+              onClick={() => onRecipeSearchModeChange('ingredients')}
+              aria-pressed={recipeSearchMode === 'ingredients'}
+            >
+              Ingredients
+            </button>
+          </div>
+          <div className="recipe-search-input-row">
+            <input
+              ref={searchInputRef}
+              className="recipe-search-input"
+              type="text"
+              value={recipeSearch}
+              onChange={(e) => onRecipeSearchChange(e.target.value)}
+              placeholder={
+                recipeSearchMode === 'ingredients'
+                  ? 'eggs, chicken, spinach...'
+                  : 'Search recipe names...'
+              }
+            />
+            {recipeSearch.trim() && (
+              <button
+                type="button"
+                className="recipe-search-clear"
+                onClick={() => onRecipeSearchChange('')}
+              >
+                Clear
+              </button>
+            )}
+          </div>
+          <p className="recipe-search-hint">
+            {recipeSearchMode === 'ingredients'
+              ? 'Enter ingredients separated by commas to find matching recipes.'
+              : 'Type to filter recipes by name as you search.'}
+          </p>
+        </div>
+      )}
 
       <div className="recipe-pagination">
         <span className="recipe-count">
