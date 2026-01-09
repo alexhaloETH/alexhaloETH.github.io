@@ -23,7 +23,15 @@ import {
   uploadImage,
 } from '../../../utils/imagesApi';
 
-const useTasksData = (showNotification) => {
+const useTasksData = (showNotification, access = {}) => {
+  const {
+    canReadTasks = true,
+    canReadNotes = true,
+    canReadMissions = true,
+    canWriteTasks = true,
+    canWriteNotes = true,
+    canWriteMissions = true,
+  } = access;
   const [activeTab, setActiveTab] = useState('tasks');
 
   // Tasks state
@@ -51,9 +59,9 @@ const useTasksData = (showNotification) => {
       try {
         setIsLoading(true);
         const [fetchedTasks, fetchedNotes, fetchedMissions] = await Promise.all([
-          getAllTasks(),
-          getAllNotes(),
-          getAllMissions(),
+          canReadTasks ? getAllTasks() : Promise.resolve([]),
+          canReadNotes ? getAllNotes() : Promise.resolve([]),
+          canReadMissions ? getAllMissions() : Promise.resolve([]),
         ]);
         setTasks(fetchedTasks);
         setNotes(fetchedNotes);
@@ -71,10 +79,19 @@ const useTasksData = (showNotification) => {
     };
 
     fetchData();
-  }, [showNotification]);
+  }, [showNotification, canReadTasks, canReadNotes, canReadMissions]);
 
   // Task handlers
   const toggleTask = async (id) => {
+    if (!canWriteTasks) {
+      showNotification({
+        title: 'Access denied',
+        message: 'You do not have permission to update tasks',
+        type: 'error',
+      });
+      return;
+    }
+
     const task = tasks.find(t => t.id === id);
     if (!task) return;
 
@@ -99,6 +116,15 @@ const useTasksData = (showNotification) => {
   };
 
   const addTask = async (newTask) => {
+    if (!canWriteTasks) {
+      showNotification({
+        title: 'Access denied',
+        message: 'You do not have permission to add tasks',
+        type: 'error',
+      });
+      return;
+    }
+
     try {
       await createTask(newTask);
       const fetchedTasks = await getAllTasks();
@@ -119,6 +145,15 @@ const useTasksData = (showNotification) => {
   };
 
   const updateTask = async (updatedTask) => {
+    if (!canWriteTasks) {
+      showNotification({
+        title: 'Access denied',
+        message: 'You do not have permission to update tasks',
+        type: 'error',
+      });
+      return;
+    }
+
     const originalTask = tasks.find(t => t.id === updatedTask.id);
 
     setTasks(tasks.map((task) =>
@@ -146,6 +181,15 @@ const useTasksData = (showNotification) => {
   };
 
   const deleteTask = async (id) => {
+    if (!canWriteTasks) {
+      showNotification({
+        title: 'Access denied',
+        message: 'You do not have permission to delete tasks',
+        type: 'error',
+      });
+      return;
+    }
+
     const taskToDelete = tasks.find(t => t.id === id);
 
     setTasks(tasks.filter((task) => task.id !== id));
@@ -171,6 +215,15 @@ const useTasksData = (showNotification) => {
   };
 
   const clearCompletedTasks = async () => {
+    if (!canWriteTasks) {
+      showNotification({
+        title: 'Access denied',
+        message: 'You do not have permission to clear tasks',
+        type: 'error',
+      });
+      return;
+    }
+
     const completedTasks = tasks.filter((t) => t.completed);
     if (completedTasks.length === 0) return;
 
@@ -195,6 +248,15 @@ const useTasksData = (showNotification) => {
 
   // Note handlers
   const addNote = async (newNote) => {
+    if (!canWriteNotes) {
+      showNotification({
+        title: 'Access denied',
+        message: 'You do not have permission to add notes',
+        type: 'error',
+      });
+      return;
+    }
+
     try {
       const { images, ...noteData } = newNote;
       const data = {
@@ -232,6 +294,15 @@ const useTasksData = (showNotification) => {
   };
 
   const updateNote = async (updatedNote) => {
+    if (!canWriteNotes) {
+      showNotification({
+        title: 'Access denied',
+        message: 'You do not have permission to update notes',
+        type: 'error',
+      });
+      return;
+    }
+
     const originalNote = notes.find(n => n.id === updatedNote.id);
     const { images, ...noteData } = updatedNote;
 
@@ -269,6 +340,15 @@ const useTasksData = (showNotification) => {
   };
 
   const deleteNote = async (id) => {
+    if (!canWriteNotes) {
+      showNotification({
+        title: 'Access denied',
+        message: 'You do not have permission to delete notes',
+        type: 'error',
+      });
+      return;
+    }
+
     const noteToDelete = notes.find(n => n.id === id);
 
     setNotes(notes.filter((note) => note.id !== id));
@@ -294,6 +374,15 @@ const useTasksData = (showNotification) => {
   };
 
   const togglePinNote = async (id) => {
+    if (!canWriteNotes) {
+      showNotification({
+        title: 'Access denied',
+        message: 'You do not have permission to pin notes',
+        type: 'error',
+      });
+      return;
+    }
+
     const note = notes.find(n => n.id === id);
     if (!note) return;
 
@@ -319,6 +408,15 @@ const useTasksData = (showNotification) => {
 
   // Mission handlers
   const toggleMission = async (id) => {
+    if (!canWriteMissions) {
+      showNotification({
+        title: 'Access denied',
+        message: 'You do not have permission to update missions',
+        type: 'error',
+      });
+      return;
+    }
+
     const mission = missions.find(m => m.id === id);
     if (!mission) return;
 
@@ -344,6 +442,15 @@ const useTasksData = (showNotification) => {
   };
 
   const addMission = async (newMission) => {
+    if (!canWriteMissions) {
+      showNotification({
+        title: 'Access denied',
+        message: 'You do not have permission to add missions',
+        type: 'error',
+      });
+      return;
+    }
+
     try {
       await createMission(newMission);
 
@@ -366,6 +473,15 @@ const useTasksData = (showNotification) => {
   };
 
   const updateMission = async (updatedMission) => {
+    if (!canWriteMissions) {
+      showNotification({
+        title: 'Access denied',
+        message: 'You do not have permission to update missions',
+        type: 'error',
+      });
+      return;
+    }
+
     const originalMission = missions.find(m => m.id === updatedMission.id);
 
     setMissions(missions.map((mission) =>
@@ -394,6 +510,15 @@ const useTasksData = (showNotification) => {
   };
 
   const deleteMission = async (id) => {
+    if (!canWriteMissions) {
+      showNotification({
+        title: 'Access denied',
+        message: 'You do not have permission to delete missions',
+        type: 'error',
+      });
+      return;
+    }
+
     const missionToDelete = missions.find(m => m.id === id);
 
     setMissions(missions.filter((mission) => mission.id !== id));
@@ -419,6 +544,15 @@ const useTasksData = (showNotification) => {
   };
 
   const logMissionAmount = async (id, amount) => {
+    if (!canWriteMissions) {
+      showNotification({
+        title: 'Access denied',
+        message: 'You do not have permission to log mission amounts',
+        type: 'error',
+      });
+      return;
+    }
+
     const mission = missions.find(m => m.id === id);
     if (!mission) return;
 

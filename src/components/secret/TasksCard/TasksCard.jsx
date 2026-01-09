@@ -1,3 +1,4 @@
+import { useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import BaseCard from '../../BaseCard/BaseCard';
 import {
@@ -14,11 +15,24 @@ import {
   TasksView,
 } from './components';
 import { useNotification } from '../../../contexts/NotificationContext';
+import { useAuth } from '../../../contexts/AuthContext';
+import { TASK_TABS } from './TasksCard.constants';
 import useTasksData from './useTasksData';
 import './TasksCard.css';
 
 function TasksCard() {
   const { showNotification } = useNotification();
+  const { canRead, canWrite } = useAuth();
+  const canReadTasks = canRead('tasks');
+  const canReadNotes = canRead('notes');
+  const canReadMissions = canRead('missions');
+  const canWriteTasks = canWrite('tasks');
+  const canWriteNotes = canWrite('notes');
+  const canWriteMissions = canWrite('missions');
+  const visibleTabs = useMemo(
+    () => TASK_TABS.filter((tab) => canRead(tab.resource)),
+    [canRead],
+  );
   const {
     activeTab,
     setActiveTab,
@@ -59,7 +73,24 @@ function TasksCard() {
     updateMission,
     deleteMission,
     logMissionAmount,
-  } = useTasksData(showNotification);
+  } = useTasksData(showNotification, {
+    canReadTasks,
+    canReadNotes,
+    canReadMissions,
+    canWriteTasks,
+    canWriteNotes,
+    canWriteMissions,
+  });
+
+  useEffect(() => {
+    if (!visibleTabs.some((tab) => tab.id === activeTab) && visibleTabs.length > 0) {
+      setActiveTab(visibleTabs[0].id);
+    }
+  }, [activeTab, setActiveTab, visibleTabs]);
+
+  if (visibleTabs.length === 0) {
+    return null;
+  }
 
   return (
     <BaseCard className="card secret-card tasks-card">
@@ -70,11 +101,12 @@ function TasksCard() {
         regularNotesCount={regularNotes.length}
         ideaNotesCount={ideaNotes.length}
         onTabChange={setActiveTab}
+        tabs={visibleTabs}
       />
 
       <div className="tasks-content">
         <AnimatePresence mode="wait">
-          {activeTab === 'tasks' && (
+          {activeTab === 'tasks' && canReadTasks && (
             <motion.div
               key="tasks"
               initial={{ opacity: 0, y: 10 }}
@@ -88,15 +120,16 @@ function TasksCard() {
                 completedCount={completedCount}
                 filteredTasks={filteredTasks}
                 onFilterChange={setFilter}
-                onShowAddTask={() => setShowAddTaskModal(true)}
-                onToggleTask={toggleTask}
-                onEditTask={setEditingTask}
-                onClearCompleted={clearCompletedTasks}
+                onShowAddTask={canWriteTasks ? () => setShowAddTaskModal(true) : null}
+                onToggleTask={canWriteTasks ? toggleTask : null}
+                onEditTask={canWriteTasks ? setEditingTask : null}
+                onClearCompleted={canWriteTasks ? clearCompletedTasks : null}
+                canEdit={canWriteTasks}
               />
             </motion.div>
           )}
 
-          {(activeTab === 'notes' || activeTab === 'ideas') && (
+          {(activeTab === 'notes' || activeTab === 'ideas') && canReadNotes && (
             <motion.div
               key={activeTab}
               initial={{ opacity: 0, y: 10 }}
@@ -107,14 +140,15 @@ function TasksCard() {
               <NotesView
                 activeTab={activeTab}
                 currentNotes={currentNotes}
-                onShowAddNote={() => setShowAddNoteModal(true)}
-                onEditNote={setEditingNote}
-                onTogglePin={togglePinNote}
+                onShowAddNote={canWriteNotes ? () => setShowAddNoteModal(true) : null}
+                onEditNote={canWriteNotes ? setEditingNote : null}
+                onTogglePin={canWriteNotes ? togglePinNote : null}
+                canEdit={canWriteNotes}
               />
             </motion.div>
           )}
 
-          {activeTab === 'missions' && (
+          {activeTab === 'missions' && canReadMissions && (
             <motion.div
               key="missions"
               initial={{ opacity: 0, y: 10 }}
@@ -124,11 +158,12 @@ function TasksCard() {
             >
               <MissionsView
                 missions={missions}
-                onShowAddMission={() => setShowAddMissionModal(true)}
-                onToggleMission={toggleMission}
-                onEditMission={setEditingMission}
+                onShowAddMission={canWriteMissions ? () => setShowAddMissionModal(true) : null}
+                onToggleMission={canWriteMissions ? toggleMission : null}
+                onEditMission={canWriteMissions ? setEditingMission : null}
                 onOpenCalendar={setCalendarMission}
-                onLogAmount={logMissionAmount}
+                onLogAmount={canWriteMissions ? logMissionAmount : null}
+                canEdit={canWriteMissions}
               />
             </motion.div>
           )}
@@ -136,7 +171,7 @@ function TasksCard() {
       </div>
 
       <AnimatePresence>
-        {editingTask && (
+        {editingTask && canWriteTasks && (
           <EditTaskModal
             task={editingTask}
             onClose={() => setEditingTask(null)}
@@ -144,13 +179,13 @@ function TasksCard() {
             onDelete={deleteTask}
           />
         )}
-        {showAddTaskModal && (
+        {showAddTaskModal && canWriteTasks && (
           <AddTaskModal
             onClose={() => setShowAddTaskModal(false)}
             onAdd={addTask}
           />
         )}
-        {editingNote && (
+        {editingNote && canWriteNotes && (
           <EditNoteModal
             note={editingNote}
             onClose={() => setEditingNote(null)}
@@ -158,14 +193,14 @@ function TasksCard() {
             onDelete={deleteNote}
           />
         )}
-        {showAddNoteModal && (
+        {showAddNoteModal && canWriteNotes && (
           <AddNoteModal
             onClose={() => setShowAddNoteModal(false)}
             onAdd={addNote}
             isIdea={activeTab === 'ideas'}
           />
         )}
-        {editingMission && (
+        {editingMission && canWriteMissions && (
           <EditMissionModal
             mission={editingMission}
             onClose={() => setEditingMission(null)}
@@ -179,7 +214,7 @@ function TasksCard() {
             onClose={() => setCalendarMission(null)}
           />
         )}
-        {showAddMissionModal && (
+        {showAddMissionModal && canWriteMissions && (
           <AddMissionModal
             onClose={() => setShowAddMissionModal(false)}
             onAdd={addMission}

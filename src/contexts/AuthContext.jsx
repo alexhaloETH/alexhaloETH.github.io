@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
 
 const AuthContext = createContext(null);
 
@@ -14,12 +14,24 @@ export function AuthProvider({ children, showNotification }) {
     // Try to restore token from localStorage on page load
     return localStorage.getItem('dashboard_token');
   });
+  const [currentUser, setCurrentUser] = useState(() => {
+    const stored = localStorage.getItem('dashboard_user');
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch (error) {
+        console.warn('Failed to parse stored user:', error);
+      }
+    }
+    const token = localStorage.getItem('dashboard_token');
+    return decodeTokenUser(token);
+  });
 
   const triggerSecretEntry = useCallback(() => {
     setShowLoginModal(true);
   }, []);
 
-  const login = useCallback(async (password) => {
+  const login = useCallback(async (username, password) => {
     try {
       // Create an AbortController for timeout handling
       const controller = new AbortController();
@@ -31,7 +43,7 @@ export function AuthProvider({ children, showNotification }) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ username, password }),
         signal: controller.signal,
       });
 
@@ -43,10 +55,15 @@ export function AuthProvider({ children, showNotification }) {
         return { success: false, error: data.error || 'Invalid password' };
       }
 
-      // Login successful! Store the JWT token
+      // Login successful! Store the JWT token + user info
       const token = data.token;
+      const user = data.user || decodeTokenUser(token);
       setAuthToken(token);
       localStorage.setItem('dashboard_token', token);
+      setCurrentUser(user);
+      if (user) {
+        localStorage.setItem('dashboard_user', JSON.stringify(user));
+      }
 
       setShowLoginModal(false);
       setIsLoadingDashboard(true);
@@ -83,6 +100,8 @@ export function AuthProvider({ children, showNotification }) {
     // Clear the auth token
     setAuthToken(null);
     localStorage.removeItem('dashboard_token');
+    setCurrentUser(null);
+    localStorage.removeItem('dashboard_user');
 
     setIsExitingDashboard(true);
 
@@ -101,6 +120,8 @@ export function AuthProvider({ children, showNotification }) {
     // Clear the auth token when exiting
     setAuthToken(null);
     localStorage.removeItem('dashboard_token');
+    setCurrentUser(null);
+    localStorage.removeItem('dashboard_user');
 
     setIsExitingDashboard(true);
 
@@ -111,6 +132,38 @@ export function AuthProvider({ children, showNotification }) {
       setIsExitingDashboard(false);
     }, 1500);
   }, []);
+
+  useEffect(() => {
+    if (!currentUser && authToken) {
+      const decoded = decodeTokenUser(authToken);
+      if (decoded) {
+        setCurrentUser(decoded);
+        localStorage.setItem('dashboard_user', JSON.stringify(decoded));
+      }
+    }
+  }, [authToken, currentUser]);
+
+  const permissions = useMemo(() => {
+    if (!currentUser) return [];
+    return Array.isArray(currentUser.permissions) ? currentUser.permissions : [];
+  }, [currentUser]);
+
+  const hasPermission = useCallback((permission) => {
+    if (!currentUser) return false;
+    if (currentUser.role === 'admin') return true;
+    return permissions.includes(permission);
+  }, [currentUser, permissions]);
+
+  const canRead = useCallback((resource) => {
+    return (
+      hasPermission(`${resource}:read`)
+      || hasPermission(`${resource}:write`)
+    );
+  }, [hasPermission]);
+
+  const canWrite = useCallback((resource) => {
+    return hasPermission(`${resource}:write`);
+  }, [hasPermission]);
 
   // Helper function to get auth token for API calls
   const getAuthHeaders = useCallback(() => {
@@ -130,6 +183,11 @@ export function AuthProvider({ children, showNotification }) {
         isLoadingDashboard,
         isExitingDashboard,
         authToken,
+        currentUser,
+        permissions,
+        hasPermission,
+        canRead,
+        canWrite,
         getAuthHeaders,
         triggerSecretEntry,
         login,
@@ -149,4 +207,25 @@ export function useAuth() {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
+}
+
+function decodeTokenUser(token) {
+  if (!token) return null;
+  try {
+    const parts = token.split('.');
+    if (parts.length < 2) return null;
+    const raw = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const padded = raw + '='.repeat((4 - (raw.length % 4)) % 4);
+    const payload = JSON.parse(atob(padded));
+    if (!payload) return null;
+    return {
+      id: payload.user_id ?? payload.id ?? null,
+      username: payload.username ?? payload.sub ?? 'user',
+      role: payload.role ?? 'user',
+      permissions: Array.isArray(payload.permissions) ? payload.permissions : [],
+    };
+  } catch (error) {
+    console.warn('Failed to decode token payload:', error);
+    return null;
+  }
 }

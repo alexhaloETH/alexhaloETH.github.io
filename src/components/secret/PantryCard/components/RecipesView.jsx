@@ -28,6 +28,7 @@ function RecipesView({
   onPageChange,
   pagedRecipes,
   onSelectRecipe,
+  canEdit,
 }) {
   const searchInputRef = useRef(null);
 
@@ -45,6 +46,7 @@ function RecipesView({
         onBack={onBack}
         onEdit={onEdit}
         onDelete={onDelete}
+        canEdit={canEdit}
       />
     );
   }
@@ -75,13 +77,15 @@ function RecipesView({
             <option value="name">Sort by Name</option>
             <option value="score">Sort by Alex Score</option>
           </select>
-          <button className="add-recipe-btn" onClick={onShowAddRecipe}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            Add Recipe
-          </button>
+          {canEdit && (
+            <button className="add-recipe-btn" onClick={onShowAddRecipe}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              Add Recipe
+            </button>
+          )}
         </div>
       </div>
 

@@ -1,7 +1,7 @@
 const PANTRY_TABS = [
-  { id: 'recipes', label: 'What Can I Make?', icon: '🍳' },
-  { id: 'pantry', label: 'Pantry', icon: '🏠' },
-  { id: 'shopping', label: 'Shopping', icon: '🛒' },
+  { id: 'recipes', label: 'What Can I Make?', icon: '🍳', resource: 'recipes' },
+  { id: 'pantry', label: 'Pantry', icon: '🏠', resource: 'pantry' },
+  { id: 'shopping', label: 'Shopping', icon: '🛒', resource: 'shopping' },
 ];
 
 const PANTRY_CATEGORIES = [

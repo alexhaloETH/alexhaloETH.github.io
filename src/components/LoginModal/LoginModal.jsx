@@ -4,13 +4,14 @@ import { useAuth } from '../../contexts/AuthContext';
 import './LoginModal.css';
 
 function LoginModalContent({ login, closeLoginModal }) {
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const inputRef = useRef(null);
+  const usernameRef = useRef(null);
 
   useEffect(() => {
-    inputRef.current?.focus();
+    usernameRef.current?.focus();
   }, []);
 
   const handleSubmit = async (e) => {
@@ -18,7 +19,7 @@ function LoginModalContent({ login, closeLoginModal }) {
     setError('');
     setIsLoading(true);
 
-    const result = await login(password);
+    const result = await login(username, password);
     setIsLoading(false);
 
     if (!result.success) {
@@ -62,13 +63,21 @@ function LoginModalContent({ login, closeLoginModal }) {
             </svg>
           </div>
           <h2>Access Required</h2>
-          <p>Enter password to continue</p>
+          <p>Enter your username and password</p>
         </div>
 
         <form className="login-form" onSubmit={handleSubmit}>
           <div className="login-input-wrapper">
             <input
-              ref={inputRef}
+              ref={usernameRef}
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Username"
+              className={error ? 'error' : ''}
+              disabled={isLoading}
+            />
+            <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -82,7 +91,7 @@ function LoginModalContent({ login, closeLoginModal }) {
           <button
             type="submit"
             className="login-submit"
-            disabled={!password || isLoading}
+            disabled={!username || !password || isLoading}
           >
             {isLoading ? (
               <span className="login-spinner" />

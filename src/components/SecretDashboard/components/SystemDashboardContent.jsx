@@ -3,8 +3,18 @@ import CommandTerminalCard from '../../secret/CommandTerminalCard/CommandTermina
 import HomeAutomationCard from '../../secret/HomeAutomationCard/HomeAutomationCard';
 import SystemStatusCard from '../../secret/SystemStatusCard/SystemStatusCard';
 import { cardVariants, containerVariants } from '../SecretDashboard.animations';
+import { useAuth } from '../../../contexts/AuthContext';
 
 function SystemDashboardContent() {
+  const { canRead, canWrite } = useAuth();
+  const showAutomation = canRead('automation');
+  const showSystem = canRead('system');
+  const showTerminal = canWrite('system');
+
+  if (!showAutomation && !showSystem && !showTerminal) {
+    return null;
+  }
+
   return (
     <motion.div
       variants={containerVariants}
@@ -22,15 +32,21 @@ function SystemDashboardContent() {
           System
         </h2>
         <div className="section-grid">
-          <motion.div variants={cardVariants} className="wide-card-wrapper">
-            <HomeAutomationCard />
-          </motion.div>
-          <motion.div variants={cardVariants}>
-            <SystemStatusCard />
-          </motion.div>
-          <motion.div variants={cardVariants}>
-            <CommandTerminalCard />
-          </motion.div>
+          {showAutomation && (
+            <motion.div variants={cardVariants} className="wide-card-wrapper">
+              <HomeAutomationCard />
+            </motion.div>
+          )}
+          {showSystem && (
+            <motion.div variants={cardVariants}>
+              <SystemStatusCard />
+            </motion.div>
+          )}
+          {showTerminal && (
+            <motion.div variants={cardVariants}>
+              <CommandTerminalCard />
+            </motion.div>
+          )}
         </div>
       </section>
     </motion.div>

@@ -109,6 +109,10 @@
   width: 100%;
 }
 
+.login-input-wrapper input + input {
+  margin-top: 10px;
+}
+
 .login-input-wrapper input::placeholder {
   color: var(--text-secondary);
   opacity: 0.6;

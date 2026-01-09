@@ -47,7 +47,16 @@ const matchesIngredientToken = (ingredient, token) => {
   return false;
 };
 
-const usePantryData = (showNotification) => {
+const usePantryData = (showNotification, access = {}) => {
+  const {
+    canReadPantry = true,
+    canReadShopping = true,
+    canReadRecipes = true,
+    canWritePantry = true,
+    canWriteShopping = true,
+    canWriteRecipes = true,
+  } = access;
+
   const [activeTab, setActiveTab] = useState('recipes');
   const [selectedTag, setSelectedTag] = useState('all');
   const [recipeSort, setRecipeSort] = useState('name');
@@ -74,9 +83,9 @@ const usePantryData = (showNotification) => {
       try {
         setIsLoading(true);
         const [pantry, shopping, fetchedRecipes] = await Promise.all([
-          getAllPantryItems(),
-          getAllShoppingItems(),
-          getAllRecipes(),
+          canReadPantry ? getAllPantryItems() : Promise.resolve([]),
+          canReadShopping ? getAllShoppingItems() : Promise.resolve([]),
+          canReadRecipes ? getAllRecipes() : Promise.resolve([]),
         ]);
         setPantryItems(pantry);
         setShoppingList(shopping);
@@ -94,7 +103,7 @@ const usePantryData = (showNotification) => {
     };
 
     fetchData();
-  }, [showNotification]);
+  }, [showNotification, canReadPantry, canReadShopping, canReadRecipes]);
 
   // Get all unique tags from recipes
   const allTags = useMemo(() => {
@@ -172,6 +181,15 @@ const usePantryData = (showNotification) => {
 
   // Pantry item handlers
   const handleUpdateQuantity = async (id, newQuantity, newStatus) => {
+    if (!canWritePantry) {
+      showNotification({
+        title: 'Access denied',
+        message: 'You do not have permission to update pantry items',
+        type: 'error',
+      });
+      return;
+    }
+
     const item = pantryItems.find(i => i.id === id);
     if (!item) return;
 
@@ -207,6 +225,15 @@ const usePantryData = (showNotification) => {
   };
 
   const handleDeletePantryItem = async (id) => {
+    if (!canWritePantry) {
+      showNotification({
+        title: 'Access denied',
+        message: 'You do not have permission to delete pantry items',
+        type: 'error',
+      });
+      return;
+    }
+
     const itemToDelete = pantryItems.find(i => i.id === id);
 
     // Optimistic delete
@@ -233,6 +260,15 @@ const usePantryData = (showNotification) => {
   };
 
   const handleAddPantryItem = async (newItem) => {
+    if (!canWritePantry) {
+      showNotification({
+        title: 'Access denied',
+        message: 'You do not have permission to add pantry items',
+        type: 'error',
+      });
+      return;
+    }
+
     try {
       await createPantryItem(newItem);
       // Refetch all items to get the server-generated ID
@@ -255,6 +291,15 @@ const usePantryData = (showNotification) => {
 
   // Shopping list handlers
   const handleToggleShoppingItem = async (id) => {
+    if (!canWriteShopping) {
+      showNotification({
+        title: 'Access denied',
+        message: 'You do not have permission to update shopping items',
+        type: 'error',
+      });
+      return;
+    }
+
     const item = shoppingList.find(i => i.id === id);
     if (!item) return;
 
@@ -281,6 +326,15 @@ const usePantryData = (showNotification) => {
   };
 
   const handleDeleteShoppingItem = async (id) => {
+    if (!canWriteShopping) {
+      showNotification({
+        title: 'Access denied',
+        message: 'You do not have permission to delete shopping items',
+        type: 'error',
+      });
+      return;
+    }
+
     const itemToDelete = shoppingList.find(i => i.id === id);
 
     // Optimistic delete
@@ -307,6 +361,15 @@ const usePantryData = (showNotification) => {
   };
 
   const handleAddShoppingItem = async (newItem) => {
+    if (!canWriteShopping) {
+      showNotification({
+        title: 'Access denied',
+        message: 'You do not have permission to add shopping items',
+        type: 'error',
+      });
+      return;
+    }
+
     try {
       await createShoppingItem({ ...newItem, checked: false });
       // Refetch all items to get the server-generated ID
@@ -329,6 +392,15 @@ const usePantryData = (showNotification) => {
 
   // Recipe handlers
   const handleAddRecipe = async (newRecipe) => {
+    if (!canWriteRecipes) {
+      showNotification({
+        title: 'Access denied',
+        message: 'You do not have permission to add recipes',
+        type: 'error',
+      });
+      return;
+    }
+
     try {
       await createRecipeAPI(newRecipe);
       // Refetch all recipes
@@ -350,6 +422,15 @@ const usePantryData = (showNotification) => {
   };
 
   const handleUpdateRecipe = async (updatedRecipe) => {
+    if (!canWriteRecipes) {
+      showNotification({
+        title: 'Access denied',
+        message: 'You do not have permission to update recipes',
+        type: 'error',
+      });
+      return;
+    }
+
     try {
       await updateRecipeAPI(selectedRecipe.id, updatedRecipe);
       const refreshedRecipes = await getAllRecipes();
@@ -372,6 +453,15 @@ const usePantryData = (showNotification) => {
   };
 
   const handleDeleteRecipe = async (id) => {
+    if (!canWriteRecipes) {
+      showNotification({
+        title: 'Access denied',
+        message: 'You do not have permission to delete recipes',
+        type: 'error',
+      });
+      return;
+    }
+
     try {
       await deleteRecipeAPI(id);
       setRecipes(recipes.filter(r => r.id !== id));

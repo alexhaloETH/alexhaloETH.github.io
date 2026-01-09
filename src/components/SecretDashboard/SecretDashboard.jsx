@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import { DASHBOARD_PAGES } from './SecretDashboard.constants';
@@ -9,7 +9,7 @@ import SystemDashboardContent from './components/SystemDashboardContent';
 import './SecretDashboard.css';
 
 function SecretDashboard() {
-  const { logout, exitSecretPortal } = useAuth();
+  const { logout, exitSecretPortal, canRead } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
   const [direction, setDirection] = useState(0);
 
@@ -18,10 +18,36 @@ function SecretDashboard() {
     setCurrentPage(pageNum);
   };
 
+  const availablePages = useMemo(() => {
+    const canAccessMain = canRead('finance')
+      || canRead('tasks')
+      || canRead('notes')
+      || canRead('missions')
+      || canRead('pantry')
+      || canRead('recipes')
+      || canRead('shopping');
+    const canAccessSystem = canRead('system') || canRead('automation');
+
+    return DASHBOARD_PAGES.filter((page) => {
+      if (page.id === 1) return canAccessMain;
+      if (page.id === 2) return canAccessSystem;
+      return false;
+    });
+  }, [canRead]);
+
+  useEffect(() => {
+    if (availablePages.length === 0) {
+      return;
+    }
+    if (!availablePages.some((page) => page.id === currentPage)) {
+      setCurrentPage(availablePages[0].id);
+    }
+  }, [availablePages, currentPage]);
+
   return (
     <div className="secret-dashboard">
       <SecretHeader
-        pages={DASHBOARD_PAGES}
+        pages={availablePages}
         currentPage={currentPage}
         onPageChange={goToPage}
         onExit={exitSecretPortal}

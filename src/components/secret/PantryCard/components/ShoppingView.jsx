@@ -3,6 +3,7 @@ function ShoppingView({
   onToggleItem,
   onDeleteItem,
   onShowAddItem,
+  canEdit,
 }) {
   const remainingCount = shoppingList.filter((i) => !i.checked).length;
 
@@ -16,22 +17,24 @@ function ShoppingView({
           >
             <div
               className={`checkbox ${item.checked ? 'checked' : ''}`}
-              onClick={() => onToggleItem(item.id)}
+              onClick={canEdit ? () => onToggleItem(item.id) : undefined}
             />
             <span className="item-icon">{item.icon}</span>
             <span className="item-name">{item.name}</span>
             <span className="item-qty">
               {item.quantity} {item.unit}
             </span>
-            <button
-              className="delete-shopping-btn"
-              onClick={() => onDeleteItem(item.id)}
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
+            {canEdit && (
+              <button
+                className="delete-shopping-btn"
+                onClick={() => onDeleteItem(item.id)}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            )}
           </div>
         ))}
       </div>
@@ -39,9 +42,11 @@ function ShoppingView({
         <span>
           {remainingCount} items remaining
         </span>
-        <button className="add-item-btn" onClick={onShowAddItem}>
-          + Add Item
-        </button>
+        {canEdit && (
+          <button className="add-item-btn" onClick={onShowAddItem}>
+            + Add Item
+          </button>
+        )}
       </div>
     </>
   );

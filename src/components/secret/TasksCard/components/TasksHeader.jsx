@@ -7,6 +7,7 @@ function TasksHeader({
   regularNotesCount,
   ideaNotesCount,
   onTabChange,
+  tabs,
 }) {
   const subtitle = () => {
     if (activeTab === 'tasks') return `${activeCount} tasks remaining`;
@@ -31,7 +32,7 @@ function TasksHeader({
         </div>
       </div>
       <div className="tasks-tabs">
-        {TASK_TABS.map((tab) => (
+        {(tabs || TASK_TABS).map((tab) => (
           <button
             key={tab.id}
             className={`tasks-tab ${activeTab === tab.id ? 'active' : ''}`}

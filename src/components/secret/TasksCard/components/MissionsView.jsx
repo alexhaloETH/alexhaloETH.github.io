@@ -15,6 +15,7 @@ function MissionsView({
   onEditMission,
   onOpenCalendar,
   onLogAmount,
+  canEdit,
 }) {
   const [amountInputs, setAmountInputs] = useState({});
 
@@ -64,13 +65,15 @@ function MissionsView({
 
   return (
     <>
-      <button className="add-mission-btn" onClick={onShowAddMission}>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <line x1="12" y1="5" x2="12" y2="19" />
-          <line x1="5" y1="12" x2="19" y2="12" />
-        </svg>
-        <span>Add new mission</span>
-      </button>
+      {canEdit && (
+        <button className="add-mission-btn" onClick={onShowAddMission}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          <span>Add new mission</span>
+        </button>
+      )}
       <div className="missions-grid">
         {missions.map((mission) => {
           const isAmount = mission.missionType === 'amount';
@@ -126,7 +129,9 @@ function MissionsView({
                     className={`mission-checkbox ${mission.completed ? 'checked' : ''}`}
                     onClick={(e) => {
                       e.stopPropagation();
-                      onToggleMission(mission.id);
+                      if (canEdit) {
+                        onToggleMission(mission.id);
+                      }
                     }}
                   >
                     {mission.completed && (
@@ -155,10 +160,12 @@ function MissionsView({
                       onKeyDown={(e) => handleAmountKeyDown(e, mission.id)}
                       placeholder={`Enter ${unitLabel}`}
                       min="0"
+                      disabled={!canEdit}
                     />
                     <button
                       className="amount-log-btn"
-                      onClick={() => handleLogAmount(mission.id)}
+                      onClick={() => canEdit && handleLogAmount(mission.id)}
+                      disabled={!canEdit}
                     >
                       Log
                     </button>
@@ -296,18 +303,20 @@ function MissionsView({
                     </span>
                   )}
                 </div>
-                <button
-                  className="edit-mission-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEditMission(mission);
-                  }}
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                  </svg>
-                </button>
+                {canEdit && (
+                  <button
+                    className="edit-mission-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEditMission(mission);
+                    }}
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                  </button>
+                )}
               </div>
             </div>
           );
