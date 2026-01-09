@@ -48,4 +48,11 @@ const formatShortDate = (isoString) => {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 };
 
-export { formatPeriodTitle, formatShortDate, formatTimeUntil, getStreakUnit };
+const formatAmount = (value) => {
+  if (value === null || value === undefined) return '—';
+  const numberValue = Number(value);
+  if (Number.isNaN(numberValue)) return '—';
+  return new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(numberValue);
+};
+
+export { formatAmount, formatPeriodTitle, formatShortDate, formatTimeUntil, getStreakUnit };

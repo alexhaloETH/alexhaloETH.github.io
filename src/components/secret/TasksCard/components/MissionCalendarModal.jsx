@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { formatAmount, formatPeriodTitle, formatShortDate } from '../TasksCard.utils';
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -94,10 +95,148 @@ const buildCalendarDays = (mission) => {
 };
 
 function MissionCalendarModal({ mission, onClose }) {
-  const { days, rangeLabel } = useMemo(() => buildCalendarDays(mission), [mission]);
+  const isAmount = mission.missionType === 'amount';
+  const { days, rangeLabel } = useMemo(() => (
+    isAmount ? { days: [], rangeLabel: '' } : buildCalendarDays(mission)
+  ), [mission, isAmount]);
   const completedPeriods = (mission.recentPeriods || []).filter((period) => period.completed).length;
   const totalPeriods = mission.recentPeriods ? mission.recentPeriods.length : 0;
   const consistency = totalPeriods ? Math.round((completedPeriods / totalPeriods) * 100) : 0;
+  const unitLabel = mission.unit?.trim() || 'count';
+  const amountSeries = useMemo(() => {
+    if (!isAmount) {
+      return { series: [], maxValue: 1 };
+    }
+    const series = (mission.recentAmounts || []).slice(-12);
+    const maxValue = Math.max(
+      1,
+      ...series.map((period) => period.amount ?? 0),
+      mission.targetAmount || 0
+    );
+    return { series, maxValue };
+  }, [isAmount, mission]);
+  const formatWithUnit = (value) => {
+    const formatted = formatAmount(value);
+    return formatted === '—' ? formatted : `${formatted} ${unitLabel}`;
+  };
+
+  if (isAmount) {
+    const targetAmount = mission.targetAmount ?? null;
+    const targetLinePosition = targetAmount
+      ? Math.min(100, (targetAmount / amountSeries.maxValue) * 100)
+      : null;
+    const entriesLabel = targetAmount ? 'Target hits' : 'Entries';
+
+    return (
+      <motion.div
+        className="modal-overlay"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+      >
+        <motion.div
+          className="modal-content mission-calendar-modal amount-modal"
+          initial={{ scale: 0.96, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.96, opacity: 0 }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="modal-header">
+            <div className="calendar-title">
+              <span className="calendar-subtitle">Mission Tracker</span>
+              <h3 title={mission.name}>{mission.name}</h3>
+              <div className="mission-footer-tags">
+                <span className={`recurrence-badge ${mission.recurrenceType}`}>{mission.recurrenceType}</span>
+                <span className="mission-type-badge">Amount</span>
+              </div>
+            </div>
+            <button className="modal-close" onClick={onClose}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="modal-body">
+            <div className="calendar-stats">
+              <div className="calendar-stat">
+                <span>Current</span>
+                <strong>{formatWithUnit(mission.currentAmount)}</strong>
+              </div>
+              <div className="calendar-stat">
+                <span>Best</span>
+                <strong>{formatWithUnit(mission.bestAmount)}</strong>
+              </div>
+              <div className="calendar-stat">
+                <span>Avg</span>
+                <strong>{formatWithUnit(mission.averageAmount)}</strong>
+              </div>
+            </div>
+
+            <div className="amount-chart-panel">
+              <div className="amount-chart-header">
+                <div>
+                  <span className="calendar-range">
+                    Recent {amountSeries.series.length}
+                  </span>
+                  <span className="calendar-caption">
+                    Track your logged amounts per period
+                  </span>
+                </div>
+                {targetAmount !== null && targetAmount !== undefined && (
+                  <div className="amount-target-badge">
+                    Target {formatWithUnit(targetAmount)}
+                  </div>
+                )}
+              </div>
+              <div className="amount-chart">
+                {targetLinePosition !== null && (
+                  <span
+                    className="amount-target-line"
+                    style={{ bottom: `${targetLinePosition}%` }}
+                  />
+                )}
+                {amountSeries.series.map((period, index) => {
+                  const height = period.amount ? (period.amount / amountSeries.maxValue) * 100 : 0;
+                  return (
+                    <span
+                      key={period.periodEnd || `${mission.id}-${index}`}
+                      className={`amount-bar ${period.amount ? 'has-value' : 'empty'} ${period.isCurrent ? 'current' : ''}`}
+                      style={{ height: `${height}%` }}
+                      title={`${formatPeriodTitle(period, mission.recurrenceType)}${period.amount ? ` • ${formatWithUnit(period.amount)}` : ''}`}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+            {targetAmount !== null && targetAmount !== undefined && (
+              <div className="amount-streak-summary">
+                Target streak: <strong>{mission.currentStreak || 0}</strong>
+                <span>Best {mission.bestStreak || 0}</span>
+              </div>
+            )}
+          </div>
+
+          <div className="modal-footer amount-footer">
+            <div className="calendar-footer-meta">
+              Total logged: <strong>{formatWithUnit(mission.totalAmount)}</strong>
+            </div>
+            <div className="calendar-footer-meta">
+              {entriesLabel}: <strong>{mission.totalCompletions || 0}</strong>
+            </div>
+            <div className="calendar-footer-meta">
+              Last log: <strong>{formatShortDate(mission.lastCompletedAt)}</strong>
+            </div>
+            <div className="modal-actions">
+              <button className="btn-cancel" onClick={onClose}>Close</button>
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div

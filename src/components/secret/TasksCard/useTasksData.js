@@ -16,6 +16,7 @@ import {
   createMission,
   updateMission as updateMissionAPI,
   completeMission as completeMissionAPI,
+  logMissionAmount as logMissionAmountAPI,
   deleteMission as deleteMissionAPI,
 } from '../../../utils/missionsApi';
 import {
@@ -417,6 +418,36 @@ const useTasksData = (showNotification) => {
     }
   };
 
+  const logMissionAmount = async (id, amount) => {
+    const mission = missions.find(m => m.id === id);
+    if (!mission) return;
+
+    const optimisticMission = {
+      ...mission,
+      currentAmount: amount,
+      lastCompletedAt: new Date().toISOString(),
+    };
+
+    setMissions(missions.map((m) =>
+      m.id === id ? optimisticMission : m
+    ));
+
+    try {
+      await logMissionAmountAPI(id, amount);
+      const refreshedMissions = await getAllMissions();
+      setMissions(refreshedMissions);
+    } catch {
+      setMissions(missions.map((m) =>
+        m.id === id ? mission : m
+      ));
+      showNotification({
+        title: 'Error',
+        message: 'Failed to log mission amount',
+        type: 'error',
+      });
+    }
+  };
+
   // Derived data
   const filteredTasks = useMemo(() => {
     if (filter === 'active') return tasks.filter((task) => !task.completed);
@@ -476,6 +507,7 @@ const useTasksData = (showNotification) => {
     addMission,
     updateMission,
     deleteMission,
+    logMissionAmount,
   };
 };
 

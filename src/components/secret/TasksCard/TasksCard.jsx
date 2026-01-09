@@ -58,6 +58,7 @@ function TasksCard() {
     addMission,
     updateMission,
     deleteMission,
+    logMissionAmount,
   } = useTasksData(showNotification);
 
   return (
@@ -127,6 +128,7 @@ function TasksCard() {
                 onToggleMission={toggleMission}
                 onEditMission={setEditingMission}
                 onOpenCalendar={setCalendarMission}
+                onLogAmount={logMissionAmount}
               />
             </motion.div>
           )}

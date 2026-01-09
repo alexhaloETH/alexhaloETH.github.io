@@ -9,6 +9,9 @@ const transformMission = (backendMission) => {
     name: backendMission.name,
     description: backendMission.description || '',
     recurrenceType: backendMission.recurrence_type,
+    missionType: backendMission.mission_type || 'streak',
+    targetAmount: backendMission.target_amount ?? null,
+    unit: backendMission.unit || '',
     completed: backendMission.completed,
     lastCompletedAt: backendMission.last_completed_at,
     nextResetAt: backendMission.next_reset_at,
@@ -16,10 +19,20 @@ const transformMission = (backendMission) => {
     currentStreak: backendMission.current_streak ?? 0,
     bestStreak: backendMission.best_streak ?? 0,
     totalCompletions: backendMission.total_completions ?? 0,
+    currentAmount: backendMission.current_amount ?? null,
+    bestAmount: backendMission.best_amount ?? null,
+    totalAmount: backendMission.total_amount ?? null,
+    averageAmount: backendMission.average_amount ?? null,
     recentPeriods: (backendMission.recent_periods || []).map((period) => ({
       periodStart: period.period_start,
       periodEnd: period.period_end,
       completed: period.completed,
+      isCurrent: period.is_current,
+    })),
+    recentAmounts: (backendMission.recent_amounts || []).map((period) => ({
+      periodStart: period.period_start,
+      periodEnd: period.period_end,
+      amount: period.amount ?? null,
       isCurrent: period.is_current,
     })),
   };
@@ -31,6 +44,9 @@ const transformToBackendFormat = (frontendMission) => {
     name: frontendMission.name,
     description: frontendMission.description || null,
     recurrence_type: frontendMission.recurrenceType,
+    mission_type: frontendMission.missionType || 'streak',
+    target_amount: frontendMission.targetAmount ?? null,
+    unit: frontendMission.unit?.trim() || null,
   };
 };
 
@@ -118,6 +134,24 @@ export const completeMission = async (id, completed) => {
     return transformMission(data);
   } catch (error) {
     console.error(`Error completing mission ${id}:`, error);
+    throw error;
+  }
+};
+
+export const logMissionAmount = async (id, amount) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/missions/${id}/amount`, {
+      method: 'PATCH',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ amount }),
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    return transformMission(data);
+  } catch (error) {
+    console.error(`Error logging mission amount ${id}:`, error);
     throw error;
   }
 };
