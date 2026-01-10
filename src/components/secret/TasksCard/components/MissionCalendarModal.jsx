@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { formatAmount, formatPeriodTitle, formatShortDate } from '../TasksCard.utils';
 
@@ -96,6 +96,7 @@ const buildCalendarDays = (mission) => {
 
 function MissionCalendarModal({ mission, onClose }) {
   const isAmount = mission.missionType === 'amount';
+  const [showFullHistory, setShowFullHistory] = useState(false);
   const { days, rangeLabel } = useMemo(() => (
     isAmount ? { days: [], rangeLabel: '' } : buildCalendarDays(mission)
   ), [mission, isAmount]);
@@ -105,16 +106,17 @@ function MissionCalendarModal({ mission, onClose }) {
   const unitLabel = mission.unit?.trim() || 'count';
   const amountSeries = useMemo(() => {
     if (!isAmount) {
-      return { series: [], maxValue: 1 };
+      return { series: [], maxValue: 1, totalEntries: 0 };
     }
-    const series = (mission.recentAmounts || []).slice(-12);
+    const allSeries = mission.recentAmounts || [];
+    const series = showFullHistory ? allSeries : allSeries.slice(-12);
     const maxValue = Math.max(
       1,
       ...series.map((period) => period.amount ?? 0),
       mission.targetAmount || 0
     );
-    return { series, maxValue };
-  }, [isAmount, mission]);
+    return { series, maxValue, totalEntries: allSeries.length };
+  }, [isAmount, mission, showFullHistory]);
   const formatWithUnit = (value) => {
     const formatted = formatAmount(value);
     return formatted === '—' ? formatted : `${formatted} ${unitLabel}`;
@@ -179,19 +181,45 @@ function MissionCalendarModal({ mission, onClose }) {
               <div className="amount-chart-header">
                 <div>
                   <span className="calendar-range">
-                    Recent {amountSeries.series.length}
+                    {showFullHistory ? `All ${amountSeries.totalEntries} entries` : `Recent ${amountSeries.series.length}`}
                   </span>
                   <span className="calendar-caption">
                     Track your logged amounts per period
                   </span>
                 </div>
-                {targetAmount !== null && targetAmount !== undefined && (
-                  <div className="amount-target-badge">
-                    Target {formatWithUnit(targetAmount)}
-                  </div>
-                )}
+                <div className="amount-chart-controls">
+                  {amountSeries.totalEntries > 12 && (
+                    <button
+                      className={`view-toggle-btn ${showFullHistory ? 'active' : ''}`}
+                      onClick={() => setShowFullHistory(!showFullHistory)}
+                      title={showFullHistory ? 'Show recent 12' : 'Show full history'}
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        {showFullHistory ? (
+                          <>
+                            <rect x="3" y="3" width="18" height="18" rx="2" />
+                            <path d="M9 9h6v6H9z" />
+                          </>
+                        ) : (
+                          <>
+                            <path d="M3 3h18v18H3z" />
+                            <path d="M7 7h10" />
+                            <path d="M7 12h10" />
+                            <path d="M7 17h10" />
+                          </>
+                        )}
+                      </svg>
+                      🔄
+                    </button>
+                  )}
+                  {targetAmount !== null && targetAmount !== undefined && (
+                    <div className="amount-target-badge">
+                      Target {formatWithUnit(targetAmount)}
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="amount-chart">
+              <div className={`amount-chart ${showFullHistory ? 'full-history' : ''}`}>
                 {targetLinePosition !== null && (
                   <span
                     className="amount-target-line"
