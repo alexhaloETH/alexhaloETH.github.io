@@ -1,45 +1,42 @@
 .locked-card-wrapper {
-  position: relative;
   height: 100%;
+  position: relative;
   width: 100%;
 }
 
 .locked-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgb(var(--background-rgb) / 50%);
+  align-items: center;
   backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  background: rgb(var(--background-rgb) / 50%);
+  border-radius: 12px;
+  inset: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
   gap: 12px;
-  z-index: 10;
-  border-radius: 12px;
+  justify-content: center;
   pointer-events: none;
+  position: absolute;
   user-select: none;
+  z-index: 10;
 }
 
 .lock-icon {
-  width: 48px;
-  height: 48px;
-  display: flex;
   align-items: center;
-  justify-content: center;
+  animation: lockPulse 2s ease-in-out infinite;
   background: rgb(var(--white-rgb) / 5%);
   border: 2px solid rgb(var(--white-rgb) / 15%);
   border-radius: 50%;
   color: var(--text-secondary);
-  animation: lockPulse 2s ease-in-out infinite;
+  display: flex;
+  height: 48px;
+  justify-content: center;
+  width: 48px;
 }
 
 .lock-icon svg {
-  width: 24px;
   height: 24px;
+  width: 24px;
 }
 
 .lock-message {
@@ -48,8 +45,8 @@
   font-weight: 600;
   letter-spacing: 0.5px;
   margin: 0;
-  text-transform: uppercase;
   text-shadow: 0 2px 8px rgb(0 0 0 / 50%);
+  text-transform: uppercase;
 }
 
 @keyframes lockPulse {
@@ -57,6 +54,7 @@
     opacity: 0.7;
     transform: scale(1);
   }
+
   50% {
     opacity: 1;
     transform: scale(1.05);
@@ -76,7 +74,7 @@
 }
 
 .placeholder-line {
-  height: 12px;
+  animation: shimmer 2s infinite;
   background: linear-gradient(
     90deg,
     rgb(var(--white-rgb) / 5%) 0%,
@@ -84,7 +82,7 @@
     rgb(var(--white-rgb) / 5%) 100%
   );
   border-radius: 6px;
-  animation: shimmer 2s infinite;
+  height: 12px;
 }
 
 .placeholder-line.short {
@@ -99,6 +97,7 @@
   0% {
     background-position: -1000px 0;
   }
+
   100% {
     background-position: 1000px 0;
   }
