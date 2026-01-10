@@ -1,6 +1,6 @@
 /* Stars Animation Background */
 .stars-background {
-  background: radial-gradient(ellipse at bottom, #1a1a1a 0%, #0a0a0a 100%);
+  background: radial-gradient(ellipse at bottom, color-mix(in srgb, var(--bg-primary) 80%, var(--text-primary) 5%) 0%, var(--bg-primary) 100%);
   height: 100%;
   position: absolute;
   width: 100%;

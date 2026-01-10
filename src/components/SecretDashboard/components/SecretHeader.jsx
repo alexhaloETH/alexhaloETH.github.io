@@ -1,3 +1,5 @@
+import ThemeSwitcher from '../../ThemeSwitcher/ThemeSwitcher';
+
 function SecretHeader({
   pages,
   currentPage,
@@ -29,6 +31,7 @@ function SecretHeader({
         <span className="secret-title">Command Center</span>
       </div>
       <div className="secret-header-right">
+        <ThemeSwitcher />
         <button className="secret-btn" onClick={onExit}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M19 12H5M12 19l-7-7 7-7" />

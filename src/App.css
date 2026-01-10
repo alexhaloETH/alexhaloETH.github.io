@@ -43,7 +43,7 @@
 
 /* Overlay for Unity background */
 .background-overlay {
-  background: rgb(10 10 10 / 80%);
+  background: color-mix(in srgb, var(--bg-primary) 80%, transparent);
   height: 100%;
   left: 0;
   pointer-events: none;
@@ -55,7 +55,7 @@
 
 /* Screensaver mode - reduce overlay opacity to show more Unity */
 .background-overlay.screensaver {
-  background: rgb(10 10 10 / 30%);
+  background: color-mix(in srgb, var(--bg-primary) 30%, transparent);
 }
 
 /* ==================== */
@@ -99,6 +99,12 @@
   font-size: 1.1rem;
   font-weight: 600;
   letter-spacing: 0.5px;
+}
+
+.header-buttons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
 }
 
 /* Toggle Button */

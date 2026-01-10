@@ -15,6 +15,8 @@ import ExitAnimation from './components/ExitAnimation/ExitAnimation.jsx'
 import SecretBackground from './components/SecretBackground/SecretBackground.jsx'
 import { AuthProvider, useAuth } from './contexts/AuthContext.jsx'
 import { NotificationProvider, useNotification } from './contexts/NotificationContext.jsx'
+import { ThemeProvider } from './contexts/ThemeContext.jsx'
+import ThemeSwitcher from './components/ThemeSwitcher/ThemeSwitcher.jsx'
 import useIdleDetection from './hooks/useIdleDetection'
 import { checkUnitySupport } from './utils/deviceDetection'
 import { IDLE_TIMEOUT } from './utils/constants'
@@ -103,19 +105,22 @@ function AppContent() {
         <div className={`portfolio ${isIdle ? 'screensaver' : ''}`}>
           <header className="header">
             <span className="header-name">ALEXHALO</span>
-            <button
-              className={`toggle-btn ${unityEnabled ? 'active' : ''}`}
-              onClick={handleToggle3D}
-            >
-              <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                {unityEnabled ? (
-                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-                ) : (
-                  <circle cx="12" cy="12" r="5" />
-                )}
-              </svg>
-              <span>{unityEnabled ? '3D On' : '3D Off'}</span>
-            </button>
+            <div className="header-buttons">
+              <ThemeSwitcher />
+              <button
+                className={`toggle-btn ${unityEnabled ? 'active' : ''}`}
+                onClick={handleToggle3D}
+              >
+                <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  {unityEnabled ? (
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                  ) : (
+                    <circle cx="12" cy="12" r="5" />
+                  )}
+                </svg>
+                <span>{unityEnabled ? '3D On' : '3D Off'}</span>
+              </button>
+            </div>
           </header>
 
           <main className="card-grid">
@@ -133,9 +138,11 @@ function AppContent() {
 
 function App() {
   return (
-    <NotificationProvider>
-      <AppWithNotifications />
-    </NotificationProvider>
+    <ThemeProvider>
+      <NotificationProvider>
+        <AppWithNotifications />
+      </NotificationProvider>
+    </ThemeProvider>
   )
 }
 
