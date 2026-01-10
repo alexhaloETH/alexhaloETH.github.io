@@ -1,6 +1,35 @@
 export const projects = [
   {
   id: 1,
+  title: "Interactive Portfolio & Smart Home Dashboard",
+  description:
+    "Full-stack interactive portfolio with a hidden smart home command center. Features 16 dynamic theme palettes, 3D Unity WebGL background with idle screensaver mode, and an authenticated secret dashboard for real-time home automation control. Backend built with Node.js/Express serves real-time IoT data, shopping lists, and trading bot metrics via WebSocket connections. Frontend leverages React, Framer Motion animations, and context-driven state management. Includes mission completion tracking, user authentication with JWT, and a modular permissions system. Deployed with responsive design, mobile optimizations, and localStorage persistence for user preferences.",
+  tags: [
+    "React",
+    "Node.js",
+    "Express",
+    "WebSocket",
+    "Framer Motion",
+    "Unity WebGL",
+    "JWT Auth",
+    "IoT Integration",
+    "Smart Home",
+    "Theme System",
+    "Context API",
+    "Full-Stack",
+  ],
+  status: "Live",
+  images: [
+    "/Images/WebsitePic1.png",
+    "/Images/WebsitePic6.png",
+    "/Images/WebsitePic3.png",
+    "/Images/WebsitePic4.png",
+    "/Images/WebsitePic5.png",
+    "/Images/WebsitePic2.png",
+  ]
+},
+  {
+  id: 2,
   title: "Blob Arena",
   description:
     "Pixel-art, turn-based battler where players collect Bloberts, push Arcade runs, and duel in PvP. Switch between Classic and AMMA modes, each with unique progression and rewards, built with mobile-first onboarding and onchain rails.",
