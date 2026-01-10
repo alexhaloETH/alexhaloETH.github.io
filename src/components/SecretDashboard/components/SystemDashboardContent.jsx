@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import CommandTerminalCard from '../../secret/CommandTerminalCard/CommandTerminalCard';
 import HomeAutomationCard from '../../secret/HomeAutomationCard/HomeAutomationCard';
 import SystemStatusCard from '../../secret/SystemStatusCard/SystemStatusCard';
+import LockedCard from '../../LockedCard/LockedCard';
 import { cardVariants, containerVariants } from '../SecretDashboard.animations';
 import { useAuth } from '../../../contexts/AuthContext';
 
@@ -10,10 +11,6 @@ function SystemDashboardContent() {
   const showAutomation = canRead('automation');
   const showSystem = canRead('system');
   const showTerminal = canWrite('system');
-
-  if (!showAutomation && !showSystem && !showTerminal) {
-    return null;
-  }
 
   return (
     <motion.div
@@ -32,21 +29,21 @@ function SystemDashboardContent() {
           System
         </h2>
         <div className="section-grid">
-          {showAutomation && (
-            <motion.div variants={cardVariants} className="wide-card-wrapper">
+          <motion.div variants={cardVariants} className="wide-card-wrapper">
+            <LockedCard isLocked={!showAutomation}>
               <HomeAutomationCard />
-            </motion.div>
-          )}
-          {showSystem && (
-            <motion.div variants={cardVariants}>
+            </LockedCard>
+          </motion.div>
+          <motion.div variants={cardVariants}>
+            <LockedCard isLocked={!showSystem}>
               <SystemStatusCard />
-            </motion.div>
-          )}
-          {showTerminal && (
-            <motion.div variants={cardVariants}>
+            </LockedCard>
+          </motion.div>
+          <motion.div variants={cardVariants}>
+            <LockedCard isLocked={!showTerminal}>
               <CommandTerminalCard />
-            </motion.div>
-          )}
+            </LockedCard>
+          </motion.div>
         </div>
       </section>
     </motion.div>

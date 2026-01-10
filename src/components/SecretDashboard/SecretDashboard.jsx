@@ -18,31 +18,10 @@ function SecretDashboard() {
     setCurrentPage(pageNum);
   };
 
-  const availablePages = useMemo(() => {
-    const canAccessMain = canRead('finance')
-      || canRead('tasks')
-      || canRead('notes')
-      || canRead('missions')
-      || canRead('pantry')
-      || canRead('recipes')
-      || canRead('shopping');
-    const canAccessSystem = canRead('system') || canRead('automation');
+  // Show all pages - individual cards will be locked based on permissions
+  const availablePages = DASHBOARD_PAGES;
 
-    return DASHBOARD_PAGES.filter((page) => {
-      if (page.id === 1) return canAccessMain;
-      if (page.id === 2) return canAccessSystem;
-      return false;
-    });
-  }, [canRead]);
-
-  useEffect(() => {
-    if (availablePages.length === 0) {
-      return;
-    }
-    if (!availablePages.some((page) => page.id === currentPage)) {
-      setCurrentPage(availablePages[0].id);
-    }
-  }, [availablePages, currentPage]);
+  // Removed useEffect - all pages are always available now
 
   return (
     <div className="secret-dashboard">

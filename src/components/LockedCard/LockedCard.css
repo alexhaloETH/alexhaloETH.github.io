@@ -1,0 +1,105 @@
+.locked-card-wrapper {
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+
+.locked-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgb(var(--background-rgb) / 50%);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  z-index: 10;
+  border-radius: 12px;
+  pointer-events: none;
+  user-select: none;
+}
+
+.lock-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(var(--white-rgb) / 5%);
+  border: 2px solid rgb(var(--white-rgb) / 15%);
+  border-radius: 50%;
+  color: var(--text-secondary);
+  animation: lockPulse 2s ease-in-out infinite;
+}
+
+.lock-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.lock-message {
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin: 0;
+  text-transform: uppercase;
+  text-shadow: 0 2px 8px rgb(0 0 0 / 50%);
+}
+
+@keyframes lockPulse {
+  0%, 100% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+/* Placeholder card styles */
+.locked-placeholder {
+  min-height: 300px;
+}
+
+.placeholder-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 0;
+}
+
+.placeholder-line {
+  height: 12px;
+  background: linear-gradient(
+    90deg,
+    rgb(var(--white-rgb) / 5%) 0%,
+    rgb(var(--white-rgb) / 8%) 50%,
+    rgb(var(--white-rgb) / 5%) 100%
+  );
+  border-radius: 6px;
+  animation: shimmer 2s infinite;
+}
+
+.placeholder-line.short {
+  width: 60%;
+}
+
+.placeholder-line.medium {
+  width: 80%;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
