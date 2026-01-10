@@ -11,6 +11,7 @@ const recurrenceOptions = [
 const missionTypeOptions = [
   { value: 'streak', label: 'Streak', icon: '🔥' },
   { value: 'amount', label: 'Amount', icon: '🔢' },
+  { value: 'checkbox', label: 'Checkbox', icon: '✅' },
 ];
 
 function AddMissionModal({ onClose, onAdd }) {
@@ -30,7 +31,7 @@ function AddMissionModal({ onClose, onAdd }) {
     onAdd({
       name: name.trim(),
       description: description.trim(),
-      recurrenceType,
+      recurrenceType: missionType === 'checkbox' ? 'daily' : recurrenceType,
       missionType,
       unit: missionType === 'amount' ? (trimmedUnit || 'count') : '',
       targetAmount: missionType === 'amount' && !Number.isNaN(parsedTarget)
@@ -136,34 +137,50 @@ function AddMissionModal({ onClose, onAdd }) {
             </div>
           )}
 
-          <div className="form-group">
-            <label>Recurrence</label>
-            <div className="recurrence-selector">
-              {recurrenceOptions.map((option) => (
-                <button
-                  key={option.value}
-                  className={`recurrence-btn ${recurrenceType === option.value ? 'active' : ''}`}
-                  onClick={() => setRecurrenceType(option.value)}
-                >
-                  <span className="recurrence-icon">{option.icon}</span>
-                  <span className="recurrence-label">{option.label}</span>
-                </button>
-              ))}
+          {missionType === 'checkbox' && (
+            <div className="mission-info">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 16v-4M12 8h.01" />
+              </svg>
+              <span>
+                Simple one-time task. Auto-deletes the day after completion.
+              </span>
             </div>
-          </div>
+          )}
 
-          <div className="mission-info">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10" />
-              <path d="M12 16v-4M12 8h.01" />
-            </svg>
-            <span>
-              {recurrenceType === 'daily' && 'Resets every day at midnight'}
-              {recurrenceType === 'weekly' && 'Resets every Monday'}
-              {recurrenceType === 'biweekly' && 'Resets every 2 weeks'}
-              {recurrenceType === 'monthly' && 'Resets on the 1st of each month'}
-            </span>
-          </div>
+          {missionType !== 'checkbox' && (
+            <>
+              <div className="form-group">
+                <label>Recurrence</label>
+                <div className="recurrence-selector">
+                  {recurrenceOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      className={`recurrence-btn ${recurrenceType === option.value ? 'active' : ''}`}
+                      onClick={() => setRecurrenceType(option.value)}
+                    >
+                      <span className="recurrence-icon">{option.icon}</span>
+                      <span className="recurrence-label">{option.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mission-info">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 16v-4M12 8h.01" />
+                </svg>
+                <span>
+                  {recurrenceType === 'daily' && 'Resets every day at midnight'}
+                  {recurrenceType === 'weekly' && 'Resets every Monday'}
+                  {recurrenceType === 'biweekly' && 'Resets every 2 weeks'}
+                  {recurrenceType === 'monthly' && 'Resets on the 1st of each month'}
+                </span>
+              </div>
+            </>
+          )}
         </div>
 
         <div className="modal-footer">

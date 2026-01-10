@@ -77,6 +77,7 @@ function MissionsView({
       <div className="missions-grid">
         {missions.map((mission) => {
           const isAmount = mission.missionType === 'amount';
+          const isCheckbox = mission.missionType === 'checkbox';
           const unitLabel = mission.unit?.trim() || 'count';
           const currentAmount = mission.currentAmount ?? null;
           const targetAmount = mission.targetAmount ?? null;
@@ -115,6 +116,53 @@ function MissionsView({
             return formatted === '—' ? formatted : `${formatted} ${unitLabel}`;
           };
 
+          // Render checkbox missions with minimal UI
+          if (isCheckbox) {
+            return (
+              <div
+                key={mission.id}
+                className={`mission-card checkbox ${mission.completed ? 'completed' : ''}`}
+              >
+                <div className="mission-header">
+                  <button
+                    className={`mission-checkbox ${mission.completed ? 'checked' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (canEdit) {
+                        onToggleMission(mission.id);
+                      }
+                    }}
+                  >
+                    {mission.completed && (
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                        <polyline points="20,6 9,17 4,12" />
+                      </svg>
+                    )}
+                  </button>
+                  <h4>{mission.name}</h4>
+                  {canEdit && (
+                    <button
+                      className="edit-mission-btn-inline"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEditMission(mission);
+                      }}
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+                {mission.description && (
+                  <p className="mission-description">{mission.description}</p>
+                )}
+              </div>
+            );
+          }
+
+          // Regular missions (streak/amount)
           return (
             <div
               key={mission.id}
@@ -226,35 +274,27 @@ function MissionsView({
                   )}
                 </div>
               ) : (
-                <div className="mission-metrics">
-                  <div className="streak-core">
-                    <div className="streak-core-icon">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M12 2s4 4 4 8a4 4 0 0 1-8 0c0-4 4-8 4-8z" />
-                        <path d="M6 18a6 6 0 0 0 12 0" />
-                      </svg>
+                <div className="mission-amount-panel streak-panel">
+                  <div className="amount-metrics-grid">
+                    <div className="amount-metric">
+                      <span>Current</span>
+                      <strong>{mission.currentStreak || 0}</strong>
                     </div>
-                    <div className="streak-core-value">{mission.currentStreak || 0}</div>
-                    <div className="streak-core-label">{streakUnit}</div>
+                    <div className="amount-metric">
+                      <span>Best</span>
+                      <strong>{mission.bestStreak || 0}</strong>
+                    </div>
+                    <div className="amount-metric">
+                      <span>Total</span>
+                      <strong>{mission.totalCompletions || 0}</strong>
+                    </div>
+                    <div className="amount-metric">
+                      <span>Cons.</span>
+                      <strong>{consistency}%</strong>
+                    </div>
                   </div>
-                  <div className="mission-metrics-right">
-                    <div className="metric-grid">
-                      <div className="metric-item">
-                        <span>Best</span>
-                        <strong>{mission.bestStreak || 0}</strong>
-                      </div>
-                      <div className="metric-item">
-                        <span>Total</span>
-                        <strong>{mission.totalCompletions || 0}</strong>
-                      </div>
-                      <div className="metric-item">
-                        <span>Cons.</span>
-                        <strong>{consistency}%</strong>
-                      </div>
-                    </div>
-                    <div className="consistency-bar">
-                      <span className="consistency-fill" style={{ width: `${consistency}%` }} />
-                    </div>
+                  <div className="consistency-bar">
+                    <span className="consistency-fill" style={{ width: `${consistency}%` }} />
                   </div>
                 </div>
               )}
