@@ -50,7 +50,7 @@ const useSystemStatus = () => {
       ]);
 
       setUptime(status.uptime_formatted);
-      setConnectedIps(status.connected_ips || []);
+      setConnectedIps(status.connected_users || []);
       setIsConnected(true);
     } catch (_error) {
       console.error('Failed to fetch system status:', _error);

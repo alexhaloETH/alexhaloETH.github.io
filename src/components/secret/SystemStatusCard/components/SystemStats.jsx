@@ -16,10 +16,11 @@ function SystemStats({ systemStats, connectedIps }) {
         <div className="connected-ips">
           <h4 className="ips-title">Recent Connections</h4>
           <div className="ips-list">
-            {connectedIps.map((ip, index) => (
+            {connectedIps.map((user, index) => (
               <div key={index} className="ip-item">
                 <span className="ip-dot" />
-                <span className="ip-address">{ip}</span>
+                <span className="ip-address">{user.ip}</span>
+                <span className="ip-username">@{user.username}</span>
               </div>
             ))}
           </div>
