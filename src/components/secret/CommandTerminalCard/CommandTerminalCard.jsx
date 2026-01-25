@@ -39,11 +39,15 @@ function CommandTerminalCard() {
     const cmdHandler = AVAILABLE_COMMANDS[command];
     if (cmdHandler === false) {
       console.error('Command not found:', command);
-      newHistory.push({
-        type: 'output',
-        text: `Command not found: ${command}. Type "help" for available commands.`,
-        status: 'error',
-      });
+      setHistory([
+        ...newHistory,
+        {
+          type: 'output',
+          text: `Command not found: ${command}. Type "help" for available commands.`,
+          status: 'error',
+        },
+      ]);
+      setHistoryIndex(-1);
       return;
     }
 
@@ -53,23 +57,24 @@ function CommandTerminalCard() {
       const response = await executeTerminalCommand(cmd);
       if (!response || response.result === false) {
         console.error('Command failed on backend');
-
-        newHistory.push({
-        type: 'output',
-        text: `Command ${response.command} Failed.  ${response.message}`,
-        status: 'error',
-        });
-
+        setHistory((prev) => [
+          ...prev,
+          {
+            type: 'output',
+            text: `Command ${response.command} Failed.  ${response.message}`,
+            status: 'error',
+          },
+        ]);
         return;
-      } else {
-        console.log('Command executed successfully on backend');
       }
-
-      newHistory.push({
-        type: 'output',
-        text: `${response.message}`,
-      });
-
+      console.log('Command executed successfully on backend', response);
+      setHistory((prev) => [
+        ...prev,
+        {
+          type: 'output',
+          text: `${response.output}`,
+        },
+      ]);
     } catch (error) {
       console.error('Failed to send command to backend:', error);
     }
