@@ -29,7 +29,7 @@ export const executeTerminalCommand = async (command) => {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ command }),
+    body:  JSON.stringify({ command }),
   });
 
   if (!response.ok) {

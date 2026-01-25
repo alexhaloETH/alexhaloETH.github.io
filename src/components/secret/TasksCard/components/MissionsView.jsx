@@ -5,7 +5,6 @@ import {
   formatPeriodTitle,
   formatShortDate,
   formatTimeUntil,
-  getStreakUnit,
 } from '../TasksCard.utils';
 
 function MissionsView({
@@ -107,7 +106,6 @@ function MissionsView({
           const consistency = validPeriods.length
             ? Math.round((completedCount / validPeriods.length) * 100)
             : 0;
-          const streakUnit = getStreakUnit(mission.recurrenceType, mission.currentStreak || 0);
           const resetsIn = formatTimeUntil(mission.nextResetAt);
           const lastDone = formatShortDate(mission.lastCompletedAt);
           const entriesLabel = targetAmount ? 'Hits' : 'Entries';
@@ -163,10 +161,14 @@ function MissionsView({
           }
 
           // Regular missions (streak/amount)
+          const missionCardClasses = ['mission-card'];
+          if (!isAmount && mission.completed) missionCardClasses.push('completed');
+          if (isAmount) missionCardClasses.push('amount');
+
           return (
             <div
               key={mission.id}
-              className={`mission-card ${!isAmount && mission.completed ? 'completed' : ''} ${isAmount ? 'amount' : ''}`}
+              className={missionCardClasses.join(' ')}
               onClick={() => onOpenCalendar(mission)}
             >
               <div className="mission-header">
@@ -260,12 +262,16 @@ function MissionsView({
                       <div className="amount-history-bars">
                         {amountPreview.map((period, index) => {
                           const height = period.amount ? (period.amount / amountMax) * 100 : 0;
+                          const barClasses = ['amount-history-bar'];
+                          barClasses.push(period.amount ? 'has-value' : 'empty');
+                          if (period.isCurrent) barClasses.push('current');
+                          const titleSuffix = period.amount ? ` • ${formatAmount(period.amount)} ${unitLabel}` : '';
                           return (
                             <span
                               key={period.periodEnd || `${mission.id}-${index}`}
-                              className={`amount-history-bar ${period.amount ? 'has-value' : 'empty'} ${period.isCurrent ? 'current' : ''}`}
+                              className={barClasses.join(' ')}
                               style={{ height: `${height}%` }}
-                              title={`${formatPeriodTitle(period, mission.recurrenceType)}${period.amount ? ` • ${formatAmount(period.amount)} ${unitLabel}` : ''}`}
+                              title={`${formatPeriodTitle(period, mission.recurrenceType)}${titleSuffix}`}
                             />
                           );
                         })}
@@ -314,15 +320,21 @@ function MissionsView({
                     Recent {historyPreview.length}
                   </span>
                   <div className="mission-history-dots">
-                    {historyPreview.map((period, index) => (
-                      <span
-                        key={period.periodEnd || `${mission.id}-${index}`}
-                        className={`mission-history-dot ${
-                          period.completed ? 'completed' : period.isCurrent ? 'current' : 'missed'
-                        }`}
-                        title={formatPeriodTitle(period, mission.recurrenceType)}
-                      />
-                    ))}
+                    {historyPreview.map((period, index) => {
+                      let dotStatus = 'missed';
+                      if (period.completed) {
+                        dotStatus = 'completed';
+                      } else if (period.isCurrent) {
+                        dotStatus = 'current';
+                      }
+                      return (
+                        <span
+                          key={period.periodEnd || `${mission.id}-${index}`}
+                          className={`mission-history-dot ${dotStatus}`}
+                          title={formatPeriodTitle(period, mission.recurrenceType)}
+                        />
+                      );
+                    })}
                   </div>
                 </div>
               )}

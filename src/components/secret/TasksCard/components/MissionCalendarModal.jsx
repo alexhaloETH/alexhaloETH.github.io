@@ -74,7 +74,13 @@ const buildCalendarDays = (mission) => {
     if (isInactive) {
       status = 'inactive';
     } else if (period) {
-      status = period.completed ? 'completed' : period.isCurrent ? 'current' : 'missed';
+      if (period.completed) {
+        status = 'completed';
+      } else if (period.isCurrent) {
+        status = 'current';
+      } else {
+        status = 'missed';
+      }
     } else if (isFuture) {
       status = 'future';
     }

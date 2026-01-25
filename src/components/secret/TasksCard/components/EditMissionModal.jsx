@@ -1,18 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-
-const recurrenceOptions = [
-  { value: 'daily', label: 'Daily', icon: '📅' },
-  { value: 'weekly', label: 'Weekly', icon: '📆' },
-  { value: 'biweekly', label: 'Every 2 Weeks', icon: '🗓️' },
-  { value: 'monthly', label: 'Monthly', icon: '📊' },
-];
-
-const missionTypeOptions = [
-  { value: 'streak', label: 'Streak', icon: '🔥' },
-  { value: 'amount', label: 'Amount', icon: '🔢' },
-  { value: 'checkbox', label: 'Checkbox', icon: '✅' },
-];
+import { RECURRENCE_OPTIONS, MISSION_TYPE_OPTIONS } from '../TasksCard.constants';
 
 function EditMissionModal({ mission, onClose, onSave, onDelete }) {
   const [name, setName] = useState(mission.name);
@@ -97,7 +85,7 @@ function EditMissionModal({ mission, onClose, onSave, onDelete }) {
           <div className="form-group">
             <label>Mission Type</label>
             <div className="recurrence-selector">
-              {missionTypeOptions.map((option) => (
+              {MISSION_TYPE_OPTIONS.map((option) => (
                 <button
                   key={option.value}
                   className={`recurrence-btn ${missionType === option.value ? 'active' : ''}`}
@@ -160,7 +148,7 @@ function EditMissionModal({ mission, onClose, onSave, onDelete }) {
               <div className="form-group">
                 <label>Recurrence</label>
                 <div className="recurrence-selector">
-                  {recurrenceOptions.map((option) => (
+                  {RECURRENCE_OPTIONS.map((option) => (
                     <button
                       key={option.value}
                       className={`recurrence-btn ${recurrenceType === option.value ? 'active' : ''}`}

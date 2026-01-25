@@ -51,7 +51,7 @@ export const projects = [
   ]
 },
   {
-  id: 2,
+  id: 3,
   title: "Dungeon Forge",
   description:
     "Unity procedural dungeon generation asset pack + tooling. Includes an editor-driven workflow to generate and edit 2D dungeon layouts using multiple PCG algorithms (Voronoi, L-System, Perlin Noise/Worms, Diamond-Square, Differential Aggregation, Random Walk, Random Room Generation incl. Binary Partition, Cellular Automata, and Delaunay Triangulation), then build out 3D dungeons via tilesets. Also includes a reusable C# utility library (DFAlgoBank / DFGeneralUtil), tileset rule + weighting system, chunk-based loading, mesh/vertex generation with Blender export, and Wave Function Collapse support (texture-based rules + node-graph rule builder).",

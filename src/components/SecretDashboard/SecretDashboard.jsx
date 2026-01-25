@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import { DASHBOARD_PAGES } from './SecretDashboard.constants';
@@ -9,7 +9,7 @@ import SystemDashboardContent from './components/SystemDashboardContent';
 import './SecretDashboard.css';
 
 function SecretDashboard() {
-  const { logout, exitSecretPortal, canRead } = useAuth();
+  const { logout, exitSecretPortal } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
   const [direction, setDirection] = useState(0);
 
@@ -18,10 +18,7 @@ function SecretDashboard() {
     setCurrentPage(pageNum);
   };
 
-  // Show all pages - individual cards will be locked based on permissions
   const availablePages = DASHBOARD_PAGES;
-
-  // Removed useEffect - all pages are always available now
 
   return (
     <div className="secret-dashboard">

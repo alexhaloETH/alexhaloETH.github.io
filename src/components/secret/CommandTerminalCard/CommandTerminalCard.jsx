@@ -25,40 +25,51 @@ function CommandTerminalCard() {
   const executeCommand = async (cmd) => {
     const parts = cmd.trim().split(' ');
     const command = parts[0].toLowerCase();
-    const args = parts.slice(1);
+    // const args = parts.slice(1);
 
     if (!command) return;
 
-    // Add input to history
     const newHistory = [...history, { type: 'input', text: cmd }];
-
+      console.log('Executing command:', command);
     if (command === 'clear') {
       setHistory([]);
       return;
     }
 
     const cmdHandler = AVAILABLE_COMMANDS[command];
-    if (cmdHandler) {
-      const result = cmdHandler.execute(args);
-      if (typeof result === 'string') {
-        newHistory.push({ type: 'output', text: result });
-      } else {
-        newHistory.push({ type: 'output', ...result });
-      }
-    } else {
+    if (cmdHandler === false) {
+      console.error('Command not found:', command);
       newHistory.push({
         type: 'output',
         text: `Command not found: ${command}. Type "help" for available commands.`,
         status: 'error',
       });
+      return;
     }
 
     setHistory(newHistory);
     setHistoryIndex(-1);
-    // Send command to backend
     try {
       const response = await executeTerminalCommand(cmd);
-      console.log('Command sent to backend:', response);
+      if (!response || response.result === false) {
+        console.error('Command failed on backend');
+
+        newHistory.push({
+        type: 'output',
+        text: `Command ${response.command} Failed.  ${response.message}`,
+        status: 'error',
+        });
+
+        return;
+      } else {
+        console.log('Command executed successfully on backend');
+      }
+
+      newHistory.push({
+        type: 'output',
+        text: `${response.message}`,
+      });
+
     } catch (error) {
       console.error('Failed to send command to backend:', error);
     }
