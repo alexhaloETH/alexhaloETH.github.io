@@ -1,42 +1,144 @@
-const TIME_PERIODS = ['1h', '8h', '1d', '7d', '1M'];
+// Tab options
+export const TABS = [
+  { id: 'overview', label: 'Overview' },
+  { id: 'bots', label: 'Bots' },
+  { id: 'trades', label: 'Trades' },
+];
 
-const BOTS_DATA = [
+// Bot status configurations
+export const BOT_STATUS = {
+  running: {
+    label: 'Running',
+    color: 'success',
+    icon: 'play',
+  },
+  stopped: {
+    label: 'Stopped',
+    color: 'neutral',
+    icon: 'stop',
+  },
+  error: {
+    label: 'Error',
+    color: 'danger',
+    icon: 'alert',
+  },
+  starting: {
+    label: 'Starting',
+    color: 'warning',
+    icon: 'loading',
+  },
+  stopping: {
+    label: 'Stopping',
+    color: 'warning',
+    icon: 'loading',
+  },
+};
+
+// Filter options
+export const STATUS_FILTER_OPTIONS = [
+  { value: 'all', label: 'All Status' },
+  { value: 'running', label: 'Running' },
+  { value: 'stopped', label: 'Stopped' },
+  { value: 'error', label: 'Error' },
+];
+
+// Sort options
+export const SORT_OPTIONS = [
+  { value: 'name', label: 'Name' },
+  { value: 'status', label: 'Status' },
+  { value: 'profit', label: 'Profit ($)' },
+  { value: 'profitPercent', label: 'Profit (%)' },
+  { value: 'trades', label: 'Total Trades' },
+  { value: 'wallet', label: 'Wallet Size' },
+];
+
+// Trade status configurations
+export const TRADE_STATUS = {
+  open: {
+    label: 'Open',
+    color: 'info',
+  },
+  closed: {
+    label: 'Closed',
+    color: 'neutral',
+  },
+};
+
+// Trade type configurations
+export const TRADE_TYPE = {
+  long: {
+    label: 'Long',
+    color: 'success',
+  },
+  short: {
+    label: 'Short',
+    color: 'danger',
+  },
+};
+
+// Stats card configurations for overview
+export const OVERVIEW_STATS = [
   {
-    id: 1,
-    name: 'ETH/USDT Bot',
-    status: 'running',
-    stats: {
-      '1h': { profit: 2.10, change: 0.1 },
-      '8h': { profit: 5.20, change: 0.3 },
-      '1d': { profit: 15.30, change: 0.8 },
-      '7d': { profit: 124.50, change: 2.4 },
-      '1M': { profit: 487.20, change: 9.1 }
-    }
+    id: 'totalProfit',
+    label: 'Total Profit',
+    format: 'currency',
+    icon: 'trending-up',
   },
   {
-    id: 2,
-    name: 'BTC Scalper',
-    status: 'paused',
-    stats: {
-      '1h': { profit: 0, change: 0 },
-      '8h': { profit: 0, change: 0 },
-      '1d': { profit: 0, change: 0 },
-      '7d': { profit: 0, change: 0 },
-      '1M': { profit: 0, change: 0 }
-    }
+    id: 'profitPercent',
+    label: 'Return',
+    format: 'percent',
+    icon: 'percent',
   },
   {
-    id: 3,
-    name: 'STRK Grid',
-    status: 'running',
-    stats: {
-      '1h': { profit: 1.20, change: 0.2 },
-      '8h': { profit: 3.80, change: 0.5 },
-      '1d': { profit: 8.50, change: 1.2 },
-      '7d': { profit: 45.80, change: 5.1 },
-      '1M': { profit: 156.40, change: 18.3 }
-    }
+    id: 'totalTrades',
+    label: 'Total Trades',
+    format: 'number',
+    icon: 'activity',
+  },
+  {
+    id: 'openTrades',
+    label: 'Open Positions',
+    format: 'number',
+    icon: 'layers',
   },
 ];
 
-export { BOTS_DATA, TIME_PERIODS };
+// Action menu items
+export const BOT_ACTIONS = {
+  start: {
+    label: 'Start Bot',
+    icon: 'play',
+    color: 'success',
+    requiresStopped: true,
+  },
+  stop: {
+    label: 'Stop Bot',
+    icon: 'stop',
+    color: 'warning',
+    requiresRunning: true,
+  },
+  restart: {
+    label: 'Restart Bot',
+    icon: 'refresh',
+    color: 'info',
+    requiresRunning: true,
+  },
+  logs: {
+    label: 'View Logs',
+    icon: 'terminal',
+    color: 'neutral',
+  },
+  details: {
+    label: 'View Details',
+    icon: 'info',
+    color: 'neutral',
+  },
+  delete: {
+    label: 'Delete Bot',
+    icon: 'trash',
+    color: 'danger',
+    requiresStopped: true,
+    isDestructive: true,
+  },
+};
