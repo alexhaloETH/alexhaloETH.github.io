@@ -101,13 +101,15 @@ function BotCard({
       <div className="bot-card-stats">
         <div className="stat-row">
           <span className="stat-label">Profit</span>
-          <span className={`stat-value ${profitClass}`}>
-            {bot.stats.totalProfit >= 0 ? '+' : ''}
-            {formatMoney(bot.stats.totalProfit, isPrivate)}
-            <span className="stat-percent">
-              ({bot.stats.totalProfit >= 0 ? '+' : ''}{bot.stats.profitPercent.toFixed(2)}%)
+          <div className={`stat-value-col ${profitClass}`}>
+            <span className="stat-main">
+              {bot.stats.totalProfit >= 0 ? '+' : ''}
+              {formatMoney(bot.stats.totalProfit, isPrivate)}
             </span>
-          </span>
+            <span className="stat-sub">
+              {bot.stats.totalProfit >= 0 ? '+' : ''}{bot.stats.profitPercent.toFixed(2)}%
+            </span>
+          </div>
         </div>
         <div className="stat-row">
           <span className="stat-label">Win Rate</span>
@@ -115,12 +117,12 @@ function BotCard({
         </div>
         <div className="stat-row">
           <span className="stat-label">Trades</span>
-          <span className="stat-value">
-            {bot.stats.totalTrades}
+          <div className="stat-value-col">
+            <span className="stat-main">{bot.stats.totalTrades}</span>
             {bot.stats.openTrades > 0 && (
-              <span className="open-badge">{bot.stats.openTrades} open</span>
+              <span className="stat-sub open">{bot.stats.openTrades} open</span>
             )}
-          </span>
+          </div>
         </div>
         <div className="stat-row">
           <span className="stat-label">Wallet</span>
