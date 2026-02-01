@@ -9,8 +9,10 @@ import {
   stopAllBots,
   deleteBot,
   getBotLogs,
-  getTrades,
 } from '../../../utils/tradingBotsApi';
+
+// Validate bot ID to prevent corrupted IDs from causing API errors
+const isValidBotId = (id) => id && typeof id === 'string' && /^[a-zA-Z0-9_-]+$/.test(id) && id !== 'unknown';
 
 /**
  * Custom hook for managing trading bots data and operations
@@ -24,7 +26,6 @@ export default function useTradingBotsData(showNotification, access = {}) {
   // Data state
   const [bots, setBots] = useState([]);
   const [status, setStatus] = useState(null);
-  const [trades, setTrades] = useState([]);
   const [selectedBot, setSelectedBot] = useState(null);
   const [botLogs, setBotLogs] = useState([]);
 
@@ -51,15 +52,15 @@ export default function useTradingBotsData(showNotification, access = {}) {
       if (showLoader) setIsLoading(true);
       setError(null);
 
-      const [botsData, statusData, tradesData] = await Promise.all([
+      const [botsData, statusData] = await Promise.all([
         listBots(),
         getBotsStatus(),
-        getTrades(),
       ]);
 
-      setBots(botsData);
+      // Filter out bots with invalid IDs
+      const validBots = botsData.filter(bot => isValidBotId(bot.id));
+      setBots(validBots);
       setStatus(statusData);
-      setTrades(tradesData);
     } catch (err) {
       console.error('Failed to fetch bots data:', err);
       setError(err.message || 'Failed to load trading bots');
@@ -89,7 +90,7 @@ export default function useTradingBotsData(showNotification, access = {}) {
   // ============================================================================
 
   const fetchBotLogs = useCallback(async (botId) => {
-    if (!botId) {
+    if (!botId || !isValidBotId(botId)) {
       setBotLogs([]);
       return;
     }
@@ -397,9 +398,6 @@ export default function useTradingBotsData(showNotification, access = {}) {
       return sortOrder === 'asc' ? comparison : -comparison;
     });
 
-  const openTrades = trades.filter(t => t.status === 'open');
-  const closedTrades = trades.filter(t => t.status === 'closed');
-
   // ============================================================================
   // RETURN
   // ============================================================================
@@ -409,9 +407,6 @@ export default function useTradingBotsData(showNotification, access = {}) {
     bots: filteredBots,
     allBots: bots,
     status,
-    trades,
-    openTrades,
-    closedTrades,
     selectedBot,
     botLogs,
 

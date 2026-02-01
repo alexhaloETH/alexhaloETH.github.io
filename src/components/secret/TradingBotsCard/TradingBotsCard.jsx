@@ -8,7 +8,6 @@ import useTradingBotsData from './useTradingBotsData';
 import { TABS } from './TradingBotsCard.constants';
 import BotsOverview from './components/BotsOverview';
 import BotsListView from './components/BotsListView';
-import TradesView from './components/TradesView';
 import BotDetailsModal from './components/BotDetailsModal';
 import LoadingState from './components/LoadingState';
 import ErrorState from './components/ErrorState';
@@ -28,9 +27,6 @@ function TradingBotsCard() {
     bots,
     allBots,
     status,
-    trades,
-    openTrades,
-    closedTrades,
     selectedBot,
     botLogs,
     isLoading,
@@ -81,7 +77,6 @@ function TradingBotsCard() {
           <BotsOverview
             status={status}
             bots={allBots}
-            openTrades={openTrades}
             isPrivate={isPrivate}
             onBotClick={setSelectedBot}
             canWrite={canWriteBots}
@@ -110,15 +105,6 @@ function TradingBotsCard() {
             onDeleteBot={handleDeleteBot}
             actionInProgress={actionInProgress}
             canWrite={canWriteBots}
-          />
-        );
-      case 'trades':
-        return (
-          <TradesView
-            trades={trades}
-            openTrades={openTrades}
-            closedTrades={closedTrades}
-            isPrivate={isPrivate}
           />
         );
       default:
@@ -179,9 +165,6 @@ function TradingBotsCard() {
             onClick={() => setActiveTab(tab.id)}
           >
             {tab.label}
-            {tab.id === 'trades' && openTrades.length > 0 && (
-              <span className="tab-badge">{openTrades.length}</span>
-            )}
           </button>
         ))}
       </div>

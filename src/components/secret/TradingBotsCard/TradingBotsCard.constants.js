@@ -2,7 +2,6 @@
 export const TABS = [
   { id: 'overview', label: 'Overview' },
   { id: 'bots', label: 'Bots' },
-  { id: 'trades', label: 'Trades' },
 ];
 
 // Bot status configurations

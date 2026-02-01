@@ -1,4 +1,4 @@
-import { formatMoney, formatPercentage } from '../../../../utils/privacy';
+import { formatMoney } from '../../../../utils/privacy';
 import { BOT_STATUS } from '../TradingBotsCard.constants';
 
 function StatCard({ label, value, subValue, icon, colorClass }) {
@@ -37,7 +37,6 @@ function QuickBotItem({ bot, onClick }) {
 function BotsOverview({
   status,
   bots,
-  openTrades,
   isPrivate,
   onBotClick,
   canWrite,
@@ -202,26 +201,6 @@ function BotsOverview({
         </div>
       </div>
 
-      {/* Open Trades Summary */}
-      {openTrades.length > 0 && (
-        <div className="open-trades-summary">
-          <h4>Open Positions ({openTrades.length})</h4>
-          <div className="open-trades-list">
-            {openTrades.slice(0, 3).map(trade => (
-              <div key={trade.id} className="open-trade-item">
-                <div className="trade-info">
-                  <span className="trade-pair">{trade.pair}</span>
-                  <span className={`trade-type ${trade.type}`}>{trade.type.toUpperCase()}</span>
-                </div>
-                <div className={`trade-profit ${trade.profit >= 0 ? 'positive' : 'negative'}`}>
-                  {trade.profit >= 0 ? '+' : ''}
-                  {formatPercentage(trade.profitPercent, isPrivate)}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
