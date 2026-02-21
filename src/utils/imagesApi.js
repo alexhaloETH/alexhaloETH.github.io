@@ -1,87 +1,44 @@
-import { getAuthHeaders, getAuthHeadersOnly } from './auth';
+import { API_ROOT, apiRequest, withErrorContext } from './apiClient';
 
-const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api`;
-
-// Upload an image (base64 encoded)
-export const uploadImage = async (entityType, entityId, file) => {
-  try {
-    // Convert file to base64
+export const uploadImage = async (entityType, entityId, file) => withErrorContext(
+  'Error uploading image',
+  async () => {
     const base64Data = await fileToBase64(file);
 
-    const response = await fetch(`${API_BASE_URL}/images/upload`, {
+    return apiRequest('/images/upload', {
       method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({
+      body: {
         entity_type: entityType,
         entity_id: entityId,
         filename: file.name,
         data: base64Data,
-      }),
+      },
     });
+  },
+);
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return response.json();
-  } catch (error) {
-    console.error('Error uploading image:', error);
-    throw error;
-  }
-};
+export const getEntityImages = async (entityType, entityId) => withErrorContext(
+  'Error fetching images',
+  () => apiRequest(`/images/${entityType}/${entityId}`),
+);
 
-// Get all images for an entity
-export const getEntityImages = async (entityType, entityId) => {
-  try {
-    const response = await fetch(
-      `${API_BASE_URL}/images/${entityType}/${entityId}`,
-      {
-        headers: getAuthHeadersOnly(),
-      }
-    );
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return response.json();
-  } catch (error) {
-    console.error('Error fetching images:', error);
-    throw error;
-  }
-};
+export const deleteImage = async (imageId) => withErrorContext(`Error deleting image ${imageId}`, () => (
+  apiRequest(`/images/${imageId}`, {
+    method: 'DELETE',
+  })
+));
 
-// Delete an image
-export const deleteImage = async (imageId) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/images/${imageId}`, {
-      method: 'DELETE',
-      headers: getAuthHeadersOnly(),
-    });
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return response.json();
-  } catch (error) {
-    console.error(`Error deleting image ${imageId}:`, error);
-    throw error;
-  }
-};
-
-// Get image URL for serving
 export const getImageUrl = (filepath) => {
-  // Extract filename from filepath (removes ./uploads/ prefix)
   const filename = filepath.split('/').pop();
-  return `${import.meta.env.VITE_API_URL}/uploads/${filename}`;
+  return `${API_ROOT}/uploads/${filename}`;
 };
 
-// Helper function to convert file to base64
-const fileToBase64 = (file) => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-      // Remove data:image/...;base64, prefix
-      const base64 = reader.result.split(',')[1];
-      resolve(base64);
-    };
-    reader.onerror = (error) => reject(error);
-  });
-};
+const fileToBase64 = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.readAsDataURL(file);
+  reader.onload = () => {
+    const base64 = reader.result.split(',')[1];
+    resolve(base64);
+  };
+  reader.onerror = (error) => reject(error);
+});

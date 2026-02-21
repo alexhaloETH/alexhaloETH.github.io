@@ -1,12 +1,9 @@
-import { getAuthHeaders, getAuthHeadersOnly } from './auth';
+import { apiRequest, withErrorContext } from './apiClient';
 
-const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api`;
-
-// Priority mapping: high=2, medium=1, low=0
 const priorityToNumber = {
-  'high': 2,
-  'medium': 1,
-  'low': 0,
+  high: 2,
+  medium: 1,
+  low: 0,
 };
 
 const numberToPriority = {
@@ -15,10 +12,9 @@ const numberToPriority = {
   0: 'low',
 };
 
-// Due date mapping: Today=0, Tomorrow=1, This week=2, Next week=3, etc.
 const dueDateToNumber = {
-  'Today': 0,
-  'Tomorrow': 1,
+  Today: 0,
+  Tomorrow: 1,
   'This week': 2,
   'Next week': 3,
   'This month': 4,
@@ -34,121 +30,49 @@ const numberToDueDate = {
   5: 'No date',
 };
 
-// Transform task from backend to frontend
-const transformTaskItem = (backendItem) => {
-  return {
-    id: backendItem.id,
-    text: backendItem.name,
-    completed: backendItem.state,
-    priority: numberToPriority[backendItem.priority] || 'low',
-    dueDate: numberToDueDate[backendItem.due_date] || 'No date',
-  };
-};
+const transformTaskItem = (backendItem) => ({
+  id: backendItem.id,
+  text: backendItem.name,
+  completed: backendItem.state,
+  priority: numberToPriority[backendItem.priority] || 'low',
+  dueDate: numberToDueDate[backendItem.due_date] || 'No date',
+});
 
-// Transform task from frontend to backend
-const transformToBackendFormat = (frontendItem) => {
-  return {
-    name: frontendItem.text || '',
-    priority: priorityToNumber[frontendItem.priority] || 0,
-    due_date: dueDateToNumber[frontendItem.dueDate] || 5,
-    state: frontendItem.completed || false,
-  };
-};
+const transformToBackendFormat = (frontendItem) => ({
+  name: frontendItem.text || '',
+  priority: priorityToNumber[frontendItem.priority] || 0,
+  due_date: dueDateToNumber[frontendItem.dueDate] || 5,
+  state: frontendItem.completed || false,
+});
 
-// Get all tasks
-export const getAllTasks = async () => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/tasks`, {
-      headers: getAuthHeadersOnly(),
-    });
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    return data.map(transformTaskItem);
-  } catch (error) {
-    console.error('Error fetching tasks:', error);
-    throw error;
-  }
-};
+export const getAllTasks = async () => withErrorContext('Error fetching tasks', async () => {
+  const data = await apiRequest('/tasks');
+  return data.map(transformTaskItem);
+});
 
-// Get a single task
-export const getTask = async (id) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
-      headers: getAuthHeadersOnly(),
-    });
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    return transformTaskItem(data);
-  } catch (error) {
-    console.error(`Error fetching task ${id}:`, error);
-    throw error;
-  }
-};
+export const getTask = async (id) => withErrorContext(`Error fetching task ${id}`, async () => {
+  const data = await apiRequest(`/tasks/${id}`);
+  return transformTaskItem(data);
+});
 
-// Create a new task
-export const createTask = async (task) => {
-  try {
-    const backendTask = transformToBackendFormat(task);
-    console.log('Creating task:', { original: task, transformed: backendTask });
+export const createTask = async (task) => withErrorContext('Error creating task', () => {
+  const backendTask = transformToBackendFormat(task);
+  return apiRequest('/tasks', {
+    method: 'POST',
+    body: backendTask,
+  });
+});
 
-    const response = await fetch(`${API_BASE_URL}/tasks`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(backendTask),
-    });
+export const updateTask = async (id, updatedTask) => withErrorContext(`Error updating task ${id}`, () => {
+  const backendTask = transformToBackendFormat(updatedTask);
+  return apiRequest(`/tasks/${id}`, {
+    method: 'PUT',
+    body: backendTask,
+  });
+});
 
-    console.log('Create task response status:', response.status);
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    console.log('Create task response data:', data);
-    return data;
-  } catch (error) {
-    console.error('Error creating task:', error);
-    throw error;
-  }
-};
-
-// Update a task
-export const updateTask = async (id, updatedTask) => {
-  try {
-    const backendTask = transformToBackendFormat(updatedTask);
-    const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
-      method: 'PUT',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(backendTask),
-    });
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error(`Error updating task ${id}:`, error);
-    throw error;
-  }
-};
-
-// Delete a task
-export const deleteTask = async (id) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
-      method: 'DELETE',
-      headers: getAuthHeadersOnly(),
-    });
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error(`Error deleting task ${id}:`, error);
-    throw error;
-  }
-};
+export const deleteTask = async (id) => withErrorContext(`Error deleting task ${id}`, () => (
+  apiRequest(`/tasks/${id}`, {
+    method: 'DELETE',
+  })
+));

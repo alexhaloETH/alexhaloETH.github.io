@@ -1,58 +1,29 @@
-import { getAuthHeaders, getAuthHeadersOnly } from './auth';
+import { apiRequest, withErrorContext } from './apiClient';
 
-const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api`;
+export const getAllRecipes = async () => withErrorContext('Failed to fetch recipes', () => (
+  apiRequest('/recipes')
+));
 
-export const getAllRecipes = async () => {
-  const response = await fetch(`${API_BASE_URL}/recipes`, {
-    headers: getAuthHeadersOnly(),
-  });
-  if (!response.ok) {
-    throw new Error('Failed to fetch recipes');
-  }
-  return response.json();
-};
+export const getRecipe = async (id) => withErrorContext(`Failed to fetch recipe ${id}`, () => (
+  apiRequest(`/recipes/${id}`)
+));
 
-export const getRecipe = async (id) => {
-  const response = await fetch(`${API_BASE_URL}/recipes/${id}`, {
-    headers: getAuthHeadersOnly(),
-  });
-  if (!response.ok) {
-    throw new Error('Failed to fetch recipe');
-  }
-  return response.json();
-};
-
-export const createRecipe = async (recipe) => {
-  const response = await fetch(`${API_BASE_URL}/recipes`, {
+export const createRecipe = async (recipe) => withErrorContext('Failed to create recipe', () => (
+  apiRequest('/recipes', {
     method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify(recipe),
-  });
-  if (!response.ok) {
-    throw new Error('Failed to create recipe');
-  }
-  return response.json();
-};
+    body: recipe,
+  })
+));
 
-export const updateRecipe = async (id, recipe) => {
-  const response = await fetch(`${API_BASE_URL}/recipes/${id}`, {
+export const updateRecipe = async (id, recipe) => withErrorContext(`Failed to update recipe ${id}`, () => (
+  apiRequest(`/recipes/${id}`, {
     method: 'PUT',
-    headers: getAuthHeaders(),
-    body: JSON.stringify(recipe),
-  });
-  if (!response.ok) {
-    throw new Error('Failed to update recipe');
-  }
-  return response.json();
-};
+    body: recipe,
+  })
+));
 
-export const deleteRecipe = async (id) => {
-  const response = await fetch(`${API_BASE_URL}/recipes/${id}`, {
+export const deleteRecipe = async (id) => withErrorContext(`Failed to delete recipe ${id}`, () => (
+  apiRequest(`/recipes/${id}`, {
     method: 'DELETE',
-    headers: getAuthHeadersOnly(),
-  });
-  if (!response.ok) {
-    throw new Error('Failed to delete recipe');
-  }
-  return response.json();
-};
+  })
+));

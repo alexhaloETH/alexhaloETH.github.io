@@ -1,122 +1,56 @@
 import { transformPantryItem, transformToBackendFormat } from './pantryMappings';
-import { getAuthHeaders, getAuthHeadersOnly } from './auth';
+import { apiRequest, withErrorContext } from './apiClient';
 
-const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api`;
-
-// Transform shopping item from backend to frontend
 const transformShoppingItem = (backendItem) => {
   const baseItem = transformPantryItem(backendItem);
   return {
     ...baseItem,
-    checked: backendItem.state, // state maps to checked
+    checked: backendItem.state,
   };
 };
 
-// Transform shopping item from frontend to backend
-const transformToBackendShoppingFormat = (frontendItem) => {
-  const baseBackend = transformToBackendFormat(frontendItem);
-  const result = {
-    ...baseBackend,
-    state: frontendItem.checked || false, // checked maps to state
-  };
-  console.log('Transform shopping to backend:', { frontendItem, result });
-  return result;
-};
+const transformToBackendShoppingFormat = (frontendItem) => ({
+  ...transformToBackendFormat(frontendItem),
+  state: frontendItem.checked || false,
+});
 
-// Get all shopping items
-export const getAllShoppingItems = async () => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/shopping`, {
-      headers: getAuthHeadersOnly(),
-    });
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
+export const getAllShoppingItems = async () => withErrorContext(
+  'Error fetching shopping items',
+  async () => {
+    const data = await apiRequest('/shopping');
     return data.map(transformShoppingItem);
-  } catch (error) {
-    console.error('Error fetching shopping items:', error);
-    throw error;
-  }
-};
+  },
+);
 
-// Get a single shopping item
-export const getShoppingItem = async (id) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/shopping/${id}`, {
-      headers: getAuthHeadersOnly(),
-    });
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
+export const getShoppingItem = async (id) => withErrorContext(
+  `Error fetching shopping item ${id}`,
+  async () => {
+    const data = await apiRequest(`/shopping/${id}`);
     return transformShoppingItem(data);
-  } catch (error) {
-    console.error(`Error fetching shopping item ${id}:`, error);
-    throw error;
-  }
-};
+  },
+);
 
-// Create a new shopping item
-export const createShoppingItem = async (item) => {
-  try {
-    const backendItem = transformToBackendShoppingFormat(item);
-    console.log('Creating shopping item:', { original: item, transformed: backendItem });
+export const createShoppingItem = async (item) => withErrorContext('Error creating shopping item', () => {
+  const backendItem = transformToBackendShoppingFormat(item);
+  return apiRequest('/shopping', {
+    method: 'POST',
+    body: backendItem,
+  });
+});
 
-    const response = await fetch(`${API_BASE_URL}/shopping`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(backendItem),
-    });
-
-    console.log('Create shopping response status:', response.status);
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    console.log('Create shopping response data:', data);
-    return data;
-  } catch (error) {
-    console.error('Error creating shopping item:', error);
-    throw error;
-  }
-};
-
-// Update a shopping item
-export const updateShoppingItem = async (id, updatedItem) => {
-  try {
+export const updateShoppingItem = async (id, updatedItem) => withErrorContext(
+  `Error updating shopping item ${id}`,
+  () => {
     const backendItem = transformToBackendShoppingFormat(updatedItem);
-    const response = await fetch(`${API_BASE_URL}/shopping/${id}`, {
+    return apiRequest(`/shopping/${id}`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(backendItem),
+      body: backendItem,
     });
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error(`Error updating shopping item ${id}:`, error);
-    throw error;
-  }
-};
+  },
+);
 
-// Delete a shopping item
-export const deleteShoppingItem = async (id) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/shopping/${id}`, {
-      method: 'DELETE',
-      headers: getAuthHeadersOnly(),
-    });
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error(`Error deleting shopping item ${id}:`, error);
-    throw error;
-  }
-};
+export const deleteShoppingItem = async (id) => withErrorContext(`Error deleting shopping item ${id}`, () => (
+  apiRequest(`/shopping/${id}`, {
+    method: 'DELETE',
+  })
+));

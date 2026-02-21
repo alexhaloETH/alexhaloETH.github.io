@@ -1,174 +1,100 @@
-import { getAuthHeaders, getAuthHeadersOnly } from './auth';
+import { apiRequest, withErrorContext } from './apiClient';
 
-const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api`;
+const transformMission = (backendMission) => ({
+  id: backendMission.id,
+  name: backendMission.name,
+  description: backendMission.description || '',
+  recurrenceType: backendMission.recurrence_type,
+  missionType: backendMission.mission_type || 'streak',
+  targetAmount: backendMission.target_amount ?? null,
+  unit: backendMission.unit || '',
+  completed: backendMission.completed,
+  lastCompletedAt: backendMission.last_completed_at,
+  nextResetAt: backendMission.next_reset_at,
+  createdAt: backendMission.created_at,
+  currentStreak: backendMission.current_streak ?? 0,
+  bestStreak: backendMission.best_streak ?? 0,
+  totalCompletions: backendMission.total_completions ?? 0,
+  currentAmount: backendMission.current_amount ?? null,
+  bestAmount: backendMission.best_amount ?? null,
+  totalAmount: backendMission.total_amount ?? null,
+  averageAmount: backendMission.average_amount ?? null,
+  recentPeriods: (backendMission.recent_periods || []).map((period) => ({
+    periodStart: period.period_start,
+    periodEnd: period.period_end,
+    completed: period.completed,
+    isCurrent: period.is_current,
+  })),
+  recentAmounts: (backendMission.recent_amounts || []).map((period) => ({
+    periodStart: period.period_start,
+    periodEnd: period.period_end,
+    amount: period.amount ?? null,
+    isCurrent: period.is_current,
+  })),
+});
 
-// Transform mission from backend to frontend format
-const transformMission = (backendMission) => {
-  return {
-    id: backendMission.id,
-    name: backendMission.name,
-    description: backendMission.description || '',
-    recurrenceType: backendMission.recurrence_type,
-    missionType: backendMission.mission_type || 'streak',
-    targetAmount: backendMission.target_amount ?? null,
-    unit: backendMission.unit || '',
-    completed: backendMission.completed,
-    lastCompletedAt: backendMission.last_completed_at,
-    nextResetAt: backendMission.next_reset_at,
-    createdAt: backendMission.created_at,
-    currentStreak: backendMission.current_streak ?? 0,
-    bestStreak: backendMission.best_streak ?? 0,
-    totalCompletions: backendMission.total_completions ?? 0,
-    currentAmount: backendMission.current_amount ?? null,
-    bestAmount: backendMission.best_amount ?? null,
-    totalAmount: backendMission.total_amount ?? null,
-    averageAmount: backendMission.average_amount ?? null,
-    recentPeriods: (backendMission.recent_periods || []).map((period) => ({
-      periodStart: period.period_start,
-      periodEnd: period.period_end,
-      completed: period.completed,
-      isCurrent: period.is_current,
-    })),
-    recentAmounts: (backendMission.recent_amounts || []).map((period) => ({
-      periodStart: period.period_start,
-      periodEnd: period.period_end,
-      amount: period.amount ?? null,
-      isCurrent: period.is_current,
-    })),
-  };
-};
+const transformToBackendFormat = (frontendMission) => ({
+  name: frontendMission.name,
+  description: frontendMission.description || null,
+  recurrence_type: frontendMission.recurrenceType,
+  mission_type: frontendMission.missionType || 'streak',
+  target_amount: frontendMission.targetAmount ?? null,
+  unit: frontendMission.unit?.trim() || null,
+});
 
-// Transform mission from frontend to backend format
-const transformToBackendFormat = (frontendMission) => {
-  return {
-    name: frontendMission.name,
-    description: frontendMission.description || null,
-    recurrence_type: frontendMission.recurrenceType,
-    mission_type: frontendMission.missionType || 'streak',
-    target_amount: frontendMission.targetAmount ?? null,
-    unit: frontendMission.unit?.trim() || null,
-  };
-};
+export const getAllMissions = async () => withErrorContext('Error fetching missions', async () => {
+  const data = await apiRequest('/missions');
+  return data.map(transformMission);
+});
 
-export const getAllMissions = async () => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/missions`, {
-      headers: getAuthHeadersOnly(),
-    });
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    return data.map(transformMission);
-  } catch (error) {
-    console.error('Error fetching missions:', error);
-    throw error;
-  }
-};
+export const getMission = async (id) => withErrorContext(`Error fetching mission ${id}`, async () => {
+  const data = await apiRequest(`/missions/${id}`);
+  return transformMission(data);
+});
 
-export const getMission = async (id) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/missions/${id}`, {
-      headers: getAuthHeadersOnly(),
-    });
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    return transformMission(data);
-  } catch (error) {
-    console.error(`Error fetching mission ${id}:`, error);
-    throw error;
-  }
-};
+export const createMission = async (mission) => withErrorContext('Error creating mission', () => {
+  const backendMission = transformToBackendFormat(mission);
+  return apiRequest('/missions', {
+    method: 'POST',
+    body: backendMission,
+  });
+});
 
-export const createMission = async (mission) => {
-  try {
-    const backendMission = transformToBackendFormat(mission);
-    const response = await fetch(`${API_BASE_URL}/missions`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(backendMission),
-    });
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Error creating mission:', error);
-    throw error;
-  }
-};
-
-export const updateMission = async (id, updatedMission) => {
-  try {
+export const updateMission = async (id, updatedMission) => withErrorContext(
+  `Error updating mission ${id}`,
+  () => {
     const backendMission = transformToBackendFormat(updatedMission);
-    const response = await fetch(`${API_BASE_URL}/missions/${id}`, {
+    return apiRequest(`/missions/${id}`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(backendMission),
+      body: backendMission,
     });
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error(`Error updating mission ${id}:`, error);
-    throw error;
-  }
-};
+  },
+);
 
-export const completeMission = async (id, completed) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/missions/${id}/complete`, {
+export const completeMission = async (id, completed) => withErrorContext(
+  `Error completing mission ${id}`,
+  async () => {
+    const data = await apiRequest(`/missions/${id}/complete`, {
       method: 'PATCH',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ completed }),
+      body: { completed },
     });
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
     return transformMission(data);
-  } catch (error) {
-    console.error(`Error completing mission ${id}:`, error);
-    throw error;
-  }
-};
+  },
+);
 
-export const logMissionAmount = async (id, amount) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/missions/${id}/amount`, {
+export const logMissionAmount = async (id, amount) => withErrorContext(
+  `Error logging mission amount ${id}`,
+  async () => {
+    const data = await apiRequest(`/missions/${id}/amount`, {
       method: 'PATCH',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ amount }),
+      body: { amount },
     });
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
     return transformMission(data);
-  } catch (error) {
-    console.error(`Error logging mission amount ${id}:`, error);
-    throw error;
-  }
-};
+  },
+);
 
-export const deleteMission = async (id) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/missions/${id}`, {
-      method: 'DELETE',
-      headers: getAuthHeadersOnly(),
-    });
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error(`Error deleting mission ${id}:`, error);
-    throw error;
-  }
-};
+export const deleteMission = async (id) => withErrorContext(`Error deleting mission ${id}`, () => (
+  apiRequest(`/missions/${id}`, {
+    method: 'DELETE',
+  })
+));

@@ -1,102 +1,40 @@
 import { transformPantryItem, transformToBackendFormat } from './pantryMappings';
-import { getAuthHeaders, getAuthHeadersOnly } from './auth';
+import { apiRequest, withErrorContext } from './apiClient';
 
-const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api`;
-
-// Get all pantry items
-export const getAllPantryItems = async () => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/pantry`, {
-      headers: getAuthHeadersOnly(),
-    });
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
+export const getAllPantryItems = async () => withErrorContext(
+  'Error fetching pantry items',
+  async () => {
+    const data = await apiRequest('/pantry');
     return data.map(transformPantryItem);
-  } catch (error) {
-    console.error('Error fetching pantry items:', error);
-    throw error;
-  }
-};
+  },
+);
 
-// Get a single pantry item
-export const getPantryItem = async (id) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/pantry/${id}`, {
-      headers: getAuthHeadersOnly(),
-    });
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    return transformPantryItem(data);
-  } catch (error) {
-    console.error(`Error fetching pantry item ${id}:`, error);
-    throw error;
-  }
-};
+export const getPantryItem = async (id) => withErrorContext(`Error fetching pantry item ${id}`, async () => {
+  const data = await apiRequest(`/pantry/${id}`);
+  return transformPantryItem(data);
+});
 
-// Create a new pantry item
-export const createPantryItem = async (item) => {
-  try {
-    const backendItem = transformToBackendFormat(item);
-    console.log('Creating pantry item:', { original: item, transformed: backendItem });
+export const createPantryItem = async (item) => withErrorContext('Error creating pantry item', () => {
+  const backendItem = transformToBackendFormat(item);
+  return apiRequest('/pantry', {
+    method: 'POST',
+    body: backendItem,
+  });
+});
 
-    const response = await fetch(`${API_BASE_URL}/pantry`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(backendItem),
-    });
+export const deletePantryItem = async (id) => withErrorContext(`Error deleting pantry item ${id}`, () => (
+  apiRequest(`/pantry/${id}`, {
+    method: 'DELETE',
+  })
+));
 
-    console.log('Create response status:', response.status);
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    console.log('Create response data:', data);
-    return data;
-  } catch (error) {
-    console.error('Error creating pantry item:', error);
-    throw error;
-  }
-};
-
-// Delete a pantry item
-export const deletePantryItem = async (id) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/pantry/${id}`, {
-      method: 'DELETE',
-      headers: getAuthHeadersOnly(),
-    });
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error(`Error deleting pantry item ${id}:`, error);
-    throw error;
-  }
-};
-
-// Update a pantry item
-export const updatePantryItem = async (id, updatedItem) => {
-  try {
+export const updatePantryItem = async (id, updatedItem) => withErrorContext(
+  `Error updating pantry item ${id}`,
+  () => {
     const backendItem = transformToBackendFormat(updatedItem);
-    const response = await fetch(`${API_BASE_URL}/pantry/${id}`, {
+    return apiRequest(`/pantry/${id}`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(backendItem),
+      body: backendItem,
     });
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error(`Error updating pantry item ${id}:`, error);
-    throw error;
-  }
-};
+  },
+);
