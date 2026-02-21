@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import ImageGallery from './ImageGallery';
 import {
   formatAmount,
@@ -18,20 +18,17 @@ function MissionsView({
 }) {
   const [amountInputs, setAmountInputs] = useState({});
 
-  useEffect(() => {
-    setAmountInputs((prev) => {
-      const next = { ...prev };
-      missions.forEach((mission) => {
-        if (mission.missionType !== 'amount') return;
-        if (next[mission.id] === undefined) {
-          next[mission.id] = mission.currentAmount !== null && mission.currentAmount !== undefined
-            ? String(mission.currentAmount)
-            : '';
-        }
-      });
-      return next;
-    });
-  }, [missions]);
+  const missionsById = useMemo(
+    () => new Map(missions.map((mission) => [mission.id, mission])),
+    [missions],
+  );
+
+  const getAmountInputValue = (mission) => (
+    amountInputs[mission.id]
+      ?? (mission.currentAmount !== null && mission.currentAmount !== undefined
+        ? String(mission.currentAmount)
+        : '')
+  );
 
   const handleAmountChange = (id, value) => {
     setAmountInputs((prev) => ({
@@ -42,12 +39,19 @@ function MissionsView({
 
   const handleLogAmount = (missionId) => {
     if (!onLogAmount) return;
-    const rawValue = amountInputs[missionId];
+
+    const mission = missionsById.get(missionId);
+    if (!mission) return;
+
+    const rawValue = getAmountInputValue(mission);
     if (rawValue === undefined) return;
+
     const trimmed = String(rawValue).trim();
     if (!trimmed) return;
+
     const numericValue = Number(trimmed);
     if (Number.isNaN(numericValue)) return;
+
     onLogAmount(missionId, numericValue);
     setAmountInputs((prev) => ({
       ...prev,
@@ -88,10 +92,9 @@ function MissionsView({
           const amountMax = Math.max(
             1,
             ...amountPreview.map((period) => period.amount ?? 0),
-            targetAmount || 0
+            targetAmount || 0,
           );
-          const amountInputValue = amountInputs[mission.id]
-            ?? (currentAmount !== null && currentAmount !== undefined ? String(currentAmount) : '');
+          const amountInputValue = getAmountInputValue(mission);
           const periodsForStats = mission.recentPeriods || [];
           const createdAt = mission.createdAt ? new Date(mission.createdAt) : null;
           const validPeriods = createdAt && !Number.isNaN(createdAt.getTime())
@@ -246,130 +249,109 @@ function MissionsView({
                           style={{ width: `${progressValue}%` }}
                         />
                       </div>
-                    <div className="amount-target-meta">
-                      Target {formattedAmount(targetAmount)}
-                      {currentAmount !== null && currentAmount !== undefined && currentAmount >= targetAmount
+                      <div className="amount-target-meta">
+                        Target {formattedAmount(targetAmount)}
+                        {currentAmount !== null && currentAmount !== undefined && currentAmount >= targetAmount
                           ? ' met'
                           : ''}
+                      </div>
                     </div>
-                  </div>
                   )}
                   {amountPreview.length > 0 && (
                     <div className="amount-history">
                       <span className="amount-history-label">
                         Recent {amountPreview.length}
                       </span>
-                      <div className="amount-history-bars">
+                      <div className="amount-bars">
                         {amountPreview.map((period, index) => {
-                          const height = period.amount ? (period.amount / amountMax) * 100 : 0;
-                          const barClasses = ['amount-history-bar'];
-                          barClasses.push(period.amount ? 'has-value' : 'empty');
-                          if (period.isCurrent) barClasses.push('current');
-                          const titleSuffix = period.amount ? ` • ${formatAmount(period.amount)} ${unitLabel}` : '';
+                          const amount = period.amount ?? 0;
+                          const height = Math.max(10, Math.round((amount / amountMax) * 100));
+                          const isCurrent = period.isCurrent;
+
                           return (
-                            <span
-                              key={period.periodEnd || `${mission.id}-${index}`}
-                              className={barClasses.join(' ')}
-                              style={{ height: `${height}%` }}
-                              title={`${formatPeriodTitle(period, mission.recurrenceType)}${titleSuffix}`}
-                            />
+                            <div
+                              key={`${period.periodEnd}-${index}`}
+                              className={`amount-bar-wrapper ${isCurrent ? 'current' : ''}`}
+                              title={`${formatPeriodTitle(period.periodStart, period.periodEnd)}: ${formattedAmount(amount)}`}
+                            >
+                              <span className="amount-bar" style={{ height: `${height}%` }} />
+                            </div>
                           );
                         })}
                       </div>
                     </div>
                   )}
-                </div>
-              ) : (
-                <div className="mission-amount-panel streak-panel">
-                  <div className="amount-metrics-grid">
-                    <div className="amount-metric">
-                      <span>Current</span>
-                      <strong>{mission.currentStreak || 0}</strong>
+                  {mission.lastCompletedAt && (
+                    <div className="mission-stats amount-last">
+                      <span>Last logged: {lastDone}</span>
                     </div>
-                    <div className="amount-metric">
-                      <span>Best</span>
-                      <strong>{mission.bestStreak || 0}</strong>
-                    </div>
-                    <div className="amount-metric">
-                      <span>Total</span>
-                      <strong>{mission.totalCompletions || 0}</strong>
-                    </div>
-                    <div className="amount-metric">
-                      <span>Cons.</span>
-                      <strong>{consistency}%</strong>
-                    </div>
-                  </div>
-                  <div className="consistency-bar">
-                    <span className="consistency-fill" style={{ width: `${consistency}%` }} />
-                  </div>
-                </div>
-              )}
-              <div className="mission-meta">
-                <div>
-                  <span className="meta-label">Reset</span>
-                  <span className="meta-value">{resetsIn}</span>
-                </div>
-                <div>
-                  <span className="meta-label">{isAmount ? 'Last log' : 'Last'}</span>
-                  <span className="meta-value">{lastDone}</span>
-                </div>
-              </div>
-              {!isAmount && historyPreview.length > 0 && (
-                <div className="mission-history">
-                  <span className="mission-history-label">
-                    Recent {historyPreview.length}
-                  </span>
-                  <div className="mission-history-dots">
-                    {historyPreview.map((period, index) => {
-                      let dotStatus = 'missed';
-                      if (period.completed) {
-                        dotStatus = 'completed';
-                      } else if (period.isCurrent) {
-                        dotStatus = 'current';
-                      }
-                      return (
-                        <span
-                          key={period.periodEnd || `${mission.id}-${index}`}
-                          className={`mission-history-dot ${dotStatus}`}
-                          title={formatPeriodTitle(period, mission.recurrenceType)}
-                        />
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-              <div className="mission-gallery" onClick={(e) => e.stopPropagation()}>
-                <ImageGallery
-                  entityType="mission"
-                  entityId={mission.id}
-                />
-              </div>
-              <div className="mission-footer">
-                <div className="mission-footer-tags">
-                  <span className={`recurrence-badge ${mission.recurrenceType}`}>
-                    {mission.recurrenceType}
-                  </span>
-                  {isAmount && (
-                    <span className="mission-type-badge">
-                      Amount
-                    </span>
                   )}
                 </div>
-                {canEdit && (
-                  <button
-                    className="edit-mission-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEditMission(mission);
-                    }}
-                  >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                    </svg>
-                  </button>
-                )}
-              </div>
+              ) : (
+                <>
+                  <div className="mission-progress">
+                    <div className="progress-stats">
+                      <span>Current Streak: {mission.currentStreak || 0}</span>
+                      <span>Best: {mission.bestStreak || 0}</span>
+                    </div>
+                    <div className="progress-bar">
+                      <div
+                        className="progress-fill"
+                        style={{ width: `${Math.min((mission.currentStreak || 0) * 10, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                  <div className="mission-meta">
+                    <span className="reset-timer">Resets {resetsIn}</span>
+                    {lastDone !== 'Never' && (
+                      <span className="last-completed">Done {lastDone}</span>
+                    )}
+                  </div>
+                  {historyPreview.length > 0 && (
+                    <div className="mission-history" onClick={(e) => e.stopPropagation()}>
+                      {historyPreview.map((period, index) => (
+                        <button
+                          key={`${period.periodEnd}-${index}`}
+                          className={`history-day ${period.completed ? 'done' : 'miss'} ${period.isCurrent ? 'current' : ''}`}
+                          title={formatPeriodTitle(period.periodStart, period.periodEnd)}
+                          onClick={() => onOpenCalendar(mission)}
+                        >
+                          {period.completed ? '✓' : '·'}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  <div className="mission-footer">
+                    <span>{consistency}% consistency</span>
+                    <span>{mission.totalCompletions || 0} completions</span>
+                  </div>
+                </>
+              )}
+
+              {canEdit && (
+                <button
+                  className="edit-mission-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEditMission(mission);
+                  }}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                  </svg>
+                </button>
+              )}
+
+              {(mission.missionType === 'streak' || mission.missionType === 'amount') && (
+                <div className="mission-gallery" onClick={(e) => e.stopPropagation()}>
+                  <ImageGallery
+                    entityType="mission"
+                    entityId={mission.id}
+                    editable={canEdit}
+                  />
+                </div>
+              )}
             </div>
           );
         })}

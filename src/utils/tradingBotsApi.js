@@ -4,7 +4,9 @@
  * Real backend integration for the tradebots endpoints.
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+import { API_ROOT } from './apiClient';
+
+const API_BASE_URL = API_ROOT;
 
 const getAuthToken = () => {
   return localStorage.getItem('dashboard_token');
@@ -43,7 +45,7 @@ const apiRequest = async (path, { method = 'GET', body, query } = {}) => {
   if (text) {
     try {
       payload = JSON.parse(text);
-    } catch (_err) {
+    } catch {
       payload = null;
     }
   }

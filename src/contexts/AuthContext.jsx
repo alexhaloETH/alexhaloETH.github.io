@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo } from 'react';
 
 const AuthContext = createContext(null);
 
@@ -79,7 +79,7 @@ export function AuthProvider({ children, showNotification }) {
               title: 'Access Granted',
               message: 'Welcome back to Command Center',
               type: 'success',
-              duration: 5000
+              duration: 5000,
             });
           }, 300);
         }
@@ -133,16 +133,6 @@ export function AuthProvider({ children, showNotification }) {
     }, 1500);
   }, []);
 
-  useEffect(() => {
-    if (!currentUser && authToken) {
-      const decoded = decodeTokenUser(authToken);
-      if (decoded) {
-        setCurrentUser(decoded);
-        localStorage.setItem('dashboard_user', JSON.stringify(decoded));
-      }
-    }
-  }, [authToken, currentUser]);
-
   const permissions = useMemo(() => {
     if (!currentUser) return [];
     return Array.isArray(currentUser.permissions) ? currentUser.permissions : [];
@@ -171,7 +161,7 @@ export function AuthProvider({ children, showNotification }) {
       return {};
     }
     return {
-      'Authorization': `Bearer ${authToken}`,
+      Authorization: `Bearer ${authToken}`,
     };
   }, [authToken]);
 
