@@ -262,20 +262,26 @@ function MissionsView({
                       <span className="amount-history-label">
                         Recent {amountPreview.length}
                       </span>
-                      <div className="amount-bars">
+                      <div className="amount-history-bars">
                         {amountPreview.map((period, index) => {
                           const amount = period.amount ?? 0;
                           const height = Math.max(10, Math.round((amount / amountMax) * 100));
                           const isCurrent = period.isCurrent;
+                          const classNames = [
+                            'amount-history-bar',
+                            amount > 0 ? 'has-value' : 'empty',
+                            isCurrent ? 'current' : '',
+                          ]
+                            .filter(Boolean)
+                            .join(' ');
 
                           return (
-                            <div
+                            <span
                               key={`${period.periodEnd}-${index}`}
-                              className={`amount-bar-wrapper ${isCurrent ? 'current' : ''}`}
+                              className={classNames}
+                              style={{ height: `${height}%` }}
                               title={`${formatPeriodTitle(period.periodStart, period.periodEnd)}: ${formattedAmount(amount)}`}
-                            >
-                              <span className="amount-bar" style={{ height: `${height}%` }} />
-                            </div>
+                            />
                           );
                         })}
                       </div>
@@ -302,23 +308,40 @@ function MissionsView({
                     </div>
                   </div>
                   <div className="mission-meta">
-                    <span className="reset-timer">Resets {resetsIn}</span>
-                    {lastDone !== 'Never' && (
-                      <span className="last-completed">Done {lastDone}</span>
-                    )}
+                    <div>
+                      <span className="meta-label">Resets</span>
+                      <span className="meta-value">{resetsIn}</span>
+                    </div>
+                    <div>
+                      <span className="meta-label">Done</span>
+                      <span className="meta-value">{lastDone === 'Never' ? '---' : lastDone}</span>
+                    </div>
                   </div>
                   {historyPreview.length > 0 && (
                     <div className="mission-history" onClick={(e) => e.stopPropagation()}>
-                      {historyPreview.map((period, index) => (
-                        <button
-                          key={`${period.periodEnd}-${index}`}
-                          className={`history-day ${period.completed ? 'done' : 'miss'} ${period.isCurrent ? 'current' : ''}`}
-                          title={formatPeriodTitle(period.periodStart, period.periodEnd)}
-                          onClick={() => onOpenCalendar(mission)}
-                        >
-                          {period.completed ? '✓' : '·'}
-                        </button>
-                      ))}
+                      <span className="mission-history-label">
+                        Recent {historyPreview.length}
+                      </span>
+                      <div className="mission-history-dots">
+                        {historyPreview.map((period, index) => {
+                          const dotClasses = [
+                            'mission-history-dot',
+                            period.completed ? 'completed' : 'missed',
+                            period.isCurrent ? 'current' : '',
+                          ]
+                            .filter(Boolean)
+                            .join(' ');
+
+                          return (
+                            <span
+                              key={`${period.periodEnd}-${index}`}
+                              className={dotClasses}
+                              title={formatPeriodTitle(period.periodStart, period.periodEnd)}
+                              onClick={() => onOpenCalendar(mission)}
+                            />
+                          );
+                        })}
+                      </div>
                     </div>
                   )}
                   <div className="mission-footer">
