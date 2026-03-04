@@ -93,3 +93,34 @@
   height: 16px;
   opacity: 0.8;
 }
+
+/* Modern Dark Refresh */
+.theme-btn {
+  backdrop-filter: blur(12px);
+  background: linear-gradient(135deg, rgb(18 26 42 / 86%), rgb(11 17 28 / 74%));
+  border: 1px solid rgb(148 163 184 / 24%);
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.theme-btn:hover {
+  border-color: rgb(96 165 250 / 48%);
+}
+
+.theme-dropdown {
+  backdrop-filter: blur(14px);
+  background: linear-gradient(170deg, rgb(16 22 34 / 94%), rgb(10 14 22 / 92%));
+  border: 1px solid rgb(148 163 184 / 22%);
+  border-radius: 14px;
+  box-shadow: 0 22px 45px rgb(0 0 0 / 55%);
+}
+
+.theme-option {
+  border-radius: 10px;
+  font-size: 0.82rem;
+}
+
+.theme-option.active {
+  background: linear-gradient(135deg, rgb(59 130 246 / 22%), rgb(34 211 238 / 16%));
+  color: #93c5fd;
+}
