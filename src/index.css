@@ -18,16 +18,16 @@
   --accent-color: #4ade80;
   --accent-pink: #ec4899;
   --accent-cyan: #22d3ee;
-  --surface-0: #060911;
-  --surface-1: rgb(12 16 28 / 76%);
-  --surface-2: rgb(18 23 38 / 82%);
-  --surface-3: rgb(22 30 48 / 92%);
-  --edge-soft: rgb(255 255 255 / 10%);
-  --edge-strong: rgb(148 163 184 / 28%);
+  --surface-0: color-mix(in srgb, var(--bg-primary) 84%, black 16%);
+  --surface-1: color-mix(in srgb, var(--bg-card-solid) 78%, transparent);
+  --surface-2: color-mix(in srgb, var(--bg-card-solid) 86%, var(--accent-cyan) 14%);
+  --surface-3: color-mix(in srgb, var(--bg-card-solid) 82%, var(--accent-color) 18%);
+  --edge-soft: color-mix(in srgb, var(--border-color) 72%, white 28%);
+  --edge-strong: color-mix(in srgb, var(--border-color) 66%, var(--accent-cyan) 34%);
   --shadow-elevated: 0 24px 50px rgb(0 0 0 / 48%);
   --shadow-card: 0 14px 34px rgb(0 0 0 / 42%);
-  --accent-blue: #60a5fa;
-  --text-muted: #94a3b8;
+  --accent-blue: color-mix(in srgb, var(--accent-cyan) 56%, var(--text-primary) 44%);
+  --text-muted: color-mix(in srgb, var(--text-secondary) 72%, var(--text-primary) 28%);
 }
 
 html, body, #root {
