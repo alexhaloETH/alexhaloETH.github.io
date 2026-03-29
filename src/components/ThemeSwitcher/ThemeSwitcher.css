@@ -1,7 +1,7 @@
 .theme-switcher {
   position: relative;
   isolation: isolate;
-  z-index: 30;
+  z-index: 80;
 }
 
 .theme-btn {
@@ -42,7 +42,7 @@
   border-radius: 8px;
   padding: 0.5rem;
   box-shadow: 0 4px 12px rgb(var(--black-rgb) / 30%);
-  z-index: 1000;
+  z-index: 3000;
   animation: dropdown-appear 0.2s ease;
 }
 

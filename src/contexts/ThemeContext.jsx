@@ -3,6 +3,20 @@ import { createContext, useContext, useState, useEffect } from 'react';
 const ThemeContext = createContext();
 
 export const THEMES = {
+  black: {
+    name: 'Pure Black',
+    colors: {
+      '--bg-primary': '#000000',
+      '--bg-card': 'rgb(5 5 5 / 84%)',
+      '--bg-card-solid': '#050505',
+      '--border-color': '#1a1a1a',
+      '--text-primary': '#f5f5f5',
+      '--text-secondary': '#9a9a9a',
+      '--accent-color': '#fafafa',
+      '--accent-pink': '#9ca3af',
+      '--accent-cyan': '#d4d4d8',
+    }
+  },
   dark: {
     name: 'Dark',
     colors: {
