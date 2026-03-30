@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import ExchangeAccountsCard from '../../secret/ExchangeAccountsCard/ExchangeAccountsCard';
 import GardenCard from '../../secret/GardenCard/GardenCard';
+import LibraryCard from '../../secret/LibraryCard/LibraryCard';
 import PantryCard from '../../secret/PantryCard/PantryCard';
 import TasksCard from '../../secret/TasksCard/TasksCard';
 import TradingBotsCard from '../../secret/TradingBotsCard/TradingBotsCard';
@@ -12,6 +13,7 @@ function MainDashboardContent() {
   const { canRead } = useAuth();
   const showFinance = canRead('finance');
   const showGarden = canRead('plants');
+  const showLibrary = canRead('library');
   const showTasks = canRead('tasks') || canRead('notes') || canRead('missions');
   const showPantry = canRead('pantry') || canRead('recipes') || canRead('shopping');
 
@@ -65,6 +67,11 @@ function MainDashboardContent() {
           <motion.div variants={cardVariants} className="wide-card-wrapper">
             <LockedCard isLocked={!showGarden}>
               <GardenCard />
+            </LockedCard>
+          </motion.div>
+          <motion.div variants={cardVariants} className="wide-card-wrapper">
+            <LockedCard isLocked={!showLibrary}>
+              <LibraryCard />
             </LockedCard>
           </motion.div>
         </div>
