@@ -25,6 +25,7 @@ function SecretHeader({
               title={page.label}
             >
               <span className="page-number">{page.id}</span>
+              <span className="page-label">{page.label}</span>
             </button>
           ))}
         </div>

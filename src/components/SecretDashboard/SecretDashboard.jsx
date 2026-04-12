@@ -6,6 +6,7 @@ import { pageVariants } from './SecretDashboard.animations';
 import MainDashboardContent from './components/MainDashboardContent';
 import SecretHeader from './components/SecretHeader';
 import SystemDashboardContent from './components/SystemDashboardContent';
+import TrackersDashboardContent from './components/TrackersDashboardContent';
 import './SecretDashboard.css';
 
 function SecretDashboard() {
@@ -50,6 +51,21 @@ function SecretDashboard() {
           {currentPage === 2 && (
             <motion.div
               key="page-2"
+              className="dashboard-page"
+              custom={direction}
+              variants={pageVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.3 }}
+            >
+              <TrackersDashboardContent />
+            </motion.div>
+          )}
+
+          {currentPage === 3 && (
+            <motion.div
+              key="page-3"
               className="dashboard-page"
               custom={direction}
               variants={pageVariants}
