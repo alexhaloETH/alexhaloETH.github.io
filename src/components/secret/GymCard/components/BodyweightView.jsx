@@ -14,6 +14,12 @@ const formatDate = (dateString) => {
   }).format(date);
 };
 
+const formatDecimal = (value) => (
+  typeof value === 'number' && Number.isFinite(value)
+    ? value.toFixed(1)
+    : null
+);
+
 function BodyweightView({ gymData, canWrite }) {
   const { bodyweightLogs, logBodyweight, removeBodyweightLog, stats } = gymData;
   const [weight, setWeight] = useState('');
@@ -46,8 +52,19 @@ function BodyweightView({ gymData, canWrite }) {
     if (index >= bodyweightLogs.length - 1) return null;
     const current = bodyweightLogs[index].weight;
     const previous = bodyweightLogs[index + 1].weight;
+    if (
+      typeof current !== 'number'
+      || !Number.isFinite(current)
+      || typeof previous !== 'number'
+      || !Number.isFinite(previous)
+    ) {
+      return null;
+    }
     return current - previous;
   };
+
+  const currentWeight = formatDecimal(stats.recentBodyweight);
+  const bodyweightChange = formatDecimal(stats.bodyweightChange30d);
 
   return (
     <motion.div
@@ -61,7 +78,7 @@ function BodyweightView({ gymData, canWrite }) {
         <div className="gym-stat-card accent">
           <span>Current</span>
           <strong>
-            {stats.recentBodyweight ? `${stats.recentBodyweight.toFixed(1)}` : '--'}
+            {currentWeight ?? '--'}
           </strong>
         </div>
         <div className="gym-stat-card">
@@ -75,8 +92,8 @@ function BodyweightView({ gymData, canWrite }) {
                   : undefined,
             }}
           >
-            {stats.bodyweightChange30d !== null
-              ? `${stats.bodyweightChange30d > 0 ? '+' : ''}${stats.bodyweightChange30d.toFixed(1)}`
+            {bodyweightChange !== null
+              ? `${stats.bodyweightChange30d > 0 ? '+' : ''}${bodyweightChange}`
               : '--'}
           </strong>
         </div>
@@ -147,10 +164,10 @@ function BodyweightView({ gymData, canWrite }) {
               <div key={log.id} className="gym-bodyweight-entry">
                 <span className="date">{formatDate(log.logDate)}</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <span className="weight">{log.weight.toFixed(1)} kg</span>
+                  <span className="weight">{formatDecimal(log.weight) ?? '--'} kg</span>
                   {change !== null && (
                     <span className={`change ${change > 0 ? 'positive' : change < 0 ? 'negative' : ''}`}>
-                      {change > 0 ? '+' : ''}{change.toFixed(1)}
+                      {change > 0 ? '+' : ''}{formatDecimal(change)}
                     </span>
                   )}
                   {log.bodyFatPercent && (

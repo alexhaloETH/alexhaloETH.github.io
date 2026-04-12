@@ -1,11 +1,21 @@
 import { motion } from 'framer-motion';
 
 const formatVolume = (volume) => {
+  if (typeof volume !== 'number' || !Number.isFinite(volume)) {
+    return '0';
+  }
+
   if (volume >= 1000) {
     return `${(volume / 1000).toFixed(1)}k`;
   }
   return Math.round(volume).toString();
 };
+
+const formatDecimal = (value) => (
+  typeof value === 'number' && Number.isFinite(value)
+    ? value.toFixed(1)
+    : null
+);
 
 function AnalyticsView({ gymData }) {
   const { stats } = gymData;
@@ -38,14 +48,14 @@ function AnalyticsView({ gymData }) {
       </div>
 
       {/* Bodyweight Summary */}
-      {stats.recentBodyweight && (
+      {formatDecimal(stats.recentBodyweight) !== null && (
         <div className="gym-chart-container">
           <h4>Bodyweight</h4>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '1rem' }}>
             <span style={{ fontSize: '2rem', fontWeight: 700 }}>
-              {stats.recentBodyweight.toFixed(1)} kg
+              {formatDecimal(stats.recentBodyweight)} kg
             </span>
-            {stats.bodyweightChange30d !== null && (
+            {formatDecimal(stats.bodyweightChange30d) !== null && (
               <span
                 style={{
                   fontSize: '0.875rem',
@@ -53,7 +63,7 @@ function AnalyticsView({ gymData }) {
                 }}
               >
                 {stats.bodyweightChange30d > 0 ? '+' : ''}
-                {stats.bodyweightChange30d.toFixed(1)} kg (30d)
+                {formatDecimal(stats.bodyweightChange30d)} kg (30d)
               </span>
             )}
           </div>

@@ -139,8 +139,12 @@ function useGymData(showNotification, { canReadGym = true, canWriteGym = true } 
     workoutsThisMonth: analytics?.workoutsThisMonth || 0,
     totalWorkouts: analytics?.totalWorkouts || 0,
     totalVolumeThisWeek: analytics?.totalVolumeThisWeek || 0,
-    recentBodyweight: analytics?.recentBodyweight,
-    bodyweightChange30d: analytics?.bodyweightChange30d,
+    recentBodyweight: typeof analytics?.recentBodyweight === 'number'
+      ? analytics.recentBodyweight
+      : null,
+    bodyweightChange30d: typeof analytics?.bodyweightChange30d === 'number'
+      ? analytics.bodyweightChange30d
+      : null,
     personalRecords: analytics?.personalRecords || [],
   }), [analytics]);
 
