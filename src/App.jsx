@@ -13,6 +13,7 @@ import SecretDashboard from './components/SecretDashboard/SecretDashboard.jsx'
 import LoadingAnimation from './components/LoadingAnimation/LoadingAnimation.jsx'
 import ExitAnimation from './components/ExitAnimation/ExitAnimation.jsx'
 import SecretBackground from './components/SecretBackground/SecretBackground.jsx'
+import PiDisplay from './pi-display/PiDisplay.jsx'
 import { AuthProvider, useAuth } from './contexts/AuthContext.jsx'
 import { NotificationProvider, useNotification } from './contexts/NotificationContext.jsx'
 import { ThemeProvider } from './contexts/ThemeContext.jsx'
@@ -21,6 +22,33 @@ import useIdleDetection from './hooks/useIdleDetection'
 import { checkUnitySupport } from './utils/deviceDetection'
 import { IDLE_TIMEOUT } from './utils/constants'
 import './App.css'
+
+function restoreGitHubPagesRoute() {
+  try {
+    const params = new URLSearchParams(window.location.search)
+    const queryRedirect = params.get('spa_redirect')
+    if (queryRedirect) {
+      window.history.replaceState(null, '', queryRedirect)
+      return
+    }
+
+    const redirect = window.sessionStorage.getItem('portfolio_spa_redirect')
+    if (redirect) {
+      window.sessionStorage.removeItem('portfolio_spa_redirect')
+      window.history.replaceState(null, '', redirect)
+    }
+  } catch (error) {
+    console.warn('Failed to restore SPA redirect:', error)
+  }
+}
+
+restoreGitHubPagesRoute()
+
+const isPiDisplayRoute = () => {
+  const route = window.location.pathname.replace(/\/+$/, '')
+  const params = new URLSearchParams(window.location.search)
+  return route === '/pi-display' || params.get('display') === 'pi'
+}
 
 function AppContent() {
   const [unityEnabled, setUnityEnabled] = useState(false)
@@ -49,6 +77,10 @@ function AppContent() {
       setUnityEnabled(false)
     }
   }, [unityEnabled, showNotification])
+
+  if (isPiDisplayRoute()) {
+    return <PiDisplay />
+  }
 
   return (
     <>
