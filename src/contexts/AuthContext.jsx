@@ -27,9 +27,49 @@ export function AuthProvider({ children, showNotification }) {
     return decodeTokenUser(token);
   });
 
+  const enterSecretPortal = useCallback((notification) => {
+    setShowLoginModal(false);
+    setIsExitingDashboard(false);
+    setIsLoadingDashboard(true);
+
+    setTimeout(() => {
+      setIsLoadingDashboard(false);
+      setShowSecretPortal(true);
+      if (notification && showNotification) {
+        setTimeout(() => {
+          showNotification(notification);
+        }, 300);
+      }
+    }, 1200);
+  }, [showNotification]);
+
   const triggerSecretEntry = useCallback(() => {
+    const storedToken = localStorage.getItem('dashboard_token');
+    const storedUser = readStoredUser();
+    const user = storedUser || decodeTokenUser(storedToken);
+
+    if (storedToken && user) {
+      setAuthToken(storedToken);
+      setCurrentUser(user);
+      localStorage.setItem('dashboard_user', JSON.stringify(user));
+      enterSecretPortal({
+        title: 'Session Restored',
+        message: 'Welcome back to Command Center',
+        type: 'success',
+        duration: 3500,
+      });
+      return;
+    }
+
+    if (storedToken && !user) {
+      localStorage.removeItem('dashboard_token');
+      localStorage.removeItem('dashboard_user');
+      setAuthToken(null);
+      setCurrentUser(null);
+    }
+
     setShowLoginModal(true);
-  }, []);
+  }, [enterSecretPortal]);
 
   const login = useCallback(async (username, password) => {
     try {
@@ -65,25 +105,12 @@ export function AuthProvider({ children, showNotification }) {
         localStorage.setItem('dashboard_user', JSON.stringify(user));
       }
 
-      setShowLoginModal(false);
-      setIsLoadingDashboard(true);
-
-      // Show loading animation for 2 seconds before showing dashboard
-      setTimeout(() => {
-        setIsLoadingDashboard(false);
-        setShowSecretPortal(true);
-        // Show welcome notification after dashboard loads
-        if (showNotification) {
-          setTimeout(() => {
-            showNotification({
-              title: 'Access Granted',
-              message: 'Welcome back to Command Center',
-              type: 'success',
-              duration: 5000,
-            });
-          }, 300);
-        }
-      }, 2000);
+      enterSecretPortal({
+        title: 'Access Granted',
+        message: 'Welcome back to Command Center',
+        type: 'success',
+        duration: 5000,
+      });
 
       return { success: true };
     } catch (error) {
@@ -94,7 +121,7 @@ export function AuthProvider({ children, showNotification }) {
       }
       return { success: false, error: 'Failed to connect to server' };
     }
-  }, [showNotification]);
+  }, [enterSecretPortal]);
 
   const logout = useCallback(() => {
     // Clear the auth token
@@ -117,12 +144,6 @@ export function AuthProvider({ children, showNotification }) {
   }, []);
 
   const exitSecretPortal = useCallback(() => {
-    // Clear the auth token when exiting
-    setAuthToken(null);
-    localStorage.removeItem('dashboard_token');
-    setCurrentUser(null);
-    localStorage.removeItem('dashboard_user');
-
     setIsExitingDashboard(true);
 
     // Show exit animation for 1.5 seconds before closing portal
@@ -197,6 +218,18 @@ export function useAuth() {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
+}
+
+function readStoredUser() {
+  const stored = localStorage.getItem('dashboard_user');
+  if (!stored) return null;
+  try {
+    return JSON.parse(stored);
+  } catch (error) {
+    console.warn('Failed to parse stored user:', error);
+    localStorage.removeItem('dashboard_user');
+    return null;
+  }
 }
 
 function decodeTokenUser(token) {
