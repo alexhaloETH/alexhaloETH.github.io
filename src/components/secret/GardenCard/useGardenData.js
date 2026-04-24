@@ -8,14 +8,6 @@ import {
 
 const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
 
-const getTodayDateString = () => {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
-
 const parseDate = (value) => {
   if (!value) {
     return null;
@@ -25,27 +17,15 @@ const parseDate = (value) => {
   return Number.isNaN(date.getTime()) ? null : date;
 };
 
+const getTodayDateString = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 const startOfToday = () => parseDate(getTodayDateString());
-
-const addDays = (value, days) => {
-  const date = parseDate(value);
-  if (!date) {
-    return null;
-  }
-
-  const result = new Date(date);
-  result.setDate(result.getDate() + days);
-  return result;
-};
-
-const getNextWaterDate = (plant) => {
-  const anchor = plant.lastWateredOn || plant.plantedOn;
-  if (!anchor || !plant.wateringIntervalDays) {
-    return null;
-  }
-
-  return addDays(anchor, plant.wateringIntervalDays);
-};
 
 const isReadyToHarvest = (plant, today) => {
   if (!plant.isHarvestable) {
@@ -64,15 +44,6 @@ const isReadyToHarvest = (plant, today) => {
   }
 
   return false;
-};
-
-const needsWaterToday = (plant, today) => {
-  const nextWaterDate = getNextWaterDate(plant);
-  if (!nextWaterDate) {
-    return false;
-  }
-
-  return nextWaterDate <= today;
 };
 
 const startsHarvestSoon = (plant, today) => {
@@ -94,15 +65,23 @@ const getSortScore = (plant, today) => {
     return 0;
   }
 
-  if (needsWaterToday(plant, today)) {
+  if (startsHarvestSoon(plant, today)) {
     return 1;
   }
 
-  if (startsHarvestSoon(plant, today)) {
+  if (plant.status === 'growing') {
     return 2;
   }
 
-  return 3;
+  if (plant.status === 'seedling') {
+    return 3;
+  }
+
+  if (plant.status === 'planned') {
+    return 4;
+  }
+
+  return 5;
 };
 
 function useGardenData(showNotification, { canReadPlants = true, canWritePlants = true } = {}) {
@@ -149,8 +128,8 @@ function useGardenData(showNotification, { canReadPlants = true, canWritePlants 
         return scoreDiff;
       }
 
-      const leftUpdated = parseDate(left.updatedAt?.slice?.(0, 10) || left.lastWateredOn) || new Date(0);
-      const rightUpdated = parseDate(right.updatedAt?.slice?.(0, 10) || right.lastWateredOn) || new Date(0);
+      const leftUpdated = parseDate(left.updatedAt?.slice?.(0, 10) || left.plantedOn) || new Date(0);
+      const rightUpdated = parseDate(right.updatedAt?.slice?.(0, 10) || right.plantedOn) || new Date(0);
       return rightUpdated - leftUpdated;
     });
   }, [plants]);
@@ -159,9 +138,9 @@ function useGardenData(showNotification, { canReadPlants = true, canWritePlants 
     const today = startOfToday();
     return {
       total: plants.length,
-      needsWater: plants.filter((plant) => needsWaterToday(plant, today)).length,
       readyToHarvest: plants.filter((plant) => isReadyToHarvest(plant, today)).length,
       harvestSoon: plants.filter((plant) => startsHarvestSoon(plant, today)).length,
+      harvestTracked: plants.filter((plant) => plant.isHarvestable).length,
     };
   }, [plants]);
 
@@ -260,14 +239,6 @@ function useGardenData(showNotification, { canReadPlants = true, canWritePlants 
     }
   };
 
-  const markPlantWatered = async (plant) => {
-    return updatePlant({
-      ...plant,
-      lastWateredOn: getTodayDateString(),
-      status: plant.status === 'planned' ? 'growing' : plant.status,
-    });
-  };
-
   return {
     plants: sortedPlants,
     stats,
@@ -279,7 +250,6 @@ function useGardenData(showNotification, { canReadPlants = true, canWritePlants 
     addPlant,
     updatePlant,
     deletePlant,
-    markPlantWatered,
   };
 }
 

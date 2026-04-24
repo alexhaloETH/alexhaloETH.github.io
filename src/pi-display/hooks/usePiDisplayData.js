@@ -16,7 +16,6 @@ import {
   getStretchLogs,
 } from '../../utils/gymApi';
 import {
-  addDays,
   getCurrentDayNumber,
   getDaysBetween,
   getTodayDateString,
@@ -46,10 +45,9 @@ const INITIAL_DATA = {
   garden: {
     ...EMPTY_SECTION,
     total: 0,
-    needsWater: [],
-    overduePlants: [],
+    harvestTracked: 0,
+    harvestSoon: [],
     readyToHarvest: [],
-    nextWaterPlant: null,
     nextHarvestPlant: null,
   },
   daily: {
@@ -119,10 +117,6 @@ const buildGardenSummary = (plantsResult) => {
   const today = parseDate(getTodayDateString());
 
   const enrichedPlants = plants.map((plant) => {
-    const nextWaterDate = plant.wateringIntervalDays
-      ? addDays(plant.lastWateredOn || plant.plantedOn, plant.wateringIntervalDays)
-      : null;
-    const daysUntilWater = getDaysBetween(nextWaterDate, today);
     const harvestStart = parseDate(plant.harvestStartOn);
     const harvestEnd = parseDate(plant.harvestEndOn);
     const readyToHarvest = Boolean(
@@ -131,35 +125,34 @@ const buildGardenSummary = (plantsResult) => {
       && harvestStart <= today
       && (!harvestEnd || harvestEnd >= today),
     );
+    const daysUntilHarvest = getDaysBetween(harvestStart, today);
 
     return {
       ...plant,
-      nextWaterDate,
-      daysUntilWater,
+      daysUntilHarvest,
       readyToHarvest,
     };
   });
 
-  const needsWater = enrichedPlants.filter((plant) => (
-    typeof plant.daysUntilWater === 'number' && plant.daysUntilWater <= 0
-  ));
-  const overduePlants = needsWater.filter((plant) => plant.daysUntilWater < 0);
-  const futureWaterPlants = enrichedPlants
-    .filter((plant) => typeof plant.daysUntilWater === 'number' && plant.daysUntilWater > 0)
-    .sort((left, right) => left.daysUntilWater - right.daysUntilWater);
+  const readyToHarvest = enrichedPlants.filter((plant) => plant.readyToHarvest);
   const futureHarvestPlants = enrichedPlants
-    .filter((plant) => plant.isHarvestable && plant.harvestStartOn && !plant.readyToHarvest)
+    .filter((plant) => (
+      plant.isHarvestable
+      && !plant.readyToHarvest
+      && typeof plant.daysUntilHarvest === 'number'
+      && plant.daysUntilHarvest >= 0
+    ))
     .sort((left, right) => plantDateSort(left.harvestStartOn, right.harvestStartOn));
+  const harvestSoon = futureHarvestPlants.filter((plant) => plant.daysUntilHarvest <= 7);
 
   return {
     ok: plantsResult.ok,
     error: plantsResult.error,
     total: plants.length,
-    needsWater,
-    overduePlants,
-    readyToHarvest: enrichedPlants.filter((plant) => plant.readyToHarvest),
-    nextWaterPlant: needsWater[0] || futureWaterPlants[0] || null,
-    nextHarvestPlant: enrichedPlants.find((plant) => plant.readyToHarvest) || futureHarvestPlants[0] || null,
+    harvestTracked: enrichedPlants.filter((plant) => plant.isHarvestable).length,
+    harvestSoon,
+    readyToHarvest,
+    nextHarvestPlant: readyToHarvest[0] || futureHarvestPlants[0] || null,
   };
 };
 

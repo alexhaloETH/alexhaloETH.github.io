@@ -157,33 +157,13 @@ function PlantModal({
             </label>
           </div>
 
-          <div className="garden-form-grid three-up">
+          <div className="garden-form-grid">
             <label className="garden-form-group">
               <span>Planted on</span>
               <input
                 type="date"
                 value={formData.plantedOn}
                 onChange={(event) => handleChange('plantedOn', event.target.value)}
-              />
-            </label>
-
-            <label className="garden-form-group">
-              <span>Last watered</span>
-              <input
-                type="date"
-                value={formData.lastWateredOn}
-                onChange={(event) => handleChange('lastWateredOn', event.target.value)}
-              />
-            </label>
-
-            <label className="garden-form-group">
-              <span>Water every days</span>
-              <input
-                type="number"
-                min="1"
-                max="30"
-                value={formData.wateringIntervalDays}
-                onChange={(event) => handleChange('wateringIntervalDays', event.target.value)}
               />
             </label>
           </div>

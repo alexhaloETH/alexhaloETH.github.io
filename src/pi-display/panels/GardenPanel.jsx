@@ -1,33 +1,39 @@
 import PanelShell from './PanelShell';
 import { formatShortDate } from '../piDisplayUtils';
 
-function getWaterLabel(plant) {
-  if (!plant) {
-    return 'No watering data';
+function getHarvestLabel(plant) {
+  if (!plant || !plant.harvestStartOn) {
+    return 'No harvest date';
   }
 
-  if (plant.daysUntilWater < 0) {
-    return `${Math.abs(plant.daysUntilWater)}d overdue`;
+  if (plant.readyToHarvest) {
+    return 'Ready now';
   }
 
-  if (plant.daysUntilWater === 0) {
-    return 'Due today';
+  if (plant.daysUntilHarvest === 0) {
+    return 'Starts today';
   }
 
-  if (plant.daysUntilWater === 1) {
-    return 'Tomorrow';
+  if (plant.daysUntilHarvest === 1) {
+    return 'Starts tomorrow';
   }
 
-  return `In ${plant.daysUntilWater}d`;
+  if (typeof plant.daysUntilHarvest === 'number' && plant.daysUntilHarvest > 1) {
+    return `Starts in ${plant.daysUntilHarvest}d`;
+  }
+
+  return formatShortDate(plant.harvestStartOn);
 }
 
 function GardenPanel({ data }) {
   const { garden } = data;
-  const waterPlants = garden.needsWater.slice(0, 3);
-  const harvestPlants = garden.readyToHarvest.slice(0, 2);
+  const readyPlants = garden.readyToHarvest.slice(0, 3);
+  const soonPlants = garden.harvestSoon.slice(0, 3);
+  const title = readyPlants.length ? 'Harvest Ready' : 'Garden Watch';
+  const tone = readyPlants.length ? 'warning' : 'green';
 
   return (
-    <PanelShell eyebrow="Garden" title={garden.needsWater.length ? 'Water Today' : 'All Watered'} tone={garden.needsWater.length ? 'warning' : 'green'}>
+    <PanelShell eyebrow="Garden" title={title} tone={tone}>
       {!garden.ok && (
         <div className="pi-empty">
           <strong>Garden unavailable</strong>
@@ -38,15 +44,24 @@ function GardenPanel({ data }) {
       {garden.ok && (
         <>
           <div className="pi-list">
-            {waterPlants.length > 0 ? waterPlants.map((plant) => (
+            {readyPlants.length > 0 ? readyPlants.map((plant) => (
               <div key={plant.id} className="pi-list-item urgent">
                 <strong>{plant.name}</strong>
-                <span>{getWaterLabel(plant)}</span>
+                <span>Ready now</span>
+              </div>
+            )) : soonPlants.length > 0 ? soonPlants.map((plant) => (
+              <div key={plant.id} className="pi-list-item">
+                <strong>{plant.name}</strong>
+                <span>{getHarvestLabel(plant)}</span>
               </div>
             )) : (
               <div className="pi-list-item">
-                <strong>{garden.nextWaterPlant?.name || 'No plants due'}</strong>
-                <span>{getWaterLabel(garden.nextWaterPlant)}</span>
+                <strong>{garden.total ? `${garden.total} plants tracked` : 'No plants tracked'}</strong>
+                <span>
+                  {garden.nextHarvestPlant
+                    ? `Next harvest ${formatShortDate(garden.nextHarvestPlant.harvestStartOn)}`
+                    : 'No harvest windows set'}
+                </span>
               </div>
             )}
           </div>
@@ -54,16 +69,12 @@ function GardenPanel({ data }) {
           <div className="pi-divider" />
 
           <div className="pi-mini-section">
-            <span>Harvest</span>
-            {harvestPlants.length > 0 ? (
-              <strong>{harvestPlants.map((plant) => plant.name).join(', ')}</strong>
-            ) : (
-              <strong>
-                {garden.nextHarvestPlant
-                  ? `${garden.nextHarvestPlant.name} · ${formatShortDate(garden.nextHarvestPlant.harvestStartOn)}`
-                  : 'No harvest window'}
-              </strong>
-            )}
+            <span>Tracking</span>
+            <strong>
+              {garden.harvestTracked > 0
+                ? `${garden.harvestTracked} harvest plants`
+                : 'Decorative only'}
+            </strong>
           </div>
         </>
       )}

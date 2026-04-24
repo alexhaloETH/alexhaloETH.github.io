@@ -37,55 +37,11 @@ const formatDate = (value) => {
   }).format(date);
 };
 
-const formatDateObject = (date) => {
-  if (!date) {
-    return 'Not set';
-  }
-
-  return new Intl.DateTimeFormat('en-GB', {
-    day: 'numeric',
-    month: 'short',
-  }).format(date);
-};
-
-const getTodayDateString = () => {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
-
-const addDays = (value, days) => {
-  const date = parseDate(value);
-  if (!date) {
-    return null;
-  }
-
-  const result = new Date(date);
-  result.setDate(result.getDate() + days);
-  return result;
-};
-
-const getNextWaterDate = (plant) => {
-  const anchor = plant.lastWateredOn || plant.plantedOn;
-  if (!anchor || !plant.wateringIntervalDays) {
-    return null;
-  }
-
-  return addDays(anchor, plant.wateringIntervalDays);
-};
-
 const getPlantSignals = (plant) => {
-  const today = parseDate(getTodayDateString());
-  const nextWaterDate = getNextWaterDate(plant);
+  const today = new Date();
   const harvestStartDate = parseDate(plant.harvestStartOn);
   const harvestEndDate = parseDate(plant.harvestEndOn);
 
-  const needsWater = Boolean(nextWaterDate && nextWaterDate <= today);
-  const daysUntilWater = nextWaterDate
-    ? Math.ceil((nextWaterDate - today) / MILLISECONDS_PER_DAY)
-    : null;
   const readyToHarvest = plant.isHarvestable
     && (
       plant.status === 'ready'
@@ -97,19 +53,6 @@ const getPlantSignals = (plant) => {
       && harvestStartDate > today
       && Math.ceil((harvestStartDate - today) / MILLISECONDS_PER_DAY) <= 7,
   );
-
-  let waterLabel = 'Set watering date';
-  if (nextWaterDate) {
-    if (daysUntilWater === null) {
-      waterLabel = formatDate(plant.lastWateredOn);
-    } else if (daysUntilWater <= 0) {
-      waterLabel = daysUntilWater === 0 ? 'Today' : `${Math.abs(daysUntilWater)}d overdue`;
-    } else if (daysUntilWater === 1) {
-      waterLabel = 'Tomorrow';
-    } else {
-      waterLabel = formatDateObject(nextWaterDate);
-    }
-  }
 
   let harvestWindowLabel = 'Not tracked';
   if (plant.isHarvestable) {
@@ -124,22 +67,22 @@ const getPlantSignals = (plant) => {
     }
   }
 
-  let insight = 'Steady growth';
+  let insight = 'Tracking growth';
   if (readyToHarvest) {
     insight = 'Harvest window is open';
-  } else if (needsWater) {
-    insight = 'Watering is due';
   } else if (harvestSoon) {
     insight = 'Harvest window opens soon';
-  } else if (!plant.lastWateredOn) {
-    insight = 'Set the first watering checkpoint';
+  } else if (!plant.isHarvestable) {
+    insight = 'Decorative or maintenance-only plant';
+  } else if (plant.status === 'seedling') {
+    insight = 'Seedlings are establishing';
+  } else if (plant.status === 'finished') {
+    insight = 'Growth cycle completed';
   }
 
   return {
-    needsWater,
     readyToHarvest,
     harvestSoon,
-    waterLabel,
     harvestWindowLabel,
     insight,
   };
@@ -160,7 +103,6 @@ function GardenCard() {
     addPlant,
     updatePlant,
     deletePlant,
-    markPlantWatered,
   } = useGardenData(showNotification, {
     canReadPlants: true,
     canWritePlants,
@@ -180,9 +122,11 @@ function GardenCard() {
           <div>
             <h3>Garden Tracker</h3>
             <p className="garden-subtitle">
-              {stats.needsWater > 0
-                ? `${stats.needsWater} plant${stats.needsWater === 1 ? '' : 's'} need water`
-                : 'Watering schedule under control'}
+              {stats.readyToHarvest > 0
+                ? `${stats.readyToHarvest} plant${stats.readyToHarvest === 1 ? '' : 's'} ready to harvest`
+                : stats.harvestSoon > 0
+                  ? `${stats.harvestSoon} harvest window${stats.harvestSoon === 1 ? '' : 's'} opening soon`
+                  : `${stats.harvestTracked} harvest-tracked plant${stats.harvestTracked === 1 ? '' : 's'} in rotation`}
             </p>
           </div>
         </div>
@@ -200,16 +144,16 @@ function GardenCard() {
 
       <div className="garden-stats">
         <div className="garden-stat">
-          <span className="garden-stat-label">Water today</span>
-          <strong>{stats.needsWater}</strong>
-        </div>
-        <div className="garden-stat">
           <span className="garden-stat-label">Harvest now</span>
           <strong>{stats.readyToHarvest}</strong>
         </div>
         <div className="garden-stat">
           <span className="garden-stat-label">Harvest soon</span>
           <strong>{stats.harvestSoon}</strong>
+        </div>
+        <div className="garden-stat">
+          <span className="garden-stat-label">Harvest tracked</span>
+          <strong>{stats.harvestTracked}</strong>
         </div>
         <div className="garden-stat">
           <span className="garden-stat-label">Tracked plants</span>
@@ -228,7 +172,7 @@ function GardenCard() {
           <div className="garden-empty-state">
             <h4>No plants tracked yet</h4>
             <p>
-              Add tomatoes, chives, herbs, or anything else you want to keep watered and on
+              Add tomatoes, chives, herbs, or anything else you want to keep on growth and
               harvest schedule.
             </p>
             {canWritePlants && (
@@ -247,14 +191,12 @@ function GardenCard() {
           <div className="garden-list">
             {plants.map((plant) => {
               const signals = getPlantSignals(plant);
-              const wateredToday = plant.lastWateredOn === getTodayDateString();
 
               return (
                 <article
                   key={plant.id}
                   className={[
                     'garden-item',
-                    signals.needsWater ? 'needs-water' : '',
                     signals.readyToHarvest ? 'ready-to-harvest' : '',
                   ].filter(Boolean).join(' ')}
                 >
@@ -282,8 +224,8 @@ function GardenCard() {
 
                   <div className="garden-schedule-grid">
                     <div className="garden-schedule-card">
-                      <span>Next water</span>
-                      <strong>{signals.waterLabel}</strong>
+                      <span>Stage</span>
+                      <strong>{STATUS_LABELS[plant.status] || plant.status}</strong>
                     </div>
                     <div className="garden-schedule-card">
                       <span>Harvest opens</span>
@@ -306,14 +248,6 @@ function GardenCard() {
 
                     {canWritePlants && (
                       <div className="garden-actions">
-                        <button
-                          type="button"
-                          className="garden-secondary-btn"
-                          onClick={() => markPlantWatered(plant)}
-                          disabled={wateredToday}
-                        >
-                          {wateredToday ? 'Watered today' : 'Mark watered'}
-                        </button>
                         <button
                           type="button"
                           className="garden-secondary-btn"
