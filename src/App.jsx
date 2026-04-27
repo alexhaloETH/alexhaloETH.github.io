@@ -13,6 +13,7 @@ import SecretDashboard from './components/SecretDashboard/SecretDashboard.jsx'
 import LoadingAnimation from './components/LoadingAnimation/LoadingAnimation.jsx'
 import ExitAnimation from './components/ExitAnimation/ExitAnimation.jsx'
 import SecretBackground from './components/SecretBackground/SecretBackground.jsx'
+import ContentBrowser, { getContentRoute } from './components/ContentBrowser/ContentBrowser.jsx'
 import PiDisplay from './pi-display/PiDisplay.jsx'
 import { AuthProvider, useAuth } from './contexts/AuthContext.jsx'
 import { NotificationProvider, useNotification } from './contexts/NotificationContext.jsx'
@@ -56,6 +57,7 @@ function AppContent() {
   const isIdle = useIdleDetection(IDLE_TIMEOUT, unityEnabled)
   const { showSecretPortal, isLoadingDashboard, isExitingDashboard } = useAuth()
   const { notification, showNotification, closeNotification } = useNotification()
+  const contentRoute = getContentRoute()
 
   const handleToggle3D = useCallback(() => {
     if (!unityEnabled) {
@@ -136,8 +138,15 @@ function AppContent() {
       ) : (
         <div className={`portfolio ${isIdle ? 'screensaver' : ''}`}>
           <header className="header">
-            <span className="header-name">ALEXHALO</span>
+            {contentRoute ? (
+              <a className="header-name" href="/">ALEXHALO</a>
+            ) : (
+              <span className="header-name">ALEXHALO</span>
+            )}
             <div className="header-buttons">
+              <a className="toggle-btn header-link" href="/content">
+                <span>Content</span>
+              </a>
               <ThemeSwitcher />
               <button
                 className={`toggle-btn ${unityEnabled ? 'active' : ''}`}
@@ -155,13 +164,17 @@ function AppContent() {
             </div>
           </header>
 
-          <main className="card-grid">
-            <HeroCard />
-            <SkillsCard />
-            <ExperienceCard />
-            <ProjectsCard />
-            <WorldCard />
-          </main>
+          {contentRoute ? (
+            <ContentBrowser />
+          ) : (
+            <main className="card-grid">
+              <HeroCard />
+              <SkillsCard />
+              <ExperienceCard />
+              <ProjectsCard />
+              <WorldCard />
+            </main>
+          )}
         </div>
       )}
     </>
