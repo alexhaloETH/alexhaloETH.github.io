@@ -7,6 +7,7 @@ import MainDashboardContent from './components/MainDashboardContent';
 import SecretHeader from './components/SecretHeader';
 import SystemDashboardContent from './components/SystemDashboardContent';
 import TrackersDashboardContent from './components/TrackersDashboardContent';
+import VaultDashboardContent from './components/VaultDashboardContent';
 import './SecretDashboard.css';
 
 function SecretDashboard() {
@@ -75,6 +76,21 @@ function SecretDashboard() {
               transition={{ duration: 0.3 }}
             >
               <SystemDashboardContent />
+            </motion.div>
+          )}
+
+          {currentPage === 4 && (
+            <motion.div
+              key="page-4"
+              className="dashboard-page"
+              custom={direction}
+              variants={pageVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.3 }}
+            >
+              <VaultDashboardContent />
             </motion.div>
           )}
         </AnimatePresence>

@@ -7,21 +7,6 @@ import {
 } from '../../utils/contentApi'
 import './ContentBrowser.css'
 
-const routeConfig = () => {
-  const path = window.location.pathname.replace(/\/+$/, '') || '/'
-  const bases = ['/content', '/notes', '/projects']
-  const base = bases.find((candidate) => path === candidate || path.startsWith(`${candidate}/`))
-
-  if (!base) {
-    return null
-  }
-
-  const slug = path === base ? null : decodeURIComponent(path.slice(base.length + 1))
-  const type = base === '/notes' ? 'note' : base === '/projects' ? 'project' : ''
-
-  return { base, slug, type }
-}
-
 const formatDate = (value) => {
   if (!value) {
     return ''
@@ -46,7 +31,7 @@ function ContentMeta({ meta }) {
 
   return (
     <div className="content-meta-strip" aria-label="Content sync status">
-      <span>{meta.publishedCount ?? 0} published</span>
+      <span>{meta.publishedCount ?? 0} selected</span>
       {meta.lastSyncAt && <span>Synced {formatDate(meta.lastSyncAt)}</span>}
     </div>
   )
@@ -104,13 +89,13 @@ function ContentFilters({
   )
 }
 
-function ContentList({ route }) {
+function ContentList({ route, onOpenItem }) {
   const [items, setItems] = useState([])
   const [tags, setTags] = useState([])
   const [meta, setMeta] = useState(null)
   const [query, setQuery] = useState('')
   const [selectedTag, setSelectedTag] = useState('')
-  const [selectedType, setSelectedType] = useState(route.type)
+  const [selectedType, setSelectedType] = useState(route.type || '')
   const [status, setStatus] = useState('loading')
   const [error, setError] = useState('')
 
@@ -150,7 +135,7 @@ function ContentList({ route }) {
   }, [])
 
   useEffect(() => {
-    setSelectedType(route.type)
+    setSelectedType(route.type || '')
   }, [route.type])
 
   const types = useMemo(() => (
@@ -186,8 +171,8 @@ function ContentList({ route }) {
     <main className="content-shell">
       <section className="content-heading">
         <div>
-          <p className="content-kicker">Obsidian Vault</p>
-          <h1>Published Content</h1>
+          <p className="content-kicker">Private Vault</p>
+          <h1>Vault Notes</h1>
         </div>
         <ContentMeta meta={meta} />
       </section>
@@ -204,7 +189,7 @@ function ContentList({ route }) {
       />
 
       {status === 'loading' && (
-        <div className="content-state">Loading published content...</div>
+        <div className="content-state">Loading vault notes...</div>
       )}
 
       {status === 'error' && (
@@ -213,14 +198,24 @@ function ContentList({ route }) {
 
       {status === 'ready' && filteredItems.length === 0 && (
         <div className="content-state">
-          No published content found.
+          No selected vault notes found.
         </div>
       )}
 
       {status === 'ready' && filteredItems.length > 0 && (
         <div className="content-list">
           {filteredItems.map((item) => (
-            <a className="content-card" href={`/content/${item.slug}`} key={item.slug}>
+            <a
+              className="content-card"
+              href={`#vault/${item.slug}`}
+              key={item.slug}
+              onClick={(event) => {
+                if (onOpenItem) {
+                  event.preventDefault()
+                  onOpenItem(item.slug)
+                }
+              }}
+            >
               <div className="content-card-topline">
                 <span className="content-type">{item.type || 'note'}</span>
                 {item.featured && <span className="content-featured">Featured</span>}
@@ -245,7 +240,7 @@ function ContentList({ route }) {
   )
 }
 
-function ContentDetail({ slug }) {
+function ContentDetail({ slug, onBack, onOpenItem }) {
   const [item, setItem] = useState(null)
   const [status, setStatus] = useState('loading')
   const [error, setError] = useState('')
@@ -279,12 +274,43 @@ function ContentDetail({ slug }) {
     }
   }, [slug])
 
+  const handleBackClick = (event) => {
+    if (onBack) {
+      event.preventDefault()
+      onBack()
+    }
+  }
+
+  const handleBodyClick = (event) => {
+    if (!onOpenItem || !(event.target instanceof Element)) {
+      return
+    }
+
+    const link = event.target.closest('a')
+    const href = link?.getAttribute('href') || ''
+
+    if (!href.startsWith('/content/')) {
+      return
+    }
+
+    const nextSlug = href
+      .slice('/content/'.length)
+      .split(/[?#]/)[0]
+
+    if (nextSlug) {
+      event.preventDefault()
+      onOpenItem(decodeURIComponent(nextSlug))
+    }
+  }
+
   return (
     <main className="content-shell detail">
-      <a className="content-back-link" href="/content">Back to content</a>
+      <a className="content-back-link" href="#vault" onClick={handleBackClick}>
+        Back to vault
+      </a>
 
       {status === 'loading' && (
-        <div className="content-state">Loading published content...</div>
+        <div className="content-state">Loading vault note...</div>
       )}
 
       {status === 'error' && (
@@ -319,6 +345,7 @@ function ContentDetail({ slug }) {
           <div
             className="content-body"
             dangerouslySetInnerHTML={{ __html: item.bodyHtml || '' }}
+            onClick={handleBodyClick}
           />
         </article>
       )}
@@ -326,19 +353,26 @@ function ContentDetail({ slug }) {
   )
 }
 
-function ContentBrowser() {
-  const route = routeConfig()
-
-  if (!route) {
-    return null
-  }
+function ContentBrowser({ initialType = '' }) {
+  const [activeSlug, setActiveSlug] = useState(null)
+  const route = { base: '', slug: activeSlug, type: initialType }
 
   if (route.slug) {
-    return <ContentDetail slug={route.slug} />
+    return (
+      <ContentDetail
+        slug={route.slug}
+        onBack={() => setActiveSlug(null)}
+        onOpenItem={setActiveSlug}
+      />
+    )
   }
 
-  return <ContentList route={route} />
+  return (
+    <ContentList
+      route={route}
+      onOpenItem={setActiveSlug}
+    />
+  )
 }
 
-export { routeConfig as getContentRoute }
 export default ContentBrowser
