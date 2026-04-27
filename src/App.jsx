@@ -14,6 +14,7 @@ import LoadingAnimation from './components/LoadingAnimation/LoadingAnimation.jsx
 import ExitAnimation from './components/ExitAnimation/ExitAnimation.jsx'
 import SecretBackground from './components/SecretBackground/SecretBackground.jsx'
 import ContentBrowser, { getContentRoute } from './components/ContentBrowser/ContentBrowser.jsx'
+import ContentCard from './components/ContentCard/ContentCard.jsx'
 import PiDisplay from './pi-display/PiDisplay.jsx'
 import { AuthProvider, useAuth } from './contexts/AuthContext.jsx'
 import { NotificationProvider, useNotification } from './contexts/NotificationContext.jsx'
@@ -172,6 +173,7 @@ function AppContent() {
               <SkillsCard />
               <ExperienceCard />
               <ProjectsCard />
+              <ContentCard />
               <WorldCard />
             </main>
           )}
