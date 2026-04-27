@@ -3,7 +3,6 @@ import {
   getPublishedContent,
   getPublishedContentBySlug,
   getPublishedContentMeta,
-  getPublishedContentTags,
 } from '../../utils/contentApi'
 import './ContentBrowser.css'
 
@@ -36,6 +35,10 @@ function ContentMeta({ meta }) {
     </div>
   )
 }
+
+const getProjectName = (item) => item.project || 'Vault'
+
+const sortByName = (a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' })
 
 function ContentFilters({
   query,
@@ -89,9 +92,33 @@ function ContentFilters({
   )
 }
 
-function ContentList({ route, onOpenItem }) {
+function ProjectRail({ projects, selectedProject, onProjectChange }) {
+  if (projects.length === 0) {
+    return null
+  }
+
+  return (
+    <aside className="content-projects" aria-label="Vault projects">
+      <span className="content-projects-label">Projects</span>
+      <div className="content-projects-list">
+        {projects.map((project) => (
+          <button
+            className={`content-project-button ${selectedProject === project.project ? 'active' : ''}`}
+            key={project.project}
+            type="button"
+            onClick={() => onProjectChange(project.project)}
+          >
+            <span className="content-project-name">{project.project}</span>
+            <span className="content-project-count">{project.count}</span>
+          </button>
+        ))}
+      </div>
+    </aside>
+  )
+}
+
+function ContentList({ route, onOpenItem, selectedProject, onProjectChange }) {
   const [items, setItems] = useState([])
-  const [tags, setTags] = useState([])
   const [meta, setMeta] = useState(null)
   const [query, setQuery] = useState('')
   const [selectedTag, setSelectedTag] = useState('')
@@ -107,16 +134,14 @@ function ContentList({ route, onOpenItem }) {
 
     Promise.all([
       getPublishedContent(),
-      getPublishedContentTags(),
       getPublishedContentMeta(),
     ])
-      .then(([contentItems, contentTags, contentMeta]) => {
+      .then(([contentItems, contentMeta]) => {
         if (!active) {
           return
         }
 
         setItems(Array.isArray(contentItems) ? contentItems : [])
-        setTags(Array.isArray(contentTags) ? contentTags : [])
         setMeta(contentMeta)
         setStatus('ready')
       })
@@ -138,14 +163,75 @@ function ContentList({ route, onOpenItem }) {
     setSelectedType(route.type || '')
   }, [route.type])
 
+  const projects = useMemo(() => {
+    const counts = new Map()
+
+    items.forEach((item) => {
+      const project = getProjectName(item)
+      counts.set(project, (counts.get(project) || 0) + 1)
+    })
+
+    if (Array.isArray(meta?.projects)) {
+      meta.projects.forEach((projectMeta) => {
+        if (projectMeta?.project) {
+          counts.set(projectMeta.project, projectMeta.count ?? counts.get(projectMeta.project) ?? 0)
+        }
+      })
+    }
+
+    return Array.from(counts.entries())
+      .map(([project, count]) => ({ project, count }))
+      .sort((a, b) => sortByName(a.project, b.project))
+  }, [items, meta])
+
+  useEffect(() => {
+    if (status === 'ready' && !selectedProject && projects.length > 0) {
+      onProjectChange(projects[0].project)
+    }
+  }, [onProjectChange, projects, selectedProject, status])
+
+  const projectItems = useMemo(() => (
+    selectedProject
+      ? items.filter((item) => getProjectName(item) === selectedProject)
+      : []
+  ), [items, selectedProject])
+
   const types = useMemo(() => (
-    Array.from(new Set(items.map((item) => item.type).filter(Boolean))).sort()
-  ), [items])
+    Array.from(new Set(projectItems.map((item) => item.type).filter(Boolean))).sort(sortByName)
+  ), [projectItems])
+
+  const tags = useMemo(() => {
+    const counts = new Map()
+
+    projectItems.forEach((item) => {
+      item.tags?.forEach((tag) => {
+        if (tag?.trim()) {
+          counts.set(tag, (counts.get(tag) || 0) + 1)
+        }
+      })
+    })
+
+    return Array.from(counts.entries())
+      .map(([tag, count]) => ({ tag, count }))
+      .sort((a, b) => sortByName(a.tag, b.tag))
+  }, [projectItems])
+
+  useEffect(() => {
+    if (selectedType && !types.includes(selectedType)) {
+      setSelectedType('')
+    }
+  }, [selectedType, types])
+
+  useEffect(() => {
+    if (selectedTag && !tags.some((tag) => tag.tag.toLowerCase() === selectedTag.toLowerCase())) {
+      setSelectedTag('')
+    }
+  }, [selectedTag, tags])
 
   const filteredItems = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()
 
-    return items.filter((item) => {
+    return projectItems.filter((item) => {
       if (selectedType && item.type !== selectedType) {
         return false
       }
@@ -165,7 +251,9 @@ function ContentList({ route, onOpenItem }) {
 
       return true
     })
-  }, [items, query, selectedTag, selectedType])
+  }, [projectItems, query, selectedTag, selectedType])
+
+  const selectedProjectMeta = projects.find((project) => project.project === selectedProject)
 
   return (
     <main className="content-shell">
@@ -177,17 +265,6 @@ function ContentList({ route, onOpenItem }) {
         <ContentMeta meta={meta} />
       </section>
 
-      <ContentFilters
-        query={query}
-        selectedTag={selectedTag}
-        selectedType={selectedType}
-        tags={tags}
-        types={types}
-        onQueryChange={setQuery}
-        onTagChange={setSelectedTag}
-        onTypeChange={setSelectedType}
-      />
-
       {status === 'loading' && (
         <div className="content-state">Loading vault notes...</div>
       )}
@@ -196,44 +273,77 @@ function ContentList({ route, onOpenItem }) {
         <div className="content-state error">{error}</div>
       )}
 
-      {status === 'ready' && filteredItems.length === 0 && (
-        <div className="content-state">
-          No selected vault notes found.
-        </div>
-      )}
+      {status === 'ready' && (
+        <div className="content-browser-layout">
+          <ProjectRail
+            projects={projects}
+            selectedProject={selectedProject}
+            onProjectChange={onProjectChange}
+          />
 
-      {status === 'ready' && filteredItems.length > 0 && (
-        <div className="content-list">
-          {filteredItems.map((item) => (
-            <a
-              className="content-card"
-              href={`#vault/${item.slug}`}
-              key={item.slug}
-              onClick={(event) => {
-                if (onOpenItem) {
-                  event.preventDefault()
-                  onOpenItem(item.slug)
-                }
-              }}
-            >
-              <div className="content-card-topline">
-                <span className="content-type">{item.type || 'note'}</span>
-                {item.featured && <span className="content-featured">Featured</span>}
+          <section className="content-project-panel">
+            <div className="content-project-heading">
+              <div>
+                <p className="content-kicker">Current Project</p>
+                <h2>{selectedProject || 'No project selected'}</h2>
               </div>
-              <h2>{item.title}</h2>
-              {item.description && <p>{item.description}</p>}
-              <div className="content-card-footer">
-                {item.date && <time>{formatDate(item.date)}</time>}
-                {item.tags?.length > 0 && (
-                  <div className="content-tags">
-                    {item.tags.slice(0, 4).map((tag) => (
-                      <span key={tag}>{tag}</span>
-                    ))}
-                  </div>
-                )}
+              {selectedProjectMeta && (
+                <span className="content-project-total">
+                  {selectedProjectMeta.count} notes
+                </span>
+              )}
+            </div>
+
+            <ContentFilters
+              query={query}
+              selectedTag={selectedTag}
+              selectedType={selectedType}
+              tags={tags}
+              types={types}
+              onQueryChange={setQuery}
+              onTagChange={setSelectedTag}
+              onTypeChange={setSelectedType}
+            />
+
+            {filteredItems.length === 0 ? (
+              <div className="content-state">
+                No notes found in this project.
               </div>
-            </a>
-          ))}
+            ) : (
+              <div className="content-list">
+                {filteredItems.map((item) => (
+                  <a
+                    className="content-card"
+                    href={`#vault/${item.slug}`}
+                    key={item.slug}
+                    onClick={(event) => {
+                      if (onOpenItem) {
+                        event.preventDefault()
+                        onOpenItem(item.slug)
+                      }
+                    }}
+                  >
+                    <div className="content-card-topline">
+                      <span className="content-type">{item.type || 'note'}</span>
+                      {item.featured && <span className="content-featured">Featured</span>}
+                    </div>
+                    <h2>{item.title}</h2>
+                    {item.description && <p>{item.description}</p>}
+                    <div className="content-card-footer">
+                      {item.date && <time>{formatDate(item.date)}</time>}
+                      {item.tags?.length > 0 && (
+                        <div className="content-tags">
+                          {item.tags.slice(0, 4).map((tag) => (
+                            <span key={tag}>{tag}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </a>
+                ))}
+              </div>
+            )}
+          </section>
         </div>
       )}
     </main>
@@ -325,6 +435,7 @@ function ContentDetail({ slug, onBack, onOpenItem }) {
 
           <header className="content-detail-header">
             <div className="content-card-topline">
+              <span className="content-project-chip">{item.project || 'Vault'}</span>
               <span className="content-type">{item.type || 'note'}</span>
               {item.featured && <span className="content-featured">Featured</span>}
             </div>
@@ -355,6 +466,7 @@ function ContentDetail({ slug, onBack, onOpenItem }) {
 
 function ContentBrowser({ initialType = '' }) {
   const [activeSlug, setActiveSlug] = useState(null)
+  const [selectedProject, setSelectedProject] = useState('')
   const route = { base: '', slug: activeSlug, type: initialType }
 
   if (route.slug) {
@@ -371,6 +483,8 @@ function ContentBrowser({ initialType = '' }) {
     <ContentList
       route={route}
       onOpenItem={setActiveSlug}
+      selectedProject={selectedProject}
+      onProjectChange={setSelectedProject}
     />
   )
 }
