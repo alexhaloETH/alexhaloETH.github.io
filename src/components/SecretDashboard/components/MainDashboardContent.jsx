@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import PantryCard from '../../secret/PantryCard/PantryCard';
 import TasksCard from '../../secret/TasksCard/TasksCard';
+import TripsCard from '../../secret/TripsCard/TripsCard';
 import LockedCard from '../../LockedCard/LockedCard';
 import { cardVariants, containerVariants } from '../SecretDashboard.animations';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -9,6 +10,7 @@ function MainDashboardContent() {
   const { canRead } = useAuth();
   const showTasks = canRead('tasks') || canRead('notes') || canRead('missions');
   const showPantry = canRead('pantry') || canRead('recipes') || canRead('shopping');
+  const showTrips = canRead('trips');
 
   return (
     <motion.div
@@ -33,6 +35,23 @@ function MainDashboardContent() {
           <motion.div variants={cardVariants}>
             <LockedCard isLocked={!showPantry}>
               <PantryCard />
+            </LockedCard>
+          </motion.div>
+        </div>
+      </section>
+
+      <section className="dashboard-section">
+        <h2 className="section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z" />
+            <circle cx="12" cy="10" r="3" />
+          </svg>
+          Trips Journal
+        </h2>
+        <div className="section-grid tracker-grid">
+          <motion.div variants={cardVariants} className="wide-card-wrapper">
+            <LockedCard isLocked={!showTrips}>
+              <TripsCard />
             </LockedCard>
           </motion.div>
         </div>
