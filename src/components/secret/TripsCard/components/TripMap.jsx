@@ -3,6 +3,33 @@ import L from 'leaflet';
 import { MapContainer, TileLayer, Polyline, CircleMarker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
+// Forces Leaflet to recompute tile/marker positions whenever the container
+// resizes. Without this, mounting inside a flex/grid layout that settles
+// after the map's first render leaves tiles stuck at their initial (wrong)
+// positions — the visible symptom is a scattered tile mosaic.
+function InvalidateOnResize({ containerRef }) {
+  const map = useMap();
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return undefined;
+
+    map.invalidateSize();
+
+    const observer = new ResizeObserver(() => {
+      map.invalidateSize();
+    });
+    observer.observe(el);
+
+    const raf = requestAnimationFrame(() => map.invalidateSize());
+
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(raf);
+    };
+  }, [map, containerRef]);
+  return null;
+}
+
 const UK_CENTER = [54.5, -3.0];
 const UK_ZOOM = 6;
 
@@ -115,6 +142,7 @@ function TripMap({
           );
         })}
         <FitBoundsOnTrips trips={list} />
+        <InvalidateOnResize containerRef={containerRef} />
       </MapContainer>
     </div>
   );
