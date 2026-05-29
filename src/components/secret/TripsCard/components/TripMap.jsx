@@ -1,38 +1,20 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import L from 'leaflet';
-import { MapContainer, TileLayer, Polyline, CircleMarker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
-// Forces Leaflet to recompute tile/marker positions whenever the container
-// resizes. Without this, mounting inside a flex/grid layout that settles
-// after the map's first render leaves tiles stuck at their initial (wrong)
-// positions — the visible symptom is a scattered tile mosaic.
-function InvalidateOnResize({ containerRef }) {
-  const map = useMap();
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return undefined;
-
-    map.invalidateSize();
-
-    const observer = new ResizeObserver(() => {
-      map.invalidateSize();
-    });
-    observer.observe(el);
-
-    const raf = requestAnimationFrame(() => map.invalidateSize());
-
-    return () => {
-      observer.disconnect();
-      cancelAnimationFrame(raf);
-    };
-  }, [map, containerRef]);
-  return null;
-}
+// We deliberately do NOT use react-leaflet's MapContainer here. In React 19
+// StrictMode every component mounts → cleanup → re-mounts, which interacts
+// badly with the way MapContainer caches its Leaflet instance: the cleanup
+// can tear down the DOM while keeping the stale map reference, then the
+// second mount renders new tiles on top of the first set at a different
+// zoom — the scattered "tiles from all over the world" look.
+//
+// Using Leaflet imperatively with a clean cleanup gives us a deterministic
+// mount/unmount lifecycle that StrictMode can re-run without leaving
+// orphaned DOM.
 
 const UK_CENTER = [54.5, -3.0];
 const UK_ZOOM = 6;
-
 const TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 const TILE_ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
@@ -66,22 +48,22 @@ const tripPolylinePositions = (trip) => (
   geometryToLatLngs(trip.routeGeometry) || waypointsToLatLngs(trip.waypoints)
 );
 
-function FitBoundsOnTrips({ trips }) {
-  const map = useMap();
-  useEffect(() => {
-    const points = [];
-    for (const trip of trips) {
-      const line = tripPolylinePositions(trip);
-      if (line) points.push(...line);
-    }
-    if (points.length === 0) return;
-    const bounds = L.latLngBounds(points);
-    if (bounds.isValid()) {
-      map.fitBounds(bounds, { padding: [24, 24], maxZoom: 11 });
-    }
-  }, [trips, map]);
-  return null;
-}
+const escapeHtml = (value) => String(value)
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;');
+
+const buildPopupHtml = (waypoint) => {
+  const title = escapeHtml(waypoint.label || `Stop ${waypoint.sequenceOrder + 1}`);
+  const score = waypoint.score != null
+    ? `<div>Score: ${waypoint.score}/10</div>`
+    : '';
+  const notes = waypoint.notes
+    ? `<div class="trip-popup-notes">${escapeHtml(waypoint.notes)}</div>`
+    : '';
+  return `<div class="trip-popup"><strong>${title}</strong>${score}${notes}</div>`;
+};
 
 function TripMap({
   trips = [],
@@ -91,69 +73,122 @@ function TripMap({
   height = 420,
 }) {
   const containerRef = useRef(null);
-  const list = useMemo(() => (trip ? [trip] : trips), [trip, trips]);
+  const mapRef = useRef(null);
+  const overlayRef = useRef({ polylines: [], markers: [] });
+
+  // 1. Initialize the Leaflet map exactly once per mount, and clean it up on
+  //    unmount. StrictMode will run this twice in dev — the cleanup makes
+  //    the second run see a clean container.
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return undefined;
+
+    // If a previous mount left a marker, scrub it so Leaflet doesn't refuse
+    // to re-initialize this DOM node.
+    if (container._leaflet_id) {
+      container._leaflet_id = null;
+      container.innerHTML = '';
+    }
+
+    const map = L.map(container, {
+      center: UK_CENTER,
+      zoom: UK_ZOOM,
+      scrollWheelZoom: true,
+      worldCopyJump: true,
+    });
+
+    L.tileLayer(TILE_URL, {
+      attribution: TILE_ATTRIBUTION,
+      subdomains: ['a', 'b', 'c'],
+      keepBuffer: 4,
+      updateWhenIdle: false,
+      maxZoom: 19,
+    }).addTo(map);
+
+    mapRef.current = map;
+
+    // Recompute tile positions after layout settles (handles flex/grid
+    // parents that finish sizing one frame after the map mounts).
+    const raf = requestAnimationFrame(() => map.invalidateSize());
+
+    const observer = new ResizeObserver(() => {
+      mapRef.current?.invalidateSize();
+    });
+    observer.observe(container);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      observer.disconnect();
+      map.remove();
+      mapRef.current = null;
+      overlayRef.current = { polylines: [], markers: [] };
+    };
+  }, []);
+
+  // 2. Sync the polyline + waypoint marker layers whenever the trips change.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return undefined;
+
+    // Tear down previous overlay layers.
+    for (const layer of overlayRef.current.polylines) map.removeLayer(layer);
+    for (const layer of overlayRef.current.markers) map.removeLayer(layer);
+
+    const list = trip ? [trip] : trips;
+    const polylines = [];
+    const markers = [];
+    const allPoints = [];
+
+    for (const t of list) {
+      const positions = tripPolylinePositions(t);
+      if (positions && positions.length >= 2) {
+        polylines.push(
+          L.polyline(positions, {
+            color: colorForTrip(t.id),
+            weight: 4,
+            opacity: 0.85,
+          }).addTo(map),
+        );
+        allPoints.push(...positions);
+      }
+    }
+
+    if (trip) {
+      for (const w of trip.waypoints || []) {
+        const isSelected = selectedWaypointId === w.id;
+        const marker = L.circleMarker([w.latitude, w.longitude], {
+          radius: isSelected ? 9 : 6,
+          color: isSelected ? '#facc15' : '#e2e8f0',
+          fillColor: isSelected ? '#facc15' : colorForTrip(trip.id),
+          fillOpacity: 0.95,
+          weight: 2,
+        }).addTo(map);
+        marker.bindPopup(buildPopupHtml(w));
+        if (onWaypointClick) {
+          marker.on('click', () => onWaypointClick(w));
+        }
+        markers.push(marker);
+      }
+    }
+
+    overlayRef.current = { polylines, markers };
+
+    if (allPoints.length > 0) {
+      const bounds = L.latLngBounds(allPoints);
+      if (bounds.isValid()) {
+        map.fitBounds(bounds, { padding: [24, 24], maxZoom: 11 });
+      }
+    }
+
+    return undefined;
+  }, [trips, trip, selectedWaypointId, onWaypointClick]);
 
   return (
-    <div className="trip-map-container" style={{ height }} ref={containerRef}>
-      <MapContainer
-        center={UK_CENTER}
-        zoom={UK_ZOOM}
-        style={{ height: '100%', width: '100%' }}
-        scrollWheelZoom
-      >
-        <TileLayer
-          url={TILE_URL}
-          attribution={TILE_ATTRIBUTION}
-          subdomains={['a', 'b', 'c']}
-          // Request a wider buffer so panning doesn't reveal black gaps,
-          // and let tiles fill in while interactions are ongoing.
-          keepBuffer={4}
-          updateWhenIdle={false}
-          maxZoom={19}
-        />
-        {list.map((t) => {
-          const positions = tripPolylinePositions(t);
-          if (!positions || positions.length < 2) return null;
-          const color = colorForTrip(t.id);
-          return (
-            <Polyline
-              key={`trip-line-${t.id}`}
-              positions={positions}
-              pathOptions={{ color, weight: 4, opacity: 0.85 }}
-            />
-          );
-        })}
-        {trip && (trip.waypoints || []).map((w) => {
-          const isSelected = selectedWaypointId === w.id;
-          return (
-            <CircleMarker
-              key={`wp-${w.id}`}
-              center={[w.latitude, w.longitude]}
-              radius={isSelected ? 9 : 6}
-              pathOptions={{
-                color: isSelected ? '#facc15' : '#e2e8f0',
-                fillColor: isSelected ? '#facc15' : colorForTrip(trip.id),
-                fillOpacity: 0.95,
-                weight: 2,
-              }}
-              eventHandlers={onWaypointClick ? {
-                click: () => onWaypointClick(w),
-              } : undefined}
-            >
-              <Popup>
-                <div className="trip-popup">
-                  <strong>{w.label || `Stop ${w.sequenceOrder + 1}`}</strong>
-                  {w.score != null && <div>Score: {w.score}/10</div>}
-                  {w.notes && <div className="trip-popup-notes">{w.notes}</div>}
-                </div>
-              </Popup>
-            </CircleMarker>
-          );
-        })}
-        <FitBoundsOnTrips trips={list} />
-        <InvalidateOnResize containerRef={containerRef} />
-      </MapContainer>
-    </div>
+    <div
+      className="trip-map-container"
+      style={{ height }}
+      ref={containerRef}
+    />
   );
 }
 
