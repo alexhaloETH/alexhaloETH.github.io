@@ -97,27 +97,37 @@ function TripMap({
       worldCopyJump: true,
     });
 
-    L.tileLayer(TILE_URL, {
+    const tileLayer = L.tileLayer(TILE_URL, {
       attribution: TILE_ATTRIBUTION,
       subdomains: ['a', 'b', 'c'],
-      keepBuffer: 4,
-      updateWhenIdle: false,
       maxZoom: 19,
     }).addTo(map);
 
     mapRef.current = map;
 
-    // Recompute tile positions after layout settles (handles flex/grid
-    // parents that finish sizing one frame after the map mounts).
-    const raf = requestAnimationFrame(() => map.invalidateSize());
+    // Force the tile layer to re-evaluate which tiles it needs once the
+    // container has its real size. We do this on the next frame AND once
+    // more after layout has fully settled, because the parent flex/grid
+    // can finish sizing several frames after mount.
+    let raf2 = 0;
+    const raf1 = requestAnimationFrame(() => {
+      map.invalidateSize({ animate: false });
+      tileLayer.redraw();
+      raf2 = requestAnimationFrame(() => {
+        map.invalidateSize({ animate: false });
+        tileLayer.redraw();
+      });
+    });
 
     const observer = new ResizeObserver(() => {
-      mapRef.current?.invalidateSize();
+      mapRef.current?.invalidateSize({ animate: false });
+      tileLayer.redraw();
     });
     observer.observe(container);
 
     return () => {
-      cancelAnimationFrame(raf);
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
       observer.disconnect();
       map.remove();
       mapRef.current = null;
