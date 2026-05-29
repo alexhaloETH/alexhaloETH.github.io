@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { feature } from 'topojson-client';
 import { geoMercator, geoPath } from 'd3-geo';
 
-// UK regions TopoJSON shipped statically in /public so there's no network
+// Whole UK (England, Scotland, Wales, NI, surrounding islands) shipped
+// statically in /public as a 76 KB GeoJSON MultiPolygon. No network
 // dependency at runtime — no OSM tile loading, no rate limits, no race
-// conditions with parent layout. Just a crisp SVG outline of England.
-const TOPO_URL = '/uk-regions.topo.json';
+// conditions with parent layout. Just a crisp SVG outline.
+const OUTLINE_URL = '/uk-outline.geo.json';
 
 const trackColors = [
   '#38bdf8',
@@ -45,7 +45,7 @@ function TripMap({
 }) {
   const containerRef = useRef(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
-  const [topo, setTopo] = useState(null);
+  const [outline, setOutline] = useState(null);
 
   // Watch container size.
   useEffect(() => {
@@ -62,18 +62,17 @@ function TripMap({
     return () => ro.disconnect();
   }, []);
 
-  // Load the UK TopoJSON once.
+  // Load the UK outline GeoJSON once.
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(TOPO_URL);
+        const res = await fetch(OUTLINE_URL);
         const data = await res.json();
         if (cancelled) return;
-        const regions = feature(data, data.objects.eer);
-        setTopo(regions);
+        setOutline(data);
       } catch (error) {
-        console.error('Failed to load UK regions topo:', error);
+        console.error('Failed to load UK outline:', error);
       }
     })();
     return () => { cancelled = true; };
@@ -81,14 +80,12 @@ function TripMap({
 
   // Build a Mercator projection that fits the UK into the container.
   const projection = useMemo(() => {
-    if (!topo || size.w < 2 || size.h < 2) return null;
-    // fitSize crops the projection to the bounding box of `topo`, giving
-    // us an outline that fills the container with a small inset.
+    if (!outline || size.w < 2 || size.h < 2) return null;
     return geoMercator().fitExtent(
       [[12, 12], [size.w - 12, size.h - 12]],
-      topo,
+      outline,
     );
-  }, [topo, size.w, size.h]);
+  }, [outline, size.w, size.h]);
 
   const pathGen = useMemo(
     () => (projection ? geoPath(projection) : null),
@@ -140,11 +137,11 @@ function TripMap({
     }).filter(Boolean);
   }, [trip, projection, selectedWaypointId]);
 
-  // Project region outlines.
-  const regionPath = useMemo(() => {
-    if (!topo || !pathGen) return null;
-    return pathGen(topo);
-  }, [topo, pathGen]);
+  // Project the UK outline path.
+  const outlinePath = useMemo(() => {
+    if (!outline || !pathGen) return null;
+    return pathGen(outline);
+  }, [outline, pathGen]);
 
   return (
     <div
@@ -159,11 +156,11 @@ function TripMap({
           viewBox={`0 0 ${size.w} ${size.h}`}
           className="trip-map-svg-root"
         >
-          {/* Region fill + region borders */}
-          {regionPath && (
+          {/* UK landmass fill + coast outline */}
+          {outlinePath && (
             <>
-              <path d={regionPath} className="trip-map-region-fill" />
-              <path d={regionPath} className="trip-map-region-stroke" />
+              <path d={outlinePath} className="trip-map-region-fill" />
+              <path d={outlinePath} className="trip-map-region-stroke" />
             </>
           )}
 
@@ -207,7 +204,7 @@ function TripMap({
         </svg>
       )}
 
-      {!topo && (
+      {!outline && (
         <div className="trip-map-loading">Loading map…</div>
       )}
     </div>
