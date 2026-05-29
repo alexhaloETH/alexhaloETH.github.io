@@ -1,23 +1,11 @@
-import { useEffect, useRef } from 'react';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { feature } from 'topojson-client';
+import { geoMercator, geoPath } from 'd3-geo';
 
-// We deliberately do NOT use react-leaflet's MapContainer here. In React 19
-// StrictMode every component mounts → cleanup → re-mounts, which interacts
-// badly with the way MapContainer caches its Leaflet instance: the cleanup
-// can tear down the DOM while keeping the stale map reference, then the
-// second mount renders new tiles on top of the first set at a different
-// zoom — the scattered "tiles from all over the world" look.
-//
-// Using Leaflet imperatively with a clean cleanup gives us a deterministic
-// mount/unmount lifecycle that StrictMode can re-run without leaving
-// orphaned DOM.
-
-const UK_CENTER = [54.5, -3.0];
-const UK_ZOOM = 6;
-const TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-const TILE_ATTRIBUTION =
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
+// UK regions TopoJSON shipped statically in /public so there's no network
+// dependency at runtime — no OSM tile loading, no rate limits, no race
+// conditions with parent layout. Just a crisp SVG outline of England.
+const TOPO_URL = '/uk-regions.topo.json';
 
 const trackColors = [
   '#38bdf8',
@@ -32,38 +20,21 @@ const trackColors = [
 
 const colorForTrip = (id) => trackColors[Math.abs(id ?? 0) % trackColors.length];
 
-const geometryToLatLngs = (geometry) => {
+const geometryToLonLats = (geometry) => {
   if (!geometry || geometry.type !== 'LineString' || !Array.isArray(geometry.coordinates)) {
     return null;
   }
-  // GeoJSON coords are [lon, lat]; Leaflet wants [lat, lon].
-  return geometry.coordinates.map(([lng, lat]) => [lat, lng]);
+  // GeoJSON is already [lon, lat] — exactly what d3-geo wants.
+  return geometry.coordinates;
 };
 
-const waypointsToLatLngs = (waypoints) => (
-  (waypoints || []).map((w) => [w.latitude, w.longitude])
+const waypointsToLonLats = (waypoints) => (
+  (waypoints || []).map((w) => [w.longitude, w.latitude])
 );
 
-const tripPolylinePositions = (trip) => (
-  geometryToLatLngs(trip.routeGeometry) || waypointsToLatLngs(trip.waypoints)
+const tripLonLats = (trip) => (
+  geometryToLonLats(trip.routeGeometry) || waypointsToLonLats(trip.waypoints)
 );
-
-const escapeHtml = (value) => String(value)
-  .replace(/&/g, '&amp;')
-  .replace(/</g, '&lt;')
-  .replace(/>/g, '&gt;')
-  .replace(/"/g, '&quot;');
-
-const buildPopupHtml = (waypoint) => {
-  const title = escapeHtml(waypoint.label || `Stop ${waypoint.sequenceOrder + 1}`);
-  const score = waypoint.score != null
-    ? `<div>Score: ${waypoint.score}/10</div>`
-    : '';
-  const notes = waypoint.notes
-    ? `<div class="trip-popup-notes">${escapeHtml(waypoint.notes)}</div>`
-    : '';
-  return `<div class="trip-popup"><strong>${title}</strong>${score}${notes}</div>`;
-};
 
 function TripMap({
   trips = [],
@@ -73,160 +44,173 @@ function TripMap({
   height = 420,
 }) {
   const containerRef = useRef(null);
-  const mapRef = useRef(null);
-  const overlayRef = useRef({ polylines: [], markers: [] });
-  const hasUserMovedRef = useRef(false);
+  const [size, setSize] = useState({ w: 0, h: 0 });
+  const [topo, setTopo] = useState(null);
 
-  // 1. Initialize the Leaflet map exactly once per mount, and clean it up on
-  //    unmount. StrictMode will run this twice in dev — the cleanup makes
-  //    the second run see a clean container.
+  // Watch container size.
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return undefined;
-
-    // If a previous mount left a marker, scrub it so Leaflet doesn't refuse
-    // to re-initialize this DOM node.
-    if (container._leaflet_id) {
-      container._leaflet_id = null;
-      container.innerHTML = '';
-    }
-
-    const map = L.map(container, {
-      center: UK_CENTER,
-      zoom: UK_ZOOM,
-      // Disabled by default so scrolling the dashboard with the cursor
-      // over the map doesn't silently zoom it in (which was leaving us
-      // at zoom 7/8 with a ghost scale(2) tile container layered over
-      // the current tiles — the visual chaos we'd been chasing).
-      // The default +/- zoom control buttons stay in the corner.
-      scrollWheelZoom: false,
-      // Disable the zoom-fade animation that keeps an old tile container
-      // around at scale(2) until the new ones load. With it on, a brief
-      // mid-mount zoom transition leaves the old tiles visible on top of
-      // gaps in the new ones.
-      zoomAnimation: false,
-      fadeAnimation: false,
-      worldCopyJump: true,
+    const el = containerRef.current;
+    if (!el) return undefined;
+    const ro = new ResizeObserver(([entry]) => {
+      const { width, height: h } = entry.contentRect;
+      setSize({
+        w: Math.max(1, Math.floor(width)),
+        h: Math.max(1, Math.floor(h)),
+      });
     });
-
-    const tileLayer = L.tileLayer(TILE_URL, {
-      attribution: TILE_ATTRIBUTION,
-      subdomains: ['a', 'b', 'c'],
-      maxZoom: 19,
-    }).addTo(map);
-
-    mapRef.current = map;
-
-    const ensureRequestedView = () => {
-      // pan: false so resizing doesn't shift the center under us.
-      map.invalidateSize({ animate: false, pan: false });
-      // Re-assert the view the user asked for. Without this, Leaflet's
-      // internal state from the tiny initial container "wins" and we end
-      // up displaying a different zoom/center than what we requested.
-      // Only enforce this on the initial mount path — once the user pans
-      // or zooms, the `hasUserMovedRef` guard below stops us trampling
-      // their view.
-      if (!hasUserMovedRef.current) {
-        map.setView(UK_CENTER, UK_ZOOM, { animate: false });
-      }
-      tileLayer.redraw();
-    };
-
-    // Re-assert the view across the first two frames in case layout
-    // settles after the first one (flex/grid often does).
-    let raf2 = 0;
-    const raf1 = requestAnimationFrame(() => {
-      ensureRequestedView();
-      raf2 = requestAnimationFrame(ensureRequestedView);
-    });
-
-    // Mark the moment the user pans/zooms so we stop overriding their view
-    // on subsequent resize events.
-    const markMoved = () => { hasUserMovedRef.current = true; };
-    map.on('zoomstart movestart', markMoved);
-
-    const observer = new ResizeObserver(() => {
-      mapRef.current?.invalidateSize({ animate: false, pan: false });
-      tileLayer.redraw();
-    });
-    observer.observe(container);
-
-    return () => {
-      cancelAnimationFrame(raf1);
-      cancelAnimationFrame(raf2);
-      observer.disconnect();
-      map.off('zoomstart movestart', markMoved);
-      map.remove();
-      mapRef.current = null;
-      overlayRef.current = { polylines: [], markers: [] };
-      hasUserMovedRef.current = false;
-    };
+    ro.observe(el);
+    return () => ro.disconnect();
   }, []);
 
-  // 2. Sync the polyline + waypoint marker layers whenever the trips change.
+  // Load the UK TopoJSON once.
   useEffect(() => {
-    const map = mapRef.current;
-    if (!map) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(TOPO_URL);
+        const data = await res.json();
+        if (cancelled) return;
+        const regions = feature(data, data.objects.eer);
+        setTopo(regions);
+      } catch (error) {
+        console.error('Failed to load UK regions topo:', error);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
-    // Tear down previous overlay layers.
-    for (const layer of overlayRef.current.polylines) map.removeLayer(layer);
-    for (const layer of overlayRef.current.markers) map.removeLayer(layer);
+  // Build a Mercator projection that fits the UK into the container.
+  const projection = useMemo(() => {
+    if (!topo || size.w < 2 || size.h < 2) return null;
+    // fitSize crops the projection to the bounding box of `topo`, giving
+    // us an outline that fills the container with a small inset.
+    return geoMercator().fitExtent(
+      [[12, 12], [size.w - 12, size.h - 12]],
+      topo,
+    );
+  }, [topo, size.w, size.h]);
 
-    const list = trip ? [trip] : trips;
-    const polylines = [];
-    const markers = [];
-    const allPoints = [];
+  const pathGen = useMemo(
+    () => (projection ? geoPath(projection) : null),
+    [projection],
+  );
 
+  const list = trip ? [trip] : trips;
+
+  // Project each trip's route into an SVG path string.
+  const tripPaths = useMemo(() => {
+    if (!projection || !pathGen) return [];
+    const out = [];
     for (const t of list) {
-      const positions = tripPolylinePositions(t);
-      if (positions && positions.length >= 2) {
-        polylines.push(
-          L.polyline(positions, {
-            color: colorForTrip(t.id),
-            weight: 4,
-            opacity: 0.85,
-          }).addTo(map),
-        );
-        allPoints.push(...positions);
+      const lonLats = tripLonLats(t);
+      if (!lonLats || lonLats.length < 2) continue;
+      const lineFeature = {
+        type: 'Feature',
+        geometry: { type: 'LineString', coordinates: lonLats },
+        properties: {},
+      };
+      const d = pathGen(lineFeature);
+      if (d) {
+        out.push({
+          id: t.id,
+          d,
+          color: colorForTrip(t.id),
+        });
       }
     }
+    return out;
+  }, [list, projection, pathGen]);
 
-    if (trip) {
-      for (const w of trip.waypoints || []) {
-        const isSelected = selectedWaypointId === w.id;
-        const marker = L.circleMarker([w.latitude, w.longitude], {
-          radius: isSelected ? 9 : 6,
-          color: isSelected ? '#facc15' : '#e2e8f0',
-          fillColor: isSelected ? '#facc15' : colorForTrip(trip.id),
-          fillOpacity: 0.95,
-          weight: 2,
-        }).addTo(map);
-        marker.bindPopup(buildPopupHtml(w));
-        if (onWaypointClick) {
-          marker.on('click', () => onWaypointClick(w));
-        }
-        markers.push(marker);
-      }
-    }
+  // Project waypoints to pixel coords (only for a selected single trip).
+  const waypointPoints = useMemo(() => {
+    if (!projection || !trip) return [];
+    return (trip.waypoints || []).map((w) => {
+      const xy = projection([w.longitude, w.latitude]);
+      if (!xy) return null;
+      return {
+        id: w.id,
+        sequenceOrder: w.sequenceOrder,
+        label: w.label,
+        notes: w.notes,
+        score: w.score,
+        x: xy[0],
+        y: xy[1],
+        isSelected: selectedWaypointId === w.id,
+      };
+    }).filter(Boolean);
+  }, [trip, projection, selectedWaypointId]);
 
-    overlayRef.current = { polylines, markers };
-
-    if (allPoints.length > 0) {
-      const bounds = L.latLngBounds(allPoints);
-      if (bounds.isValid()) {
-        map.fitBounds(bounds, { padding: [24, 24], maxZoom: 11 });
-      }
-    }
-
-    return undefined;
-  }, [trips, trip, selectedWaypointId, onWaypointClick]);
+  // Project region outlines.
+  const regionPath = useMemo(() => {
+    if (!topo || !pathGen) return null;
+    return pathGen(topo);
+  }, [topo, pathGen]);
 
   return (
     <div
-      className="trip-map-container"
+      className="trip-map-container trip-map-svg"
       style={{ height }}
       ref={containerRef}
-    />
+    >
+      {size.w > 1 && size.h > 1 && (
+        <svg
+          width={size.w}
+          height={size.h}
+          viewBox={`0 0 ${size.w} ${size.h}`}
+          className="trip-map-svg-root"
+        >
+          {/* Region fill + region borders */}
+          {regionPath && (
+            <>
+              <path d={regionPath} className="trip-map-region-fill" />
+              <path d={regionPath} className="trip-map-region-stroke" />
+            </>
+          )}
+
+          {/* Trip routes */}
+          {tripPaths.map((t) => (
+            <path
+              key={`trip-${t.id}`}
+              d={t.d}
+              fill="none"
+              stroke={t.color}
+              strokeWidth={3}
+              strokeOpacity={0.95}
+              strokeLinejoin="round"
+              strokeLinecap="round"
+            />
+          ))}
+
+          {/* Waypoints (only for a single selected trip) */}
+          {waypointPoints.map((wp) => (
+            <g
+              key={`wp-${wp.id}`}
+              transform={`translate(${wp.x},${wp.y})`}
+              className={wp.isSelected ? 'trip-waypoint-dot is-selected' : 'trip-waypoint-dot'}
+              onClick={onWaypointClick ? () => onWaypointClick({
+                id: wp.id,
+                sequenceOrder: wp.sequenceOrder,
+              }) : undefined}
+              style={onWaypointClick ? { cursor: 'pointer' } : undefined}
+            >
+              <circle
+                r={wp.isSelected ? 8 : 5}
+                className="trip-waypoint-dot-circle"
+              />
+              <title>
+                {wp.label || `Stop ${wp.sequenceOrder + 1}`}
+                {wp.score != null ? ` (${wp.score}/10)` : ''}
+                {wp.notes ? `\n${wp.notes}` : ''}
+              </title>
+            </g>
+          ))}
+        </svg>
+      )}
+
+      {!topo && (
+        <div className="trip-map-loading">Loading map…</div>
+      )}
+    </div>
   );
 }
 
