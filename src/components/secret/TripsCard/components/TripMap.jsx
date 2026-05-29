@@ -92,13 +92,20 @@ function TripMap({
     }
 
     const map = L.map(container, {
-      // Defer setting the view until invalidateSize has measured the real
-      // container — initializing at zoom 6 in a temporarily-zero-sized
-      // container was causing Leaflet to silently rebase the view to
-      // something else (we were ending up at zoom 8 with a pan offset).
       center: UK_CENTER,
       zoom: UK_ZOOM,
-      scrollWheelZoom: true,
+      // Disabled by default so scrolling the dashboard with the cursor
+      // over the map doesn't silently zoom it in (which was leaving us
+      // at zoom 7/8 with a ghost scale(2) tile container layered over
+      // the current tiles — the visual chaos we'd been chasing).
+      // The default +/- zoom control buttons stay in the corner.
+      scrollWheelZoom: false,
+      // Disable the zoom-fade animation that keeps an old tile container
+      // around at scale(2) until the new ones load. With it on, a brief
+      // mid-mount zoom transition leaves the old tiles visible on top of
+      // gaps in the new ones.
+      zoomAnimation: false,
+      fadeAnimation: false,
       worldCopyJump: true,
     });
 
