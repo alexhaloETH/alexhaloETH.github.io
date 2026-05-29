@@ -101,7 +101,16 @@ function TripMap({
         style={{ height: '100%', width: '100%' }}
         scrollWheelZoom
       >
-        <TileLayer url={TILE_URL} attribution={TILE_ATTRIBUTION} />
+        <TileLayer
+          url={TILE_URL}
+          attribution={TILE_ATTRIBUTION}
+          subdomains={['a', 'b', 'c']}
+          // Request a wider buffer so panning doesn't reveal black gaps,
+          // and let tiles fill in while interactions are ongoing.
+          keepBuffer={4}
+          updateWhenIdle={false}
+          maxZoom={19}
+        />
         {list.map((t) => {
           const positions = tripPolylinePositions(t);
           if (!positions || positions.length < 2) return null;
