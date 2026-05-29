@@ -75,6 +75,7 @@ function TripMap({
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const overlayRef = useRef({ polylines: [], markers: [] });
+  const hasUserMovedRef = useRef(false);
 
   // 1. Initialize the Leaflet map exactly once per mount, and clean it up on
   //    unmount. StrictMode will run this twice in dev — the cleanup makes
@@ -91,6 +92,10 @@ function TripMap({
     }
 
     const map = L.map(container, {
+      // Defer setting the view until invalidateSize has measured the real
+      // container — initializing at zoom 6 in a temporarily-zero-sized
+      // container was causing Leaflet to silently rebase the view to
+      // something else (we were ending up at zoom 8 with a pan offset).
       center: UK_CENTER,
       zoom: UK_ZOOM,
       scrollWheelZoom: true,
@@ -105,22 +110,36 @@ function TripMap({
 
     mapRef.current = map;
 
-    // Force the tile layer to re-evaluate which tiles it needs once the
-    // container has its real size. We do this on the next frame AND once
-    // more after layout has fully settled, because the parent flex/grid
-    // can finish sizing several frames after mount.
+    const ensureRequestedView = () => {
+      // pan: false so resizing doesn't shift the center under us.
+      map.invalidateSize({ animate: false, pan: false });
+      // Re-assert the view the user asked for. Without this, Leaflet's
+      // internal state from the tiny initial container "wins" and we end
+      // up displaying a different zoom/center than what we requested.
+      // Only enforce this on the initial mount path — once the user pans
+      // or zooms, the `hasUserMovedRef` guard below stops us trampling
+      // their view.
+      if (!hasUserMovedRef.current) {
+        map.setView(UK_CENTER, UK_ZOOM, { animate: false });
+      }
+      tileLayer.redraw();
+    };
+
+    // Re-assert the view across the first two frames in case layout
+    // settles after the first one (flex/grid often does).
     let raf2 = 0;
     const raf1 = requestAnimationFrame(() => {
-      map.invalidateSize({ animate: false });
-      tileLayer.redraw();
-      raf2 = requestAnimationFrame(() => {
-        map.invalidateSize({ animate: false });
-        tileLayer.redraw();
-      });
+      ensureRequestedView();
+      raf2 = requestAnimationFrame(ensureRequestedView);
     });
 
+    // Mark the moment the user pans/zooms so we stop overriding their view
+    // on subsequent resize events.
+    const markMoved = () => { hasUserMovedRef.current = true; };
+    map.on('zoomstart movestart', markMoved);
+
     const observer = new ResizeObserver(() => {
-      mapRef.current?.invalidateSize({ animate: false });
+      mapRef.current?.invalidateSize({ animate: false, pan: false });
       tileLayer.redraw();
     });
     observer.observe(container);
@@ -129,9 +148,11 @@ function TripMap({
       cancelAnimationFrame(raf1);
       cancelAnimationFrame(raf2);
       observer.disconnect();
+      map.off('zoomstart movestart', markMoved);
       map.remove();
       mapRef.current = null;
       overlayRef.current = { polylines: [], markers: [] };
+      hasUserMovedRef.current = false;
     };
   }, []);
 
