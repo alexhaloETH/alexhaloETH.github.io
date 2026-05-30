@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { geoMercator, geoPath } from 'd3-geo';
+import ukOutline from '../data/ukOutline.json';
 
-// Whole UK (England, Scotland, Wales, NI, surrounding islands) shipped
-// statically in /public as a 76 KB GeoJSON MultiPolygon. No network
-// dependency at runtime — no OSM tile loading, no rate limits, no race
-// conditions with parent layout. Just a crisp SVG outline.
-const OUTLINE_URL = '/uk-outline.geo.json';
+// The whole UK (England, Scotland, Wales, NI, surrounding islands) is bundled
+// straight into the JS as a GeoJSON MultiPolygon — no runtime fetch, no public
+// asset, no network, no tiles, no 404. Vite inlines it at build time, so the
+// outline is always present the moment this component renders. Just a crisp
+// SVG drawn with d3-geo, the same proven approach as DottedWorldMap.
 
 const trackColors = [
   '#38bdf8',
@@ -45,9 +46,8 @@ function TripMap({
 }) {
   const containerRef = useRef(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
-  const [outline, setOutline] = useState(null);
 
-  // Watch container size.
+  // Watch container size so the projection fits the rendered box.
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return undefined;
@@ -62,37 +62,21 @@ function TripMap({
     return () => ro.disconnect();
   }, []);
 
-  // Load the UK outline GeoJSON once.
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch(OUTLINE_URL);
-        const data = await res.json();
-        if (cancelled) return;
-        setOutline(data);
-      } catch (error) {
-        console.error('Failed to load UK outline:', error);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, []);
-
-  // Build a Mercator projection that fits the UK into the container.
+  // Mercator projection fitting the UK into the container (padded by 12px).
   const projection = useMemo(() => {
-    if (!outline || size.w < 2 || size.h < 2) return null;
+    if (size.w < 2 || size.h < 2) return null;
     return geoMercator().fitExtent(
       [[12, 12], [size.w - 12, size.h - 12]],
-      outline,
+      ukOutline,
     );
-  }, [outline, size.w, size.h]);
+  }, [size.w, size.h]);
 
   const pathGen = useMemo(
     () => (projection ? geoPath(projection) : null),
     [projection],
   );
 
-  const list = trip ? [trip] : trips;
+  const list = useMemo(() => (trip ? [trip] : trips), [trip, trips]);
 
   // Project each trip's route into an SVG path string.
   const tripPaths = useMemo(() => {
@@ -138,10 +122,10 @@ function TripMap({
   }, [trip, projection, selectedWaypointId]);
 
   // Project the UK outline path.
-  const outlinePath = useMemo(() => {
-    if (!outline || !pathGen) return null;
-    return pathGen(outline);
-  }, [outline, pathGen]);
+  const outlinePath = useMemo(
+    () => (pathGen ? pathGen(ukOutline) : null),
+    [pathGen],
+  );
 
   return (
     <div
@@ -202,10 +186,6 @@ function TripMap({
             </g>
           ))}
         </svg>
-      )}
-
-      {!outline && (
-        <div className="trip-map-loading">Loading map…</div>
       )}
     </div>
   );
