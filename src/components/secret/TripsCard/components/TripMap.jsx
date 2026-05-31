@@ -58,7 +58,7 @@ const computeArrows = (points, spacing) => {
       const t = (nextAt - acc) / segLen;
       arrows.push({ x: x0 + dx * t, y: y0 + dy * t, angle });
       nextAt += spacing;
-      if (arrows.length > 40) return arrows;
+      if (arrows.length > 120) return arrows;
     }
     acc += segLen;
   }
@@ -188,7 +188,7 @@ function TripMap({
         id: t.id,
         d,
         color: colorForTrip(t.id),
-        arrows: computeArrows(pts, 90),
+        arrows: computeArrows(pts, 30),
       });
     }
     return out;
