@@ -272,8 +272,7 @@ function TripMap({
                   <path
                     key={`arr-${r.id}-${idx}`}
                     className="trip-route-arrow"
-                    d="M-3.4,-3 L4,0 L-3.4,3 Z"
-                    fill={r.color}
+                    d="M-4,-3.6 L5,0 L-4,3.6 Z"
                     transform={`translate(${a.x},${a.y}) rotate(${a.angle}) scale(${inv})`}
                   />
                 ))}
