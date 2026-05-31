@@ -19,11 +19,13 @@ const formatDuration = (seconds) => {
 
 function TripDetailView({
   trip,
+  pois = [],
   canWrite,
   onClose,
   onWaypointSave,
   onTripEdit,
   onTripDelete,
+  onPoiClick,
 }) {
   const [selectedWaypointId, setSelectedWaypointId] = useState(null);
   const selected = useMemo(
@@ -88,8 +90,10 @@ function TripDetailView({
 
       <TripMap
         trip={trip}
+        pois={pois}
         selectedWaypointId={selectedWaypointId}
         onWaypointClick={(w) => setSelectedWaypointId(w.id)}
+        onPoiClick={onPoiClick}
         height={420}
       />
 

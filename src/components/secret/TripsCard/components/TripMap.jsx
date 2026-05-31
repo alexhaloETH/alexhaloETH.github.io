@@ -40,11 +40,38 @@ const tripLonLats = (trip) => (
   geometryToLonLats(trip.routeGeometry) || waypointsToLonLats(trip.waypoints)
 );
 
+// Walk a projected polyline and drop a direction arrow every `spacing` pixels,
+// oriented along the local travel direction. Capped so dense routes stay cheap.
+const computeArrows = (points, spacing) => {
+  const arrows = [];
+  let acc = 0;
+  let nextAt = spacing * 0.6;
+  for (let i = 1; i < points.length; i += 1) {
+    const [x0, y0] = points[i - 1];
+    const [x1, y1] = points[i];
+    const dx = x1 - x0;
+    const dy = y1 - y0;
+    const segLen = Math.hypot(dx, dy);
+    if (segLen === 0) continue;
+    const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
+    while (acc + segLen >= nextAt) {
+      const t = (nextAt - acc) / segLen;
+      arrows.push({ x: x0 + dx * t, y: y0 + dy * t, angle });
+      nextAt += spacing;
+      if (arrows.length > 40) return arrows;
+    }
+    acc += segLen;
+  }
+  return arrows;
+};
+
 function TripMap({
   trips = [],
   trip = null,
+  pois = [],
   selectedWaypointId = null,
   onWaypointClick,
+  onPoiClick,
   height = 420,
 }) {
   const containerRef = useRef(null);
@@ -142,22 +169,30 @@ function TripMap({
     select(svgRef.current).call(zoomRef.current.transform, zoomIdentity);
   };
 
-  // Project each shown trip's route into an SVG path string.
-  const tripPaths = useMemo(() => {
-    if (!projection || !pathGen) return [];
+  // Project each shown route to pixel points, then build its path string and
+  // sample direction arrows from the same points (cheap, no double projection).
+  const routeRenders = useMemo(() => {
+    if (!projection) return [];
     const out = [];
     for (const t of list) {
       const lonLats = tripLonLats(t);
       if (!lonLats || lonLats.length < 2) continue;
-      const d = pathGen({
-        type: 'Feature',
-        geometry: { type: 'LineString', coordinates: lonLats },
-        properties: {},
+      const pts = [];
+      for (const ll of lonLats) {
+        const xy = projection(ll);
+        if (xy) pts.push(xy);
+      }
+      if (pts.length < 2) continue;
+      const d = `M${pts.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join('L')}`;
+      out.push({
+        id: t.id,
+        d,
+        color: colorForTrip(t.id),
+        arrows: computeArrows(pts, 90),
       });
-      if (d) out.push({ id: t.id, d, color: colorForTrip(t.id) });
     }
     return out;
-  }, [list, projection, pathGen]);
+  }, [list, projection]);
 
   // Project waypoints to pixel coords (only for a selected single trip).
   const waypointPoints = useMemo(() => {
@@ -178,6 +213,16 @@ function TripMap({
     }).filter(Boolean);
   }, [trip, projection, selectedWaypointId]);
 
+  // Project points of interest (always shown, in every view).
+  const poiPoints = useMemo(() => {
+    if (!projection) return [];
+    return (pois || []).map((p) => {
+      const xy = projection([p.longitude, p.latitude]);
+      if (!xy) return null;
+      return { poi: p, x: xy[0], y: xy[1] };
+    }).filter(Boolean);
+  }, [pois, projection]);
+
   // Project the continent outline (all country borders) once per projection.
   const outlinePath = useMemo(
     () => (pathGen ? pathGen(europe) : null),
@@ -185,6 +230,7 @@ function TripMap({
   );
 
   const { k } = transform;
+  const inv = 1 / k; // counter-scale so markers stay a constant screen size
 
   return (
     <div
@@ -209,19 +255,29 @@ function TripMap({
               </>
             )}
 
-            {/* Trip routes — non-scaling stroke keeps them crisp at any zoom */}
-            {tripPaths.map((t) => (
-              <path
-                key={`trip-${t.id}`}
-                d={t.d}
-                fill="none"
-                stroke={t.color}
-                strokeWidth={3}
-                strokeOpacity={0.95}
-                strokeLinejoin="round"
-                strokeLinecap="round"
-                vectorEffect="non-scaling-stroke"
-              />
+            {/* Trip routes + direction arrows */}
+            {routeRenders.map((r) => (
+              <g key={`trip-${r.id}`}>
+                <path
+                  d={r.d}
+                  fill="none"
+                  stroke={r.color}
+                  strokeWidth={3}
+                  strokeOpacity={0.95}
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                  vectorEffect="non-scaling-stroke"
+                />
+                {r.arrows.map((a, idx) => (
+                  <path
+                    key={`arr-${r.id}-${idx}`}
+                    className="trip-route-arrow"
+                    d="M-3.4,-3 L4,0 L-3.4,3 Z"
+                    fill={r.color}
+                    transform={`translate(${a.x},${a.y}) rotate(${a.angle}) scale(${inv})`}
+                  />
+                ))}
+              </g>
             ))}
 
             {/* Waypoints (only for a single selected trip). Radius is divided
@@ -238,7 +294,7 @@ function TripMap({
                 style={onWaypointClick ? { cursor: 'pointer' } : undefined}
               >
                 <circle
-                  r={(wp.isSelected ? 8 : 5) / k}
+                  r={(wp.isSelected ? 8 : 5) * inv}
                   className="trip-waypoint-dot-circle"
                 />
                 <title>
@@ -246,6 +302,31 @@ function TripMap({
                   {wp.score != null ? ` (${wp.score}/10)` : ''}
                   {wp.notes ? `\n${wp.notes}` : ''}
                 </title>
+              </g>
+            ))}
+
+            {/* Points of interest — labelled pins, constant screen size */}
+            {poiPoints.map(({ poi, x, y }) => (
+              <g
+                key={`poi-${poi.id}`}
+                className="trip-poi"
+                transform={`translate(${x},${y})`}
+                onClick={onPoiClick ? () => onPoiClick(poi) : undefined}
+                style={onPoiClick ? { cursor: 'pointer' } : undefined}
+              >
+                <g transform={`scale(${inv})`}>
+                  <path
+                    className="trip-poi-pin"
+                    d="M0 0 C -5.5 -7 -6.5 -12 0 -15.5 C 6.5 -12 5.5 -7 0 0 Z"
+                  />
+                  <circle className="trip-poi-pin-hole" cx="0" cy="-10.5" r="2.3" />
+                  <text className="trip-poi-label" x="9" y="-8">{poi.name}</text>
+                  <title>
+                    {poi.name}
+                    {poi.address ? `\n${poi.address}` : ''}
+                    {poi.notes ? `\n${poi.notes}` : ''}
+                  </title>
+                </g>
               </g>
             ))}
           </g>

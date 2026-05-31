@@ -7,7 +7,9 @@ import TripMap from './components/TripMap';
 import TripDetailView from './components/TripDetailView';
 import TagFilterBar from './components/TagFilterBar';
 import TripModal from './TripModal';
+import PoiModal from './PoiModal';
 import useTripsData from './useTripsData';
+import usePois from './usePois';
 import './TripsCard.css';
 
 const formatDate = (value) => {
@@ -41,7 +43,9 @@ function TripsCard() {
     saveWaypoint,
   } = useTripsData(showNotification, { canReadTrips: true, canWriteTrips });
 
+  const { pois, addPoi, updatePoi, removePoi } = usePois();
   const [modalState, setModalState] = useState({ open: false, mode: 'create', trip: null });
+  const [poiModal, setPoiModal] = useState({ open: false, poi: null });
   const [selectedTags, setSelectedTags] = useState([]);
 
   const allTags = useMemo(() => {
@@ -82,6 +86,21 @@ function TripsCard() {
     await removeTrip(trip.id);
   };
 
+  const handlePoiSubmit = async (payload) => {
+    if (poiModal.poi) {
+      updatePoi(poiModal.poi.id, payload);
+    } else {
+      addPoi(payload);
+    }
+    return true;
+  };
+
+  const handlePoiDelete = (poi) => {
+    if (!canWriteTrips) return;
+    if (!window.confirm(`Remove the place "${poi.name}"?`)) return;
+    removePoi(poi.id);
+  };
+
   return (
     <BaseCard className="card secret-card trips-card">
       <div className="card-header trips-card-header">
@@ -111,13 +130,22 @@ function TripsCard() {
             </button>
           )}
           {canWriteTrips && !selectedTripDetail && (
-            <button
-              type="button"
-              className="primary-button"
-              onClick={() => setModalState({ open: true, mode: 'create', trip: null })}
-            >
-              Add trip
-            </button>
+            <>
+              <button
+                type="button"
+                className="ghost-button"
+                onClick={() => setPoiModal({ open: true, poi: null })}
+              >
+                Add place
+              </button>
+              <button
+                type="button"
+                className="primary-button"
+                onClick={() => setModalState({ open: true, mode: 'create', trip: null })}
+              >
+                Add trip
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -133,7 +161,12 @@ function TripsCard() {
               onToggle={toggleTag}
               onClear={() => setSelectedTags([])}
             />
-            <TripMap trips={filteredTrips} height={360} />
+            <TripMap
+              trips={filteredTrips}
+              pois={pois}
+              onPoiClick={canWriteTrips ? (poi) => setPoiModal({ open: true, poi }) : undefined}
+              height={360}
+            />
             <ul className="trips-list">
               {trips.length === 0 && (
                 <li className="trips-list-empty">
@@ -175,6 +208,36 @@ function TripsCard() {
                 </li>
               ))}
             </ul>
+
+            {pois.length > 0 && (
+              <div className="trips-poi-list">
+                <h4>Places</h4>
+                <ul>
+                  {pois.map((poi) => (
+                    <li key={poi.id}>
+                      <button
+                        type="button"
+                        className="trips-poi-row"
+                        onClick={() => setPoiModal({ open: true, poi })}
+                      >
+                        <span className="trips-poi-name">{poi.name}</span>
+                        {poi.address && <span className="trips-poi-addr">{poi.address}</span>}
+                      </button>
+                      {canWriteTrips && (
+                        <button
+                          type="button"
+                          className="trips-poi-del"
+                          aria-label={`Remove ${poi.name}`}
+                          onClick={() => handlePoiDelete(poi)}
+                        >
+                          ×
+                        </button>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         )}
 
@@ -183,11 +246,13 @@ function TripsCard() {
             {isDetailLoading && <div className="trips-loading subtle">Refreshing…</div>}
             <TripDetailView
               trip={selectedTripDetail}
+              pois={pois}
               canWrite={canWriteTrips}
               onClose={closeTrip}
               onWaypointSave={saveWaypoint}
               onTripEdit={(trip) => setModalState({ open: true, mode: 'edit', trip })}
               onTripDelete={handleDelete}
+              onPoiClick={canWriteTrips ? (poi) => setPoiModal({ open: true, poi }) : undefined}
             />
           </>
         )}
@@ -200,6 +265,14 @@ function TripsCard() {
             trip={modalState.trip}
             onSubmit={modalState.mode === 'edit' ? handleEditSubmit : handleAddSubmit}
             onClose={() => setModalState({ open: false, mode: 'create', trip: null })}
+          />
+        )}
+        {poiModal.open && (
+          <PoiModal
+            mode={poiModal.poi ? 'edit' : 'create'}
+            poi={poiModal.poi}
+            onSubmit={handlePoiSubmit}
+            onClose={() => setPoiModal({ open: false, poi: null })}
           />
         )}
       </AnimatePresence>
