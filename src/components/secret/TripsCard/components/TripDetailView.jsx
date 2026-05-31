@@ -4,8 +4,8 @@ import WaypointEditor from './WaypointEditor';
 
 const formatDistance = (meters) => {
   if (meters == null) return '—';
-  const km = meters / 1000;
-  return `${km.toFixed(km < 10 ? 1 : 0)} km`;
+  const miles = meters / 1609.344;
+  return `${miles.toFixed(miles < 10 ? 1 : 0)} mi`;
 };
 
 const formatDuration = (seconds) => {

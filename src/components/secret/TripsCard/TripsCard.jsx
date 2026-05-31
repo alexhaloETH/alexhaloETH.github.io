@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import BaseCard from '../../BaseCard/BaseCard';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useNotification } from '../../../contexts/NotificationContext';
 import TripMap from './components/TripMap';
 import TripDetailView from './components/TripDetailView';
+import TagFilterBar from './components/TagFilterBar';
 import TripModal from './TripModal';
 import useTripsData from './useTripsData';
 import './TripsCard.css';
@@ -19,8 +20,8 @@ const formatDate = (value) => {
 
 const formatDistance = (meters) => {
   if (meters == null) return null;
-  const km = meters / 1000;
-  return `${km.toFixed(km < 10 ? 1 : 0)} km`;
+  const miles = meters / 1609.344;
+  return `${miles.toFixed(miles < 10 ? 1 : 0)} mi`;
 };
 
 function TripsCard() {
@@ -41,6 +42,24 @@ function TripsCard() {
   } = useTripsData(showNotification, { canReadTrips: true, canWriteTrips });
 
   const [modalState, setModalState] = useState({ open: false, mode: 'create', trip: null });
+  const [selectedTags, setSelectedTags] = useState([]);
+
+  const allTags = useMemo(() => {
+    const set = new Set();
+    trips.forEach((t) => (t.tags || []).forEach((tag) => set.add(tag)));
+    return Array.from(set).sort();
+  }, [trips]);
+
+  const filteredTrips = useMemo(() => {
+    if (selectedTags.length === 0) return trips;
+    return trips.filter((t) => (t.tags || []).some((tag) => selectedTags.includes(tag)));
+  }, [trips, selectedTags]);
+
+  const toggleTag = (tag) => {
+    setSelectedTags((prev) => (
+      prev.includes(tag) ? prev.filter((x) => x !== tag) : [...prev, tag]
+    ));
+  };
 
   const handleAddSubmit = async (payload) => {
     const detail = await addTrip(payload);
@@ -79,7 +98,9 @@ function TripsCard() {
             <p className="trips-subtitle">
               {trips.length === 0
                 ? 'No trips yet — paste a Google Maps route to start.'
-                : `${trips.length} route${trips.length === 1 ? '' : 's'} on the map`}
+                : selectedTags.length > 0
+                  ? `${filteredTrips.length} of ${trips.length} routes shown`
+                  : `${trips.length} route${trips.length === 1 ? '' : 's'} on the map`}
             </p>
           </div>
         </div>
@@ -106,14 +127,25 @@ function TripsCard() {
 
         {!isLoading && !selectedTripDetail && (
           <div className="trips-overview">
-            <TripMap trips={trips} height={360} />
+            <TagFilterBar
+              tags={allTags}
+              selected={selectedTags}
+              onToggle={toggleTag}
+              onClear={() => setSelectedTags([])}
+            />
+            <TripMap trips={filteredTrips} height={360} />
             <ul className="trips-list">
               {trips.length === 0 && (
                 <li className="trips-list-empty">
                   Add your first route to see it drawn on the map.
                 </li>
               )}
-              {trips.map((trip) => (
+              {trips.length > 0 && filteredTrips.length === 0 && (
+                <li className="trips-list-empty">
+                  No trips match the selected tags.
+                </li>
+              )}
+              {filteredTrips.map((trip) => (
                 <li key={trip.id}>
                   <button
                     type="button"
