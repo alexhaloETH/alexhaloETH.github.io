@@ -3,6 +3,7 @@ import { geoMercator, geoPath } from 'd3-geo';
 import { select } from 'd3-selection';
 import { zoom as d3zoom, zoomIdentity } from 'd3-zoom';
 import europe from '../data/europe.json';
+import { getTripDays, colorForDay } from '../tripDays';
 
 // The whole of Europe (country borders) is bundled straight into the JS as a
 // GeoJSON FeatureCollection — no runtime fetch, no public asset, no 404. Vite
@@ -68,6 +69,7 @@ const computeArrows = (points, spacing) => {
 function TripMap({
   trips = [],
   trip = null,
+  dayData = null,
   pois = [],
   selectedWaypointId = null,
   onWaypointClick,
@@ -81,6 +83,10 @@ function TripMap({
   const [transform, setTransform] = useState({ k: 1, x: 0, y: 0 });
 
   const list = useMemo(() => (trip ? [trip] : trips), [trip, trips]);
+  const days = useMemo(
+    () => (trip ? (dayData || getTripDays(trip)) : null),
+    [trip, dayData],
+  );
 
   // Watch container size so the projection fits the rendered box.
   useEffect(() => {
@@ -174,6 +180,24 @@ function TripMap({
   const routeRenders = useMemo(() => {
     if (!projection) return [];
     const out = [];
+    if (days) {
+      days.segments.forEach((seg, segIdx) => {
+        const pts = [];
+        for (const ll of seg.points) {
+          const xy = projection(ll);
+          if (xy) pts.push(xy);
+        }
+        if (pts.length < 2) return;
+        const d = `M${pts.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join('L')}`;
+        out.push({
+          id: `day-${seg.day}-${segIdx}`,
+          d,
+          color: seg.color,
+          arrows: computeArrows(pts, 30),
+        });
+      });
+      return out;
+    }
     for (const t of list) {
       const lonLats = tripLonLats(t);
       if (!lonLats || lonLats.length < 2) continue;
@@ -192,12 +216,12 @@ function TripMap({
       });
     }
     return out;
-  }, [list, projection]);
+  }, [days, list, projection]);
 
   // Project waypoints to pixel coords (only for a selected single trip).
   const waypointPoints = useMemo(() => {
-    if (!projection || !trip) return [];
-    return (trip.waypoints || []).map((w) => {
+    if (!projection || !days) return [];
+    return days.dayWaypoints.map((w) => {
       const xy = projection([w.longitude, w.latitude]);
       if (!xy) return null;
       return {
@@ -206,12 +230,15 @@ function TripMap({
         label: w.label,
         notes: w.notes,
         score: w.score,
+        isOvernight: w.isOvernight,
+        day: w.effectiveDay,
+        dayColor: colorForDay(w.effectiveDay),
         x: xy[0],
         y: xy[1],
         isSelected: selectedWaypointId === w.id,
       };
     }).filter(Boolean);
-  }, [trip, projection, selectedWaypointId]);
+  }, [days, projection, selectedWaypointId]);
 
   // Project points of interest (always shown, in every view).
   const poiPoints = useMemo(() => {
@@ -292,12 +319,25 @@ function TripMap({
                 }) : undefined}
                 style={onWaypointClick ? { cursor: 'pointer' } : undefined}
               >
-                <circle
-                  r={(wp.isSelected ? 8 : 5) * inv}
-                  className="trip-waypoint-dot-circle"
-                />
+                {wp.isOvernight ? (
+                  <g transform={`scale(${(wp.isSelected ? 1.25 : 1) * inv})`}>
+                    {wp.isSelected && <circle className="trip-camp-marker-halo" r="12" />}
+                    <path
+                      className="trip-camp-marker"
+                      d="M0 -10 L7 2 L-7 2 Z"
+                      style={{ fill: wp.dayColor }}
+                    />
+                    <path className="trip-camp-marker-pole" d="M0 2 L0 -10" />
+                  </g>
+                ) : (
+                  <circle
+                    r={(wp.isSelected ? 8 : 5) * inv}
+                    className="trip-waypoint-dot-circle"
+                  />
+                )}
                 <title>
                   {wp.label || `Stop ${wp.sequenceOrder + 1}`}
+                  {wp.isOvernight ? ` · Camp (day ${wp.day})` : ''}
                   {wp.score != null ? ` (${wp.score}/10)` : ''}
                   {wp.notes ? `\n${wp.notes}` : ''}
                 </title>

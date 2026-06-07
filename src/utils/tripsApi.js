@@ -46,6 +46,7 @@ const transformWaypoint = (raw) => ({
   label: raw.label ?? '',
   notes: raw.notes ?? '',
   score: raw.score ?? null,
+  isOvernight: Boolean(raw.is_overnight),
   createdAt: raw.created_at,
 });
 
@@ -106,6 +107,7 @@ export const updateWaypoint = (tripId, waypointId, payload) => withErrorContext(
       notes: payload.notes ?? null,
       score: payload.score ?? null,
       day_number: payload.dayNumber ?? null,
+      is_overnight: payload.isOvernight ?? null,
     },
   }),
 );

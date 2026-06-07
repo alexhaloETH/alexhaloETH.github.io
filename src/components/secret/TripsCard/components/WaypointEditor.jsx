@@ -2,11 +2,12 @@ import { useState } from 'react';
 
 const SCORE_OPTIONS = [null, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
-function WaypointEditor({ waypoint, canWrite, onSave, onClose }) {
+function WaypointEditor({ waypoint, canWrite, computedDay = null, onSave, onClose }) {
   const [label, setLabel] = useState(waypoint.label || '');
   const [notes, setNotes] = useState(waypoint.notes || '');
   const [score, setScore] = useState(waypoint.score ?? '');
   const [dayNumber, setDayNumber] = useState(waypoint.dayNumber ?? '');
+  const [isOvernight, setIsOvernight] = useState(Boolean(waypoint.isOvernight));
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSubmit = async (event) => {
@@ -18,6 +19,7 @@ function WaypointEditor({ waypoint, canWrite, onSave, onClose }) {
       notes: notes.trim() || null,
       score: score === '' ? null : Number(score),
       dayNumber: dayNumber === '' ? null : Number(dayNumber),
+      isOvernight,
     });
     setIsSaving(false);
     if (ok) onClose?.();
@@ -25,6 +27,20 @@ function WaypointEditor({ waypoint, canWrite, onSave, onClose }) {
 
   return (
     <form className="waypoint-editor" onSubmit={handleSubmit}>
+      <label className="waypoint-editor-overnight">
+        <input
+          type="checkbox"
+          checked={isOvernight}
+          onChange={(e) => setIsOvernight(e.target.checked)}
+          disabled={!canWrite}
+        />
+        <span>
+          Camp / overnight stop here
+          <span className="waypoint-editor-overnight-hint">
+            Splits the trip into a new day after this stop.
+          </span>
+        </span>
+      </label>
       <div className="waypoint-editor-row">
         <label>
           Label
@@ -60,7 +76,7 @@ function WaypointEditor({ waypoint, canWrite, onSave, onClose }) {
             value={dayNumber}
             onChange={(e) => setDayNumber(e.target.value)}
             disabled={!canWrite}
-            placeholder="—"
+            placeholder={computedDay ? `${computedDay}` : '—'}
           />
         </label>
       </div>
