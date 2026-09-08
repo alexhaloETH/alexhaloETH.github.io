@@ -1,11 +1,10 @@
 const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
 
-export const PANEL_IDS = ['now', 'garden', 'daily', 'library', 'system', 'gym'];
+export const PANEL_IDS = ['now', 'daily', 'library', 'system', 'gym'];
 
 export const PANEL_LABELS = {
   alerts: 'Alerts',
   now: 'Now',
-  garden: 'Garden',
   daily: 'Daily Ops',
   library: 'Library',
   system: 'System',

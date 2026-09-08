@@ -6,7 +6,6 @@ import useDisplayAlerts from './hooks/useDisplayAlerts';
 import usePiDisplayData from './hooks/usePiDisplayData';
 import AlertsPanel from './panels/AlertsPanel';
 import DailyOpsPanel from './panels/DailyOpsPanel';
-import GardenPanel from './panels/GardenPanel';
 import GymPanel from './panels/GymPanel';
 import LibraryPanel from './panels/LibraryPanel';
 import NowPanel from './panels/NowPanel';
@@ -41,8 +40,6 @@ const renderPanel = (panelId, props) => {
   switch (panelId) {
     case 'alerts':
       return <AlertsPanel {...props} />;
-    case 'garden':
-      return <GardenPanel {...props} />;
     case 'daily':
       return <DailyOpsPanel {...props} />;
     case 'library':

@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { API_ROOT } from '../../utils/apiClient';
-import { getAllPlants } from '../../utils/plantsApi';
 import { getAllLibraryBooks, getAllReadingSessions } from '../../utils/libraryApi';
 import { getAllTasks } from '../../utils/taskApi';
 import { getAllMissions } from '../../utils/missionsApi';
@@ -17,7 +16,6 @@ import {
 } from '../../utils/gymApi';
 import {
   getCurrentDayNumber,
-  getDaysBetween,
   getTodayDateString,
   parseDate,
 } from '../piDisplayUtils';
@@ -41,14 +39,6 @@ const INITIAL_DATA = {
     diskUsage: null,
     temperature: null,
     uptime: '',
-  },
-  garden: {
-    ...EMPTY_SECTION,
-    total: 0,
-    harvestTracked: 0,
-    harvestSoon: [],
-    readyToHarvest: [],
-    nextHarvestPlant: null,
   },
   daily: {
     ...EMPTY_SECTION,
@@ -110,59 +100,6 @@ const fetchHealth = async () => {
       error: error.message || 'Health check failed',
     };
   }
-};
-
-const buildGardenSummary = (plantsResult) => {
-  const plants = Array.isArray(plantsResult.value) ? plantsResult.value : [];
-  const today = parseDate(getTodayDateString());
-
-  const enrichedPlants = plants.map((plant) => {
-    const harvestStart = parseDate(plant.harvestStartOn);
-    const harvestEnd = parseDate(plant.harvestEndOn);
-    const readyToHarvest = Boolean(
-      plant.isHarvestable
-      && harvestStart
-      && harvestStart <= today
-      && (!harvestEnd || harvestEnd >= today),
-    );
-    const daysUntilHarvest = getDaysBetween(harvestStart, today);
-
-    return {
-      ...plant,
-      daysUntilHarvest,
-      readyToHarvest,
-    };
-  });
-
-  const readyToHarvest = enrichedPlants.filter((plant) => plant.readyToHarvest);
-  const futureHarvestPlants = enrichedPlants
-    .filter((plant) => (
-      plant.isHarvestable
-      && !plant.readyToHarvest
-      && typeof plant.daysUntilHarvest === 'number'
-      && plant.daysUntilHarvest >= 0
-    ))
-    .sort((left, right) => plantDateSort(left.harvestStartOn, right.harvestStartOn));
-  const harvestSoon = futureHarvestPlants.filter((plant) => plant.daysUntilHarvest <= 7);
-
-  return {
-    ok: plantsResult.ok,
-    error: plantsResult.error,
-    total: plants.length,
-    harvestTracked: enrichedPlants.filter((plant) => plant.isHarvestable).length,
-    harvestSoon,
-    readyToHarvest,
-    nextHarvestPlant: readyToHarvest[0] || futureHarvestPlants[0] || null,
-  };
-};
-
-const plantDateSort = (leftValue, rightValue) => {
-  const left = parseDate(leftValue);
-  const right = parseDate(rightValue);
-  if (!left && !right) return 0;
-  if (!left) return 1;
-  if (!right) return -1;
-  return left - right;
 };
 
 const getReadingStreak = (sessions) => {
@@ -324,7 +261,6 @@ function usePiDisplayData({ authToken, refreshMs = 60000 } = {}) {
     safeSetIsLoading(true);
 
     const [
-      plantsResult,
       booksResult,
       sessionsResult,
       tasksResult,
@@ -338,7 +274,6 @@ function usePiDisplayData({ authToken, refreshMs = 60000 } = {}) {
       stretchesResult,
       stretchLogsResult,
     ] = await Promise.all([
-      safeCall(getAllPlants, []),
       safeCall(getAllLibraryBooks, []),
       safeCall(getAllReadingSessions, []),
       safeCall(getAllTasks, []),
@@ -362,7 +297,6 @@ function usePiDisplayData({ authToken, refreshMs = 60000 } = {}) {
       health,
       lastUpdated: new Date().toISOString(),
       system: buildSystemSummary(systemResult),
-      garden: buildGardenSummary(plantsResult),
       daily: buildDailySummary(tasksResult, shoppingResult, missionsResult),
       library: buildLibrarySummary(booksResult, sessionsResult),
       gym: buildGymSummary({

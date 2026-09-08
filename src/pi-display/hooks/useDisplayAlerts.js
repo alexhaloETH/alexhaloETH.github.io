@@ -19,12 +19,6 @@ const getTemperatureSeverity = (temperature) => {
 function useDisplayAlerts(data) {
   return useMemo(() => {
     const alerts = [];
-    const readyToHarvest = Array.isArray(data.garden?.readyToHarvest)
-      ? data.garden.readyToHarvest
-      : [];
-    const harvestSoon = Array.isArray(data.garden?.harvestSoon)
-      ? data.garden.harvestSoon
-      : [];
 
     if (!data.health.apiOk) {
       alerts.push({
@@ -93,29 +87,6 @@ function useDisplayAlerts(data) {
       });
     }
 
-    if (readyToHarvest.length > 0) {
-      const first = readyToHarvest[0];
-      alerts.push({
-        id: 'plants-ready',
-        severity: 'warning',
-        title: 'Harvest ready',
-        message: `${readyToHarvest.length} plant${readyToHarvest.length === 1 ? '' : 's'} ready to harvest`,
-        detail: `${first.name} is in its harvest window.`,
-        source: 'Garden',
-      });
-    } else if (harvestSoon.length > 0) {
-      const first = harvestSoon[0];
-      alerts.push({
-        id: 'plants-harvest-soon',
-        severity: 'info',
-        title: 'Harvest coming up',
-        message: `${harvestSoon.length} plant${harvestSoon.length === 1 ? '' : 's'} nearing harvest`,
-        detail: first.daysUntilHarvest === 0
-          ? `${first.name} starts harvesting today.`
-          : `${first.name} starts harvesting in ${first.daysUntilHarvest} day${first.daysUntilHarvest === 1 ? '' : 's'}.`,
-        source: 'Garden',
-      });
-    }
 
     if (data.daily.highPriorityTask) {
       alerts.push({

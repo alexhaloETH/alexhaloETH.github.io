@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion';
-import GardenCard from '../../secret/GardenCard/GardenCard';
 import GymCard from '../../secret/GymCard/GymCard';
 import LibraryCard from '../../secret/LibraryCard/LibraryCard';
 import LockedCard from '../../LockedCard/LockedCard';
@@ -8,7 +7,6 @@ import { useAuth } from '../../../contexts/AuthContext';
 
 function TrackersDashboardContent() {
   const { canRead } = useAuth();
-  const showGarden = canRead('plants');
   const showGym = canRead('gym');
   const showLibrary = canRead('library');
 
@@ -32,9 +30,6 @@ function TrackersDashboardContent() {
         </h2>
         <div className="section-grid tracker-grid">
           <motion.div variants={cardVariants}>
-            <LockedCard isLocked={!showGarden}>
-              <GardenCard />
-            </LockedCard>
           </motion.div>
           <motion.div variants={cardVariants}>
             <LockedCard isLocked={!showLibrary}>
