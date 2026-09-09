@@ -47,7 +47,8 @@ export const heroData = {
     highlight: "automate",
     suffix: " the boring things in my life",
   },
-  currentProject: "Grug's Lair", // TODO: Update with current project
+  currentLabel: "Currently",
+  currentProject: "Looking for a new role",
   gameJamsCount: 3,
   gameJamsLabel: "Game Jams · More Coming Soon",
 };

@@ -66,7 +66,7 @@ function HeroCard() {
         </div>
         <div className="hero-footer">
           <div className="hero-current">
-            <span className="current-label">Currently working on/at</span>
+            <span className="current-label">{heroData.currentLabel}</span>
             <span className="current-project">{heroData.currentProject}</span>
           </div>
           <div className="hero-jams">

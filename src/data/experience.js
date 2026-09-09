@@ -5,7 +5,7 @@ export const experiences = [
   company: "Grug's Lair Limited",
   icon: "🚀",
   startDate: new Date(2023, 9),
-  endDate: null, 
+  endDate: new Date(2026, 6), // July 2026
   description:
     "Technical lead for a mobile-first onchain game studio. I own end-to-end engineering (game client, web stack, and Starknet/Cairo contracts), with a focus on shipping production gameplay, smooth onboarding, and scalable live operations. Primary shipped title: Blob Arena — a fully onchain turn-based battler on Starknet, powered by Cartridge, with Classic + AMMA modes and competitive tournaments/leagues.",
   highlights: [
