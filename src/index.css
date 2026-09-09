@@ -54,3 +54,64 @@ h6 {
   font-family: 'Space Grotesk', sans-serif;
   letter-spacing: 0.01em;
 }
+
+/* ==================== */
+
+/* Touch targets        */
+
+/* ==================== */
+
+/* A finger needs roughly 44px. Several controls here are deliberately small
+   graphics -- 6px carousel dots, 14px timeline handles -- so instead of
+   resizing them and changing the design, the tappable area is expanded with a
+   transparent overlay. Each overlay is capped at the measured spacing between
+   its neighbours: a blanket 44px would have made the carousel worse, because
+   the dots sit 11px apart and every dot would have swallowed taps meant for
+   four others. Scoped to coarse pointers, so mouse layouts are untouched. */
+@media (pointer: coarse) {
+  /* Widen the row first so a real hit area fits between dots at all. */
+  .gallery-dots {
+    gap: 26px;
+  }
+
+  .gallery-arrow,
+  .gallery-dot,
+  .nav-arrow,
+  .timeline-dot,
+  .toggle-btn,
+  .view-toggle-btn {
+    position: relative;
+  }
+
+  .gallery-arrow::after,
+  .gallery-dot::after,
+  .nav-arrow::after,
+  .timeline-dot::after,
+  .toggle-btn::after,
+  .view-toggle-btn::after {
+    content: '';
+    height: 44px;
+    left: 50%;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 44px;
+  }
+
+  /* Dots stay narrower than their pitch so a tap lands on the nearest one. */
+  .gallery-dot::after {
+    width: 32px;
+  }
+
+  .timeline-dot::after {
+    width: 40px;
+  }
+
+  /* These are wide enough already; only their height falls short. */
+  .indicator,
+  .skills-tab,
+  .social-link,
+  .theme-btn {
+    min-height: 44px;
+  }
+}
