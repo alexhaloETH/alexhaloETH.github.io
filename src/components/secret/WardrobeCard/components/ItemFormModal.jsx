@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import ModalPortal from '../../../ModalPortal/ModalPortal';
 import { SLOTS } from '../useWardrobeData';
 
 const EMPTY = { slot: 'tee', label: '', hex: '#708238', isActive: true };
@@ -35,6 +36,7 @@ function ItemFormModal({ item, onSave, onClose }) {
   };
 
   return (
+    <ModalPortal>
     <div className="wardrobe-modal-backdrop" role="presentation" onClick={onClose}>
       <div
         className="wardrobe-modal"
@@ -83,6 +85,7 @@ function ItemFormModal({ item, onSave, onClose }) {
         </form>
       </div>
     </div>
+    </ModalPortal>
   );
 }
 

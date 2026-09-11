@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import ModalPortal from '../../../ModalPortal/ModalPortal';
 import { motion } from 'framer-motion';
 import { formatMoney } from '../../../../utils/privacy';
 import { BOT_STATUS } from '../TradingBotsCard.constants';
@@ -38,6 +39,7 @@ function BotDetailsModal({
   };
 
   return (
+    <ModalPortal>
     <motion.div
       className="modal-backdrop"
       initial={{ opacity: 0 }}
@@ -350,6 +352,7 @@ function BotDetailsModal({
         )}
       </motion.div>
     </motion.div>
+    </ModalPortal>
   );
 }
 
