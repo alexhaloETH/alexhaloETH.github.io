@@ -1,0 +1,135 @@
+/* Design tokens: the one place raw values live. Every component reads these.
+   Contrast was checked pair by pair (WCAG AA): ink on paper 14.9:1, secondary text
+   7.1:1, cream on the red action 5.4:1, ink on yellow 11.9:1, red text 5.7:1. */
+
+:root {
+  /* primitives */
+  --paper-50: #fffaf1;
+  --paper-100: #f4eee2;
+  --paper-200: #e9e1d1;
+  --paper-300: #e2d9c7;
+  --tan-300: #d6cab2;
+  --ink-900: #1d1b18;
+  --ink-600: #544e45;
+  --red-600: #c42f1d;
+  --red-700: #a82616;
+  --red-text: #b3261a;
+  --yellow-300: #ffd23f;
+  --yellow-200: #ffe17a;
+
+  /* semantic colour */
+  --surface-page: var(--paper-100);
+  --surface-card: var(--paper-50);
+  --surface-sunken: var(--paper-200);
+  --surface-highlight: var(--yellow-300);
+  --surface-highlight-hover: var(--yellow-200);
+  --surface-bar: var(--ink-900);
+  --text-primary: var(--ink-900);
+  --text-secondary: var(--ink-600);
+  --text-accent: var(--red-text);
+  --text-on-action: var(--paper-50);
+  --text-on-bar: var(--paper-50);
+  --text-on-highlight: var(--ink-900);
+  --action-primary: var(--red-600);
+  --action-primary-hover: var(--red-700);
+  --border-strong: var(--ink-900);
+  --focus-ring: var(--red-600);
+  --texture-dot: var(--paper-300);
+  --map-land: var(--tan-300);
+
+  /* type */
+  --font-display: 'Pixelify Sans', 'Courier New', monospace;
+  --font-body: 'DM Sans', system-ui, -apple-system, 'Segoe UI', roboto, sans-serif;
+
+  /* big screens scale the whole page: every size below is in rem */
+  --root-size-lg: 106.25%;
+  --root-size-xl: 112.5%;
+  --root-size-2xl: 125%;
+  --fs-xs: 0.8125rem;
+  --fs-sm: 0.875rem;
+  --fs-base: 1rem;
+  --fs-lg: 1.125rem;
+  --fs-xl: 1.375rem;
+  --fs-2xl: 1.75rem;
+  --fs-3xl: 2.25rem;
+
+  /* "ALEXHALO" in Pixelify Sans 700 is 4.82x its font size, so 19cqi fills about 92%
+     of the hero card at any width. 12vw is the fallback without container units. */
+  --fs-display: clamp(2.5rem, 12vw, 8rem);
+  --fs-hero-name: clamp(1.5rem, 19cqi, 8rem);
+
+  /* the pixel face is wide, so headings scale with the viewport */
+  --fs-title: clamp(1.5rem, 8vw, 2.25rem);
+  --fs-title-lg: clamp(1.75rem, 10vw, 3rem);
+
+  /* fits a 10-letter pixel word (about 6em wide) in its container: 100cqi / 6.6 */
+  --fs-fit-10ch: 15cqi;
+  --lh-display: 0.95;
+  --lh-tight: 1.1;
+  --lh-snug: 1.3;
+  --lh-body: 1.6;
+  --tracking-label: 0.06em;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-bold: 700;
+
+  /* space, 4px base */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --gutter: 1rem;
+  --section-gap: var(--space-16);
+
+  /* shape: square corners everywhere, like the pixel art */
+  --border: 2px;
+  --radius: 0;
+  --shadow-offset: 4px;
+  --lift: -2px;
+  --shadow-hard: var(--shadow-offset) var(--shadow-offset) 0 var(--border-strong);
+  --shadow-hard-lg: 6px 6px 0 var(--border-strong);
+  --shadow-none: 0 0 0 var(--border-strong);
+  --ring: 3px;
+  --ring-offset: 3px;
+  --target: 2.75rem;
+  --icon: 1.125rem;
+  --icon-lg: 2rem;
+  --pip: 0.5rem;
+  --pixel-icon: 2.5rem;
+
+  /* three slots per row on phones; never fewer than three, even at 280px */
+  --slot-min: min(5rem, 30%);
+  --slot-basis: 6rem;
+  --slot-icon: 1.75rem;
+  --stat-min: 7.5rem;
+  --status-label: 6.5rem;
+  --texture-dot-size: 1px;
+  --texture-gap: 22px;
+  --measure: 62ch;
+  --container: 74rem;
+  --media-max: 60vh;
+
+  /* map strokes are in viewBox units: 10 per degree, one land pixel every 5 degrees */
+  --map-pixel: 34;
+  --map-pin-stroke: 10;
+  --key: 0.875rem;
+
+  /* motion */
+  --dur-reduced: 0.01ms;
+  --dur-fast: 120ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@media (width >= 48em) {
+  :root {
+    --gutter: 2rem;
+    --section-gap: var(--space-20);
+  }
+}

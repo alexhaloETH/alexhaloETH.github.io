@@ -2,21 +2,111 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ALEXHALO3115</title>
-    <script>
-      (function () {
-        var target = window.location.pathname + window.location.search + window.location.hash;
-        var fallback = '/?spa_redirect=' + encodeURIComponent(target);
-        try {
-          window.sessionStorage.setItem('portfolio_spa_redirect', target);
-        } catch (error) {
-          window.location.replace(fallback);
-          return;
-        }
-        window.location.replace('/');
-      }());
-    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Page not found, Alexhalo</title>
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#f4eee2" /><!-- ds-allow-hardcode: meta tags cannot read CSS variables; mirrors --paper -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@700&family=DM+Sans:opsz,wght@9..40,400;9..40,700&display=swap" />
+    <style>
+      /* Standalone on purpose: GitHub Pages serves this file for any unknown path,
+         including old links into the removed dashboard. Tokens mirror src/styles. */
+      :root {
+        --paper: #f4eee2;
+        --card: #fffaf1;
+        --dot: #e2d9c7;
+        --ink: #1d1b18;
+        --ink-soft: #544e45;
+        --yellow: #ffd23f;
+        --red: #c42f1d;
+        --border: 2px;
+        --shadow: 4px 4px 0 var(--ink);
+        --shadow-lift: 6px 6px 0 var(--ink);
+        --shadow-none: 0 0 0 var(--ink);
+        --press: 4px;
+        --lift: -2px;
+        --ring: 3px;
+        --space-2: 0.5rem;
+        --space-4: 1rem;
+        --space-5: 1.25rem;
+        --space-6: 1.5rem;
+        --space-8: 2rem;
+        --target: 2.75rem;
+        --dot-size: 1px;
+        --dot-gap: 22px;
+        --dur: 120ms;
+        --font-body: 'DM Sans', system-ui, sans-serif;
+        --font-display: 'Pixelify Sans', 'Courier New', monospace;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: var(--space-8) var(--space-4);
+        background-color: var(--paper);
+        background-image: radial-gradient(var(--dot) var(--dot-size), transparent var(--dot-size));
+        background-size: var(--dot-gap) var(--dot-gap);
+        color: var(--ink);
+        font-family: var(--font-body);
+        line-height: 1.6;
+      }
+      main {
+        width: 100%;
+        max-width: 32rem;
+        padding: var(--space-8) var(--space-6);
+        background: var(--card);
+        border: var(--border) solid var(--ink);
+        box-shadow: var(--shadow-lift);
+      }
+      .badge {
+        display: inline-block;
+        margin: 0;
+        padding: 0 var(--space-2);
+        background: var(--yellow);
+        border: var(--border) solid var(--ink);
+        font-weight: 700;
+      }
+      h1 {
+        margin: var(--space-5) 0 0;
+        font-family: var(--font-display);
+        font-size: clamp(1.5rem, 9vw, 3rem);
+        line-height: 1.1;
+        text-transform: uppercase;
+      }
+      p { margin: var(--space-4) 0 0; color: var(--ink-soft); }
+      a {
+        display: inline-flex;
+        align-items: center;
+        min-height: var(--target);
+        margin-top: var(--space-6);
+        padding: 0 var(--space-5);
+        background: var(--red);
+        color: var(--card);
+        border: var(--border) solid var(--ink);
+        box-shadow: var(--shadow);
+        font-weight: 700;
+        text-decoration: none;
+        transition: transform var(--dur) ease-out, box-shadow var(--dur) ease-out;
+      }
+      a:hover { transform: translate(var(--lift), var(--lift)); box-shadow: var(--shadow-lift); }
+      a:active { transform: translate(var(--press), var(--press)); box-shadow: var(--shadow-none); }
+      a:focus-visible { outline: var(--ring) solid var(--red); outline-offset: var(--ring); }
+      @media (prefers-reduced-motion: reduce) {
+        a { transition: none; }
+        a:hover { transform: none; }
+      }
+    </style>
   </head>
-  <body></body>
+  <body>
+    <main>
+      <p class="badge">404</p>
+      <h1>Not in the inventory</h1>
+      <p>There is nothing at this address. It may have been part of the old site.</p>
+      <a href="/">Back to the portfolio</a>
+    </main>
+  </body>
 </html>

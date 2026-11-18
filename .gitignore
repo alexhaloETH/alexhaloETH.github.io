@@ -33,3 +33,6 @@ src/purged/
 .claude
 
 .env
+
+# Server bundle used only while prerendering
+dist-server

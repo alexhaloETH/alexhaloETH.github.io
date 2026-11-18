@@ -1,18 +1,10 @@
+// Minify CSS in production builds. PurgeCSS used to run here too, but it silently
+// dropped selectors made only of pseudo-classes (like :focus-visible, which removed
+// every keyboard focus ring in production). The stylesheet is small now, so it went.
 const cssnano = require('cssnano');
-const purgecss = require('@fullhuman/postcss-purgecss');
-const purgecssPlugin = purgecss.default ?? purgecss;
-const purgeConfig = require('./purgecss.config.cjs');
 
 const isProduction = process.env.NODE_ENV === 'production';
 
 module.exports = {
-  plugins: isProduction
-    ? [
-        purgecssPlugin({
-          content: purgeConfig.content,
-          safelist: purgeConfig.safelist,
-        }),
-        cssnano({ preset: 'default' }),
-      ]
-    : [],
+  plugins: isProduction ? [cssnano({ preset: 'default' })] : [],
 };

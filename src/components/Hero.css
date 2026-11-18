@@ -1,0 +1,188 @@
+.intro {
+  display: grid;
+  gap: var(--space-6);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* The hero card is a size container so the name can be sized to fit it exactly. */
+.hero {
+  container-type: inline-size;
+  padding: var(--space-6) var(--space-5) var(--space-8);
+}
+
+.hero-name {
+  font-family: var(--font-display);
+  font-size: var(--fs-display);
+  font-weight: var(--weight-bold);
+  line-height: var(--lh-display);
+  margin-top: var(--space-5);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+@supports (font-size: 1cqi) {
+  .hero-name {
+    font-size: var(--fs-hero-name);
+  }
+}
+
+.statement {
+  font-size: var(--fs-xl);
+  font-weight: var(--weight-bold);
+  line-height: var(--lh-snug);
+  margin-top: var(--space-5);
+  max-width: 30ch;
+}
+
+.hero-intro {
+  color: var(--text-secondary);
+  margin-top: var(--space-4);
+  max-width: var(--measure);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-4);
+  margin-top: var(--space-6);
+}
+
+/* Phones: the main action gets the whole row and the profiles share the next. */
+.hero .actions .btn-primary {
+  flex: 1 1 100%;
+}
+
+/* Status: a character sheet --------------------------------------------- */
+
+/* Rows are separated by space, not divider lines. */
+.status-list {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.status-row {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.status-row dt {
+  color: var(--text-secondary);
+  font-family: var(--font-display);
+  font-size: var(--fs-sm);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.status-row dd {
+  font-weight: var(--weight-bold);
+}
+
+.status-row dd span {
+  color: var(--text-secondary);
+  display: block;
+  font-size: var(--fs-sm);
+  font-weight: var(--weight-regular);
+}
+
+.achievement {
+  align-items: center;
+  background: var(--surface-highlight);
+  border: var(--border) solid var(--border-strong);
+  color: var(--text-on-highlight);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  padding: var(--space-4);
+}
+
+.achievement .achievement-icon {
+  height: var(--icon-lg);
+  width: var(--icon-lg);
+}
+
+/* Sits beside the award icon when there is room, below it when there is not. */
+.achievement-text {
+  flex: 1 1 12rem;
+}
+
+.achievement-text strong {
+  display: block;
+  line-height: var(--lh-snug);
+}
+
+.achievement-text span {
+  font-size: var(--fs-sm);
+}
+
+.counters {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--stat-min)), 1fr));
+  margin-top: var(--space-4);
+}
+
+.counter {
+  background: var(--surface-sunken);
+  border: var(--border) solid var(--border-strong);
+  display: flex;
+  flex-direction: column-reverse;
+  padding: var(--space-3) var(--space-4);
+}
+
+.counter dd {
+  font-family: var(--font-display);
+  font-size: var(--fs-3xl);
+  font-weight: var(--weight-bold);
+  line-height: 1;
+}
+
+.counter dt {
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+}
+
+@media (width >= 30em) {
+  .hero .actions .btn-primary {
+    flex: 0 0 auto;
+  }
+
+  .status-row {
+    align-items: baseline;
+    gap: var(--space-3);
+    grid-template-columns: minmax(0, var(--status-label)) minmax(0, 1fr);
+  }
+}
+
+@media (width >= 48em) {
+  .hero {
+    padding: var(--space-10);
+  }
+}
+
+@media (width >= 64em) {
+  .intro {
+    align-items: stretch;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  }
+
+  /* The sheet is as tall as the hero; share the spare height evenly between the
+     rows, the award and the counters instead of leaving one gap. */
+  .status-window .window-body {
+    justify-content: space-between;
+  }
+
+  .status-window .achievement,
+  .status-window .counters {
+    margin-top: var(--space-5);
+  }
+
+  .status-list {
+    gap: var(--space-5);
+  }
+
+  .status-row dd {
+    font-size: var(--fs-lg);
+  }
+}

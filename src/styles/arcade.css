@@ -1,0 +1,89 @@
+/* Arcade Night: the Cartridge layout as a dark arcade cabinet. Indigo, marquee type,
+   neon offset shadows. Every raw value is a token override on top of tokens.css,
+   switched on by data-style="arcade" on <html> in index.html. */
+
+html[data-style='arcade'] {
+  --surface-page: #1b1435;
+  --surface-card: #2a2150;
+  --surface-sunken: #211943;
+  --surface-highlight: #ffe14d;
+  --surface-highlight-hover: #fff07a;
+  --surface-bar: #0c0918;
+  --text-primary: #fff4e0;
+  --text-secondary: #c9bfe6;
+  --text-accent: #ff8cc2;
+  --text-on-action: #140f26;
+  --text-on-bar: #fff4e0;
+  --text-on-highlight: #140f26;
+  --action-primary: #ffe14d;
+  --action-primary-hover: #fff07a;
+  --border-strong: #0c0918;
+  --focus-ring: #ffe14d;
+  --texture-dot: #2e2559;
+  --map-land: #463a80;
+  --neon: #ff3d8b;
+  --track: #8f84b8;
+  --font-display: 'Bungee', 'Impact', sans-serif;
+  --font-body: 'Rubik', system-ui, sans-serif;
+
+  /* Bungee is wide: ALEXHALO is 5.74em, a 10-letter word about 7em */
+  --fs-hero-name: clamp(1.5rem, 16cqi, 8rem);
+  --fs-fit-10ch: 12.5cqi;
+  --border: 3px;
+  --shadow-offset: 5px;
+  --shadow-hard: var(--shadow-offset) var(--shadow-offset) 0 var(--neon);
+  --shadow-hard-lg: 7px 7px 0 var(--neon);
+  --shadow-none: 0 0 0 var(--neon);
+  --round-md: 8px;
+  --round-sm: 6px;
+
+  color-scheme: dark;
+  font-synthesis: none;
+}
+
+html[data-style='arcade'] .card,
+html[data-style='arcade'] .window,
+html[data-style='arcade'] .step,
+html[data-style='arcade'] .btn {
+  border-radius: var(--round-md);
+}
+
+html[data-style='arcade'] .window {
+  overflow: hidden;
+}
+
+html[data-style='arcade'] .slot,
+html[data-style='arcade'] .perk,
+html[data-style='arcade'] .shot,
+html[data-style='arcade'] .chip,
+html[data-style='arcade'] .shelf a,
+html[data-style='arcade'] .counter,
+html[data-style='arcade'] .achievement {
+  border-radius: var(--round-sm);
+}
+
+/* Ink lines vanish on a dark page, so the level path is drawn in a light tone. */
+html[data-style='arcade'] .path::before {
+  background: var(--track);
+}
+
+/* Pins that read on a dark map: yellow worked, cream visited, neon home. */
+html[data-style='arcade'] .pin-visited,
+html[data-style='arcade'] .key-visited {
+  background: var(--text-primary);
+  fill: var(--text-primary);
+}
+
+html[data-style='arcade'] .pin-home,
+html[data-style='arcade'] .key-home {
+  background: var(--neon);
+  fill: var(--neon);
+}
+
+html[data-style='arcade'] .pin-ring {
+  stroke: var(--neon);
+}
+
+html[data-style='arcade'] .key-home {
+  outline-color: var(--neon);
+}

@@ -1,0 +1,157 @@
+.inventory {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* Bags: one per row on phones (tablet and desktop layouts below). */
+.bags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+}
+
+.bag {
+  flex: 1 1 100%;
+}
+
+/* Item slots: square cells like a game inventory grid. */
+.slots {
+  display: grid;
+  gap: var(--space-2);
+  grid-template-columns: repeat(auto-fill, minmax(var(--slot-min), 1fr));
+}
+
+.slot {
+  align-content: center;
+  aspect-ratio: 1;
+  background: var(--surface-sunken);
+  border: var(--border) solid var(--border-strong);
+  display: grid;
+  gap: var(--space-2);
+  justify-items: center;
+  padding: var(--space-2) var(--space-1);
+  text-align: center;
+}
+
+.slot-icon {
+  height: var(--slot-icon);
+  width: var(--slot-icon);
+}
+
+.slot-mono {
+  align-items: center;
+  display: flex;
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: var(--weight-bold);
+  height: var(--slot-icon);
+  line-height: 1;
+}
+
+.slot-name {
+  font-size: var(--fs-xs);
+  font-weight: var(--weight-bold);
+  line-height: var(--lh-tight);
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+/* Leveling up: what is being learned now or improved. */
+.leveling-intro {
+  font-weight: var(--weight-medium);
+  margin-bottom: var(--space-4);
+}
+
+.perks {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.perk {
+  align-items: center;
+  background: var(--surface-sunken);
+  border: var(--border) solid var(--border-strong);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+
+.perk-icon {
+  color: var(--action-primary);
+  flex: none;
+  height: var(--pixel-icon);
+  width: var(--pixel-icon);
+}
+
+/* Beside the icon when there is room, below it when there is not. */
+.perk-text {
+  container-type: inline-size;
+  flex: 1 1 10rem;
+  min-width: 0;
+}
+
+.perk-text strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: min(var(--fs-lg), var(--fs-fit-10ch));
+  text-transform: uppercase;
+}
+
+.perk-text span {
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+}
+
+/* Tablets: a two-column grid. The first bag (the biggest) takes the full row and the
+   rest pair up, so rows stay flush and slots keep one size. */
+@media (width >= 48em) {
+  .bags {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .bag:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .bag .window-body {
+    justify-content: center;
+  }
+
+  .perks {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Desktop: the bags on the left, Leveling up as a tall window on the right. Each bag's
+   share of a row is proportional to its item count, so every slot is the same size and
+   the last bag in a row always reaches the edge. */
+@media (width >= 64em) {
+  .inventory {
+    align-items: stretch;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  }
+
+  .bags {
+    display: flex;
+  }
+
+  .bag,
+  .bag:first-child {
+    flex: var(--items) 1 calc(var(--items) * var(--slot-basis));
+  }
+
+  .bag .slots {
+    grid-template-columns: repeat(var(--items), minmax(0, 1fr));
+  }
+
+  /* The perks share the window's height evenly instead of leaving a gap below. */
+  .leveling .perks {
+    flex: 1;
+    grid-auto-rows: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

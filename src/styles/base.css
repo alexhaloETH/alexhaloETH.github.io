@@ -1,0 +1,387 @@
+/* Base styles and shared pieces. The base IS the phone layout; wider screens are
+   layered on with min-width queries in each component's stylesheet. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  text-size-adjust: 100%;
+}
+
+/* Large monitors: scale everything up a step so the page does not sit small in the
+   middle of a 1920px screen. Phones and laptops keep the browser default. */
+@media (width >= 96em) {
+  html {
+    font-size: var(--root-size-lg);
+  }
+}
+
+@media (width >= 112em) {
+  html {
+    font-size: var(--root-size-xl);
+  }
+}
+
+@media (width >= 140em) {
+  html {
+    font-size: var(--root-size-2xl);
+  }
+}
+
+body {
+  background-color: var(--surface-page);
+  background-image: radial-gradient(var(--texture-dot) var(--texture-dot-size), transparent var(--texture-dot-size));
+  background-size: var(--texture-gap) var(--texture-gap);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  -webkit-font-smoothing: antialiased;
+  line-height: var(--lh-body);
+  margin: 0;
+
+  /* Only breaks a word that cannot fit its line at all (tiny screens, big text). */
+  overflow-wrap: break-word;
+}
+
+img,
+video,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+img,
+video {
+  height: auto;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+ul,
+ol,
+dl,
+dd,
+figure {
+  margin: 0;
+}
+
+ul,
+ol {
+  list-style: none;
+  padding: 0;
+}
+
+a {
+  color: inherit;
+}
+
+/* Anchor jumps stop a little short of the top edge. */
+[id] {
+  scroll-margin-top: var(--space-6);
+}
+
+button {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: var(--ring) solid var(--focus-ring);
+  outline-offset: var(--ring-offset);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: var(--dur-reduced) !important;
+  }
+}
+
+/* Utilities ------------------------------------------------------------ */
+.sr-only {
+  border: 0;
+  clip-path: inset(50%);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+.skip {
+  background: var(--surface-highlight);
+  border: var(--border) solid var(--border-strong);
+  color: var(--text-on-highlight);
+  font-weight: var(--weight-bold);
+  left: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  position: absolute;
+  top: var(--space-4);
+  transform: translateY(-200%);
+  z-index: 10;
+}
+
+.skip:focus {
+  transform: none;
+}
+
+.wrap {
+  margin-inline: auto;
+  max-width: var(--container);
+  padding-inline: max(var(--gutter), env(safe-area-inset-left)) max(var(--gutter), env(safe-area-inset-right));
+  width: 100%;
+}
+
+.icon {
+  flex: none;
+  height: var(--icon);
+  width: var(--icon);
+}
+
+/* Buttons: chunky, and they press into their shadow ---------------------- */
+.btn {
+  align-items: center;
+  border: var(--border) solid var(--border-strong);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-hard);
+  cursor: pointer;
+  display: inline-flex;
+  font-weight: var(--weight-bold);
+  gap: var(--space-2);
+  justify-content: center;
+  min-height: var(--target);
+  padding-inline: var(--space-5);
+  text-decoration: none;
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
+}
+
+.btn:hover {
+  box-shadow: var(--shadow-hard-lg);
+  transform: translate(var(--lift), var(--lift));
+}
+
+.btn:active {
+  box-shadow: var(--shadow-none);
+  transform: translate(var(--shadow-offset), var(--shadow-offset));
+}
+
+.btn-primary {
+  background: var(--action-primary);
+  color: var(--text-on-action);
+}
+
+.btn-primary:hover {
+  background: var(--action-primary-hover);
+}
+
+.btn-secondary {
+  background: var(--surface-card);
+  color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+  background: var(--surface-highlight);
+  color: var(--text-on-highlight);
+}
+
+.btn-sm {
+  font-size: var(--fs-sm);
+  padding-inline: var(--space-4);
+}
+
+.btn-icon {
+  padding: 0;
+  width: var(--target);
+}
+
+.btn[data-state='done'] {
+  background: var(--surface-highlight);
+  color: var(--text-on-highlight);
+}
+
+.link {
+  align-items: center;
+  display: inline-flex;
+  font-weight: var(--weight-bold);
+  gap: var(--space-1);
+  min-height: var(--target);
+  text-decoration: underline;
+  text-decoration-thickness: var(--border);
+  text-underline-offset: 0.25em;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.link:hover {
+  background: var(--surface-highlight);
+  color: var(--text-on-highlight);
+}
+
+.link:active {
+  background: var(--surface-highlight-hover);
+}
+
+/* Surfaces --------------------------------------------------------------- */
+.card {
+  background: var(--surface-card);
+  border: var(--border) solid var(--border-strong);
+  border-radius: var(--radius);
+}
+
+.card-raised {
+  box-shadow: var(--shadow-hard-lg);
+}
+
+/* A game UI window: an ink title bar over a cream panel. */
+.window {
+  background: var(--surface-card);
+  border: var(--border) solid var(--border-strong);
+  box-shadow: var(--shadow-hard);
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+}
+
+.window-bar {
+  align-items: center;
+  background: var(--surface-bar);
+  color: var(--text-on-bar);
+  display: flex;
+  gap: var(--space-3);
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+}
+
+.window-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-base);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.window-meta {
+  font-size: var(--fs-xs);
+  font-weight: var(--weight-bold);
+}
+
+.window-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: var(--space-4);
+}
+
+/* Chips and badges ------------------------------------------------------- */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chip {
+  align-items: center;
+  background: var(--surface-card);
+  border: var(--border) solid var(--border-strong);
+  display: inline-flex;
+  font-size: var(--fs-sm);
+  font-weight: var(--weight-medium);
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+}
+
+.chip .icon {
+  height: var(--fs-base);
+  width: var(--fs-base);
+}
+
+.chip-muted {
+  background: var(--surface-sunken);
+}
+
+.badge {
+  align-items: center;
+  background: var(--surface-highlight);
+  border: var(--border) solid var(--border-strong);
+  color: var(--text-on-highlight);
+  display: inline-flex;
+  font-size: var(--fs-sm);
+  font-weight: var(--weight-bold);
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+}
+
+.badge::before {
+  background: var(--border-strong);
+  content: '';
+  height: var(--pip);
+  width: var(--pip);
+}
+
+/* Sections --------------------------------------------------------------- */
+.section {
+  padding-top: var(--section-gap);
+}
+
+.section-title {
+  align-items: center;
+  display: flex;
+  font-family: var(--font-display);
+  font-size: var(--fs-title);
+  font-weight: var(--weight-bold);
+  gap: var(--space-3);
+  line-height: var(--lh-tight);
+  margin-bottom: var(--space-6);
+  text-transform: uppercase;
+}
+
+.section-title .pixel-arrow {
+  color: var(--action-primary);
+  height: 0.7em;
+  width: 0.7em;
+}
+
+.checks {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: minmax(0, 1fr);
+  max-width: var(--measure);
+}
+
+.checks li {
+  padding-left: var(--space-6);
+  position: relative;
+}
+
+.footer {
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  padding-block: 0 max(var(--space-8), env(safe-area-inset-bottom));
+}
+
+.checks li::before {
+  background: var(--action-primary);
+  content: '';
+  height: var(--pip);
+  left: 0;
+  position: absolute;
+  top: 0.55em;
+  width: var(--pip);
+}

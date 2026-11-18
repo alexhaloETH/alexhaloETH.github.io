@@ -1,50 +1,73 @@
-export const projects = [
-  {
-  id: 1,
-  title: "Blob Arena",
-  description:
-    "Pixel-art, turn-based battler where players collect Bloberts, push Arcade runs, and duel in PvP. Switch between Classic and AMMA modes, each with unique progression and rewards, built with mobile-first onboarding and onchain rails.",
-  tags: [
-    "Starknet",
-    "Dojo Engine",
-    "Cartridge Controller",
-    "Onchain Gaming",
-    "Turn-Based Combat",
-    "PvP Systems",
-    "LiveOps / Seasons",
-    "Tech Leadership (CTO)"
-  ],
-  status: "Live",
-    images: [
-    "/Images/ba_1.png",
-    "/Images/ba_2.png",
-    "/Images/ba_3.png"
-  ]
-},
-  {
-  id: 2,
-  title: "Dungeon Forge",
-  description:
-    "Unity procedural dungeon generation asset pack + tooling. Includes an editor-driven workflow to generate and edit 2D dungeon layouts using multiple PCG algorithms (Voronoi, L-System, Perlin Noise/Worms, Diamond-Square, Differential Aggregation, Random Walk, Random Room Generation incl. Binary Partition, Cellular Automata, and Delaunay Triangulation), then build out 3D dungeons via tilesets. Also includes a reusable C# utility library (DFAlgoBank / DFGeneralUtil), tileset rule + weighting system, chunk-based loading, mesh/vertex generation with Blender export, and Wave Function Collapse support (texture-based rules + node-graph rule builder).",
-  tags: [
-    "Unity",
-    "C#",
-    "Procedural Generation",
-    "Editor Tools",
-    "PCG Algorithms",
-    "Wave Function Collapse",
-    "Perlin Noise",
-    "Voronoi",
-    "Cellular Automata",
-    "Mesh Generation",
-  ],
-  status: "Open Source (MIT)",
-  images: [
-    "https://i.imgur.com/zxcb4pR.gif", 
-    "https://i.imgur.com/Q9CVCCc.gif", 
-    "https://media.giphy.com/media/sfdtRsBCjHgY6DTkvM/giphy.gif",
-    "https://i.imgur.com/SOg3t7a.gif", 
-  ],
-}
+// Selected work. The first project is the featured one and gets the big card.
+// Media paths are relative to /public. Give every image its real width and height
+// so the page does not jump while it loads.
 
+export const featured = {
+  id: 'blob-arena',
+  title: 'Blob Arena',
+  role: "CTO and co-founder, Grug's Lair",
+  status: 'Shipped',
+  period: 'Live late 2025 to June 2026',
+  summary:
+    'A pixel-art, turn-based battler that ran fully onchain on Starknet. Players collected Bloberts, pushed Arcade runs and duelled in PvP across Classic and AMMA modes.',
+  highlights: [
+    'Owned engineering end to end: the Unity client, the web stack and the Starknet contracts in Cairo.',
+    'Built onboarding for people who had never touched crypto, with Discord and passkey sign-in through Cartridge.',
+    'Shipped live competitive events, including the Armored MMA launch at Hall of Fame Village, with tournaments and seasonal prizes.',
+  ],
+  stack: ['Unity', 'C#', 'Cairo', 'Starknet', 'Dojo', 'Cartridge', 'React', 'TypeScript'],
+  link: {
+    label: 'Read the Bankless feature',
+    href: 'https://www.bankless.com/read/enter-the-blob-arena',
+  },
+  media: [
+    {
+      src: '/media/blob-arena-key-art.webp',
+      width: 498,
+      height: 393,
+      alt: 'Blob Arena key art: pixel-art fighters in front of a colosseum',
+      kind: 'main',
+    },
+    {
+      src: '/media/blob-arena-duel.webp',
+      width: 498,
+      height: 393,
+      alt: 'A PvP duel between two knights in a town square, with HP and stat bars',
+      kind: 'side',
+    },
+    {
+      src: '/media/blob-arena-mobile.webp',
+      width: 184,
+      height: 385,
+      alt: 'The mobile battle screen with Fight, Bag, Info and Run actions',
+      kind: 'phone',
+    },
+  ],
+};
+
+export const dungeonForge = {
+  id: 'dungeon-forge',
+  title: 'Dungeon Forge',
+  role: 'Unity editor toolkit for procedural dungeons',
+  status: 'Open source, MIT',
+  period: '2023',
+  paragraphs: [
+    'Generates 2D dungeon layouts with a dozen PCG algorithms, from Voronoi, L-systems and Perlin worms to cellular automata, BSP rooms and Delaunay triangulation, then builds them out in 3D from weighted tilesets.',
+    'Also handles chunk-based loading, mesh generation with Blender export, and wave function collapse with a node-graph rule builder.',
+  ],
+  link: { label: 'View the code', href: 'https://github.com/alexhaloETH/Dungeon-Forge' },
+  video: {
+    src: '/media/dungeon-forge.mp4',
+    poster: '/media/dungeon-forge-poster.jpg',
+    width: 480,
+    height: 264,
+    label: 'Dungeon Forge generating a dungeon in the Unity editor',
+    caption: 'Generating a layout in the Unity editor. 11 seconds, no sound.',
+  },
+};
+
+export const earlierWork = [
+  { name: 'Squad AI', meta: 'Unity, C#', href: 'https://github.com/alexhaloETH/AT_SquadAI_Unity' },
+  { name: 'Mesh destruction', meta: 'ShaderLab', href: 'https://github.com/alexhaloETH/Mesh_Destruction_AT' },
+  { name: 'Sim game', meta: 'C#', href: 'https://github.com/alexhaloETH/Sim_Game_AT' },
 ];

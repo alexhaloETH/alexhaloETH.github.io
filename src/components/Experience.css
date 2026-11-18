@@ -1,0 +1,108 @@
+/* A level path: a track with a square checkpoint per role. Vertical on phones,
+   horizontal across the full width on desktop. The track is centred on the
+   checkpoints: track offset = checkpoint size / 2 - track width / 2. Checkpoints are
+   placed from the step's padding box, so they also step back over its border. */
+.path {
+  display: grid;
+  gap: var(--space-6);
+  grid-template-columns: minmax(0, 1fr);
+  padding-left: var(--space-8);
+  position: relative;
+}
+
+.path::before {
+  background: var(--border-strong);
+  bottom: var(--space-4);
+  content: '';
+  left: calc(var(--space-2) - var(--border) / 2);
+  position: absolute;
+  top: var(--space-4);
+  width: var(--border);
+}
+
+.step {
+  background: var(--surface-card);
+  border: var(--border) solid var(--border-strong);
+  container-type: inline-size;
+  padding: var(--space-5);
+  position: relative;
+}
+
+.step::before {
+  background: var(--surface-card);
+  border: var(--border) solid var(--border-strong);
+  content: '';
+  height: var(--space-4);
+  left: calc(var(--space-8) * -1 - var(--border));
+  position: absolute;
+  top: var(--space-5);
+  width: var(--space-4);
+}
+
+.step-latest {
+  box-shadow: var(--shadow-hard);
+}
+
+.step-latest::before {
+  background: var(--action-primary);
+}
+
+.when {
+  background: var(--surface-sunken);
+  border: var(--border) solid var(--border-strong);
+  display: inline-block;
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--weight-bold);
+  padding: 0 var(--space-2);
+}
+
+/* Long words like TECHNOLOGY are wide in the pixel face: shrink with the card. */
+.role {
+  font-family: var(--font-display);
+  font-size: min(var(--fs-2xl), var(--fs-fit-10ch));
+  font-weight: var(--weight-bold);
+  line-height: var(--lh-tight);
+  margin-top: var(--space-3);
+  text-transform: uppercase;
+}
+
+.org {
+  color: var(--text-accent);
+  font-weight: var(--weight-bold);
+}
+
+.summary {
+  color: var(--text-secondary);
+  margin-top: var(--space-2);
+  max-width: var(--measure);
+}
+
+.step .checks {
+  margin-top: var(--space-3);
+}
+
+.step .link {
+  margin-top: var(--space-1);
+}
+
+@media (width >= 64em) {
+  .path {
+    align-items: start;
+    gap: var(--space-6);
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr);
+    padding-left: 0;
+    padding-top: var(--space-10);
+  }
+
+  .path::before {
+    height: var(--border);
+    inset: calc(var(--space-2) - var(--border) / 2) var(--space-4) auto var(--space-4);
+    width: auto;
+  }
+
+  .step::before {
+    left: var(--space-5);
+    top: calc(var(--space-10) * -1 - var(--border));
+  }
+}

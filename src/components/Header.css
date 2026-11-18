@@ -1,0 +1,21 @@
+.top {
+  padding-block: var(--space-4);
+}
+
+.top-inner {
+  align-items: center;
+  display: flex;
+  gap: var(--space-3);
+  justify-content: space-between;
+}
+
+.wordmark {
+  align-items: center;
+  display: inline-flex;
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: var(--weight-bold);
+  min-height: var(--target);
+  text-decoration: none;
+  text-transform: uppercase;
+}

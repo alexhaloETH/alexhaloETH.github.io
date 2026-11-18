@@ -1,0 +1,239 @@
+.project {
+  padding: var(--space-4);
+}
+
+.shots {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: minmax(0, 2.4fr) minmax(0, 1fr);
+}
+
+.shot {
+  background: var(--surface-sunken);
+  border: var(--border) solid var(--border-strong);
+  overflow: hidden;
+  position: relative;
+}
+
+.shot-main {
+  aspect-ratio: 498 / 393;
+  grid-column: 1 / -1;
+  max-height: var(--media-max);
+}
+
+.shot-side {
+  aspect-ratio: 498 / 393;
+}
+
+.shot img {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+/* The portrait phone shot stretches to the row height and sits inside it. */
+.shot-phone img {
+  inset: 0;
+  object-fit: contain;
+  padding: var(--space-1);
+  position: absolute;
+}
+
+.project-body {
+  padding: var(--space-5) var(--space-1) var(--space-1);
+}
+
+.project-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-title-lg);
+  font-weight: var(--weight-bold);
+  line-height: var(--lh-tight);
+  margin-top: var(--space-4);
+  text-transform: uppercase;
+}
+
+.project-role {
+  color: var(--text-accent);
+  font-weight: var(--weight-bold);
+  margin-top: var(--space-1);
+}
+
+.project-text {
+  margin-top: var(--space-4);
+  max-width: var(--measure);
+}
+
+.label {
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  font-weight: var(--weight-bold);
+  margin: var(--space-6) 0 var(--space-3);
+  text-transform: uppercase;
+}
+
+.project-stack {
+  margin-top: var(--space-5);
+}
+
+.project-link {
+  margin-top: var(--space-6);
+}
+
+/* Demo video -------------------------------------------------------------- */
+.video {
+  background: var(--surface-sunken);
+  border: var(--border) solid var(--border-strong);
+}
+
+.video-frame {
+  position: relative;
+}
+
+.video video {
+  aspect-ratio: 480 / 264;
+  object-fit: cover;
+  width: 100%;
+}
+
+.video-toggle {
+  bottom: var(--space-3);
+  left: var(--space-3);
+  position: absolute;
+}
+
+.video-toggle .icon {
+  height: var(--fs-sm);
+  width: var(--fs-sm);
+}
+
+.video figcaption {
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  padding: var(--space-3);
+}
+
+.project-second {
+  margin-top: var(--space-8);
+}
+
+/* Earlier work shelf ------------------------------------------------------ */
+.shelf {
+  margin-top: var(--space-10);
+}
+
+.shelf-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+}
+
+.shelf ul {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.shelf a {
+  align-items: center;
+  background: var(--surface-card);
+  border: var(--border) solid var(--border-strong);
+  column-gap: var(--space-3);
+  display: grid;
+  grid-template-areas: 'name icon' 'meta icon';
+  grid-template-columns: minmax(0, 1fr) var(--icon);
+  min-height: var(--space-16);
+  padding: var(--space-3) var(--space-4);
+  text-decoration: none;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.shelf a:hover {
+  background: var(--surface-highlight);
+  box-shadow: var(--shadow-hard);
+  color: var(--text-on-highlight);
+  transform: translate(var(--lift), var(--lift));
+}
+
+.shelf a:active {
+  box-shadow: var(--shadow-none);
+  transform: none;
+}
+
+.shelf-name {
+  font-weight: var(--weight-bold);
+  grid-area: name;
+}
+
+.shelf-meta {
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  grid-area: meta;
+}
+
+.shelf .icon {
+  grid-area: icon;
+}
+
+@media (width >= 48em) {
+  .project {
+    padding: var(--space-6);
+  }
+
+  .shelf a {
+    grid-template-areas: 'name meta icon';
+    grid-template-columns: minmax(0, 1fr) auto var(--icon);
+  }
+}
+
+@media (width >= 64em) {
+  .project-lead {
+    align-items: start;
+    display: grid;
+    gap: var(--space-8);
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  }
+
+  .project-lead .project-body {
+    padding-top: 0;
+  }
+
+  /* Dungeon Forge mirrors Blob Arena: words left, media right. */
+  .project-second {
+    align-items: center;
+    display: grid;
+    gap: var(--space-8);
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  }
+
+  .project-second .video {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .project-second .project-body {
+    grid-column: 1;
+    grid-row: 1;
+    padding-top: 0;
+  }
+
+  .shelf {
+    align-items: start;
+    display: grid;
+    gap: var(--space-8);
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+  }
+
+  .shelf ul {
+    margin-top: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shelf a:hover {
+    transform: none;
+  }
+}

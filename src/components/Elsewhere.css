@@ -1,0 +1,114 @@
+.band {
+  background: var(--surface-highlight);
+  border-block: var(--border) solid var(--border-strong);
+  color: var(--text-on-highlight);
+  margin-top: var(--section-gap);
+  padding-block: var(--space-12);
+}
+
+.band-grid {
+  display: grid;
+  gap: var(--space-8);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.band-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-title);
+  font-weight: var(--weight-bold);
+  line-height: var(--lh-tight);
+  text-transform: uppercase;
+}
+
+.band-lede {
+  font-size: var(--fs-lg);
+  margin-top: var(--space-4);
+  max-width: var(--measure);
+}
+
+.band-visited {
+  margin-top: var(--space-3);
+  max-width: var(--measure);
+}
+
+/* The map ------------------------------------------------------------------ */
+.map-window .window-body {
+  gap: var(--space-4);
+}
+
+.map {
+  height: auto;
+  width: 100%;
+}
+
+.map-land {
+  fill: none;
+  stroke: var(--map-land);
+  stroke-linecap: square;
+  stroke-width: var(--map-pixel);
+}
+
+.pin,
+.pin-ring {
+  stroke: var(--border-strong);
+  stroke-width: var(--map-pin-stroke);
+}
+
+.pin-home {
+  fill: var(--border-strong);
+}
+
+.pin-ring {
+  fill: none;
+}
+
+.pin-worked {
+  fill: var(--action-primary);
+}
+
+.pin-visited {
+  fill: var(--surface-card);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  font-size: var(--fs-sm);
+  font-weight: var(--weight-bold);
+  gap: var(--space-2) var(--space-5);
+}
+
+.legend li {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--space-2);
+}
+
+.key {
+  border: var(--border) solid var(--border-strong);
+  flex: none;
+  height: var(--key);
+  width: var(--key);
+}
+
+.key-home {
+  background: var(--border-strong);
+  outline: var(--border) solid var(--border-strong);
+  outline-offset: var(--border);
+}
+
+.key-worked {
+  background: var(--action-primary);
+}
+
+.key-visited {
+  background: var(--surface-card);
+}
+
+@media (width >= 64em) {
+  .band-grid {
+    align-items: center;
+    gap: var(--space-12);
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  }
+}
