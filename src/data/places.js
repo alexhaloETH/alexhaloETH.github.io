@@ -2,7 +2,7 @@
 //
 //   kind: 'home'    where you are based now (one place)
 //         'worked'  places you have worked from
-//         'visited' places you have been
+//         'visited' places you went for work trips: conferences and meetups
 //
 // Coordinates are decimal degrees (search "<city> coordinates"). They must sit inside
 // the map bounds in scripts/build-world-dots.mjs: longitude -130 to 155, latitude -45 to 72.

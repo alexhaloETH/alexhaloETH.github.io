@@ -58,7 +58,7 @@ export default function Chart() {
           {worked.length ? <p className="interlude-text">I have worked from {joinNames(worked)}.</p> : null}
           {visited.length ? (
             <p className="chart-visited">
-              <span className="label">Also visited</span> {visited.join(', ')}
+              <span className="label">Conferences and meetups</span> {visited.join(', ')}
             </p>
           ) : null}
         </div>
@@ -76,7 +76,7 @@ export default function Chart() {
               </li>
               <li>
                 <span className="key key-visited" aria-hidden="true" />
-                Visited
+                Conferences and meetups
               </li>
             </ul>
           </figcaption>

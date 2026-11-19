@@ -1,10 +1,13 @@
 // A loose debris field the ship is flying through: tumbling rocks at many depths,
 // drifting astern. They give the scene parallax and a sense of speed.
-import { IcosahedronGeometry, InstancedMesh, Matrix4, MeshStandardMaterial, Quaternion, Vector3 } from 'three';
+import { Color, IcosahedronGeometry, InstancedMesh, Matrix4, MeshStandardMaterial, Quaternion, Vector3 } from 'three';
 
 const FIELD = { x: 230, y: 90, z: 170 };
 // Rocks shrink away inside this distance from the camera rather than fill the screen.
 const NEAR = { start: 34, end: 14 };
+// Rocks are recycled from the back of the field to the front. Over this distance at
+// each end they fade from the dark of space and grow, so none pops in or out.
+const EDGE = 70;
 
 // A lumpy rock: an icosphere pushed in and out by a hash of each vertex position.
 // Shared vertices get the same push, so the surface has no cracks.
@@ -46,6 +49,7 @@ export function createDebris({ palette, count, rand, speed }) {
     });
   }
 
+  const tint = new Color();
   const q = new Quaternion();
   const s = new Vector3();
   const m = new Matrix4();
@@ -59,11 +63,16 @@ export function createDebris({ palette, count, rand, speed }) {
       q.setFromAxisAngle(r.axis, r.angle);
       const d = r.p.distanceTo(cameraPosition);
       const near = Math.min(1, Math.max(0, (d - NEAR.end) / (NEAR.start - NEAR.end)));
-      s.setScalar(r.size * near);
+      const edge = Math.min(1, (FIELD.x - Math.abs(r.p.x)) / EDGE);
+      const fade = edge * edge * (3 - 2 * edge);
+      s.setScalar(r.size * near * (0.35 + 0.65 * fade));
       m.compose(r.p, q, s);
       mesh.setMatrixAt(i, m);
+      // Instance colour multiplies the rock colour: black blends into the night sky.
+      mesh.setColorAt(i, tint.setScalar(fade));
     }
     mesh.instanceMatrix.needsUpdate = true;
+    mesh.instanceColor.needsUpdate = true;
   }
 
   return { mesh, update };

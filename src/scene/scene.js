@@ -340,13 +340,15 @@ function skyDome(palette, sunDir) {
 
 // The ring: an open band lit by the sun, with segment seams and bright rim walls.
 function ringStructure({ palette, sunDir, radius, width }) {
-  const geometry = new CylinderGeometry(radius, radius, width, 360, 1, true);
+  const geometry = new CylinderGeometry(radius, radius, width, 480, 1, true);
   const material = new ShaderMaterial({
     uniforms: {
       uSun: { value: sunDir },
       uOuter: { value: new Color(palette.ringOuter) },
       uInner: { value: new Color(palette.ringInner) },
       uEdge: { value: new Color(palette.ringEdge) },
+      uSpace: { value: new Color(palette.space) },
+      uLights: { value: new Color(palette.windowWarm) },
     },
     vertexShader: /* glsl */ `
       varying vec3 vNormal;
@@ -362,22 +364,37 @@ function ringStructure({ palette, sunDir, radius, width }) {
       uniform vec3 uOuter;
       uniform vec3 uInner;
       uniform vec3 uEdge;
+      uniform vec3 uSpace;
+      uniform vec3 uLights;
       varying vec3 vNormal;
       varying vec2 vUv;
+      float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+      // A line pattern that fades out before it gets thinner than a pixel, so it never shimmers.
+      float lines(float x, float count, float width) {
+        float f = abs(fract(x * count) - 0.5);
+        float w = fwidth(x * count);
+        return smoothstep(width + w, width, 0.5 - f) * clamp(1.0 - w * 4.0, 0.0, 1.0);
+      }
       void main() {
         bool inner = !gl_FrontFacing;
         vec3 n = inner ? -vNormal : vNormal;
         float light = max(dot(n, uSun), 0.0);
         vec3 base = inner ? uInner : uOuter;
-        vec3 col = base * (0.16 + light * 1.1);
-        float seam = smoothstep(0.47, 0.5, abs(fract(vUv.x * 120.0) - 0.5));
-        col *= 1.0 - seam * 0.55;
-        float wall = smoothstep(0.1, 0.0, min(vUv.y, 1.0 - vUv.y));
-        col += uEdge * wall * (0.12 + light * 0.9);
+        vec3 col = base * (0.08 + light * 1.0);
+        // Structural sections and a few longitudinal bands.
+        col *= 1.0 - 0.45 * lines(vUv.x, 64.0, 0.02);
+        col *= 1.0 - 0.25 * lines(vUv.y, 5.0, 0.03);
+        // Raised rims catch the sun.
+        float wall = smoothstep(0.08, 0.0, min(vUv.y, 1.0 - vUv.y));
+        col += uEdge * wall * (0.05 + light * 0.8);
+        // Sparse lights on the inner face, showing mostly on its night side.
         if (inner) {
-          float lane = smoothstep(0.03, 0.0, abs(vUv.y - 0.5));
-          col += uEdge * lane * 0.18 * (0.3 + light);
+          vec2 cell = floor(vec2(vUv.x * 900.0, vUv.y * 14.0));
+          float on = step(0.985, hash(cell));
+          col += uLights * on * 0.6 * (1.0 - light) * clamp(1.0 - fwidth(vUv.x * 900.0), 0.0, 1.0);
         }
+        // Distance haze: the ring sits far behind everything, so it leans towards the sky.
+        col = mix(uSpace, col, 0.6);
         gl_FragColor = vec4(col, 1.0);
         #include <colorspace_fragment>
       }
@@ -597,9 +614,10 @@ export async function startScene(canvas) {
   // The ring sits in a group that turns with the camera at a slower rate, so it stays
   // in the backdrop of every shot while still showing some parallax.
   const ringPivot = new Group();
-  const ring = ringStructure({ palette, sunDir, radius: 900, width: 42 });
+  // Far out and scaled up to match, so it reads as a distant structure, not a hoop.
+  const ring = ringStructure({ palette, sunDir, radius: 2000, width: 120 });
   const ringTilt = new Group();
-  ringTilt.position.set(-2200, -260, 1100);
+  ringTilt.position.set(-4400, -520, 2200);
   ringTilt.rotation.set(1.18, 0.2, 0.42);
   ringTilt.add(ring);
   ringPivot.add(ringTilt);
