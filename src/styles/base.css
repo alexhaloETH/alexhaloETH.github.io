@@ -1,0 +1,423 @@
+/* Base: reset, type, buttons, and the two kinds of section.
+   Mobile first: everything here is the phone layout; wider screens add to it. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--header-h);
+  text-size-adjust: 100%;
+}
+
+@media (width >= 96em) {
+  html {
+    font-size: var(--root-lg);
+  }
+}
+
+@media (width >= 112em) {
+  html {
+    font-size: var(--root-xl);
+  }
+}
+
+@media (width >= 140em) {
+  html {
+    font-size: var(--root-xxl);
+  }
+}
+
+body {
+  min-height: 100svh;
+  margin: 0;
+  overflow-wrap: break-word;
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  font-stretch: var(--stretch-body);
+  line-height: var(--lh-body);
+  color: var(--text-primary);
+  background-color: var(--surface-page);
+
+  /* The sky before WebGL arrives, and in its place if it never does: two tiles of
+     faint stars over the page colour. */
+  background-image:
+    radial-gradient(circle at 12% 18%, var(--fallback-star) 0 var(--star-core), transparent var(--star-edge)),
+    radial-gradient(circle at 63% 41%, var(--fallback-star) 0 var(--star-core), transparent var(--star-edge)),
+    radial-gradient(circle at 37% 77%, var(--fallback-star-dim) 0 var(--star-core), transparent var(--star-edge)),
+    radial-gradient(circle at 84% 88%, var(--fallback-star-dim) 0 var(--star-core), transparent var(--star-edge)),
+    radial-gradient(circle at 28% 52%, var(--fallback-star-dim) 0 var(--star-core), transparent var(--star-edge)),
+    radial-gradient(circle at 91% 9%, var(--fallback-star) 0 var(--star-core), transparent var(--star-edge));
+  background-attachment: fixed;
+  background-size:
+    var(--star-tile-a) var(--star-tile-a),
+    var(--star-tile-a) var(--star-tile-a),
+    var(--star-tile-b) var(--star-tile-b),
+    var(--star-tile-b) var(--star-tile-b),
+    var(--star-tile-c) var(--star-tile-c),
+    var(--star-tile-c) var(--star-tile-c);
+  -webkit-font-smoothing: antialiased;
+}
+
+img,
+video,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+figure,
+dl,
+dd {
+  margin: 0;
+}
+
+ul,
+ol {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+/* The WebGL canvas. Fixed to the large viewport so phone toolbars never resize it. */
+.scene {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 0;
+  display: block;
+  width: 100%;
+  height: 100lvh;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--dur-slow) var(--ease-out);
+}
+
+.scene[data-state='ready'] {
+  opacity: 1;
+}
+
+.scene[data-state='failed'] {
+  display: none;
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+/* Every column is a size container, so headings can be sized to the column they sit in. */
+.wrap {
+  container-type: inline-size;
+  width: 100%;
+  max-width: var(--page-max);
+  padding-inline: var(--gutter);
+  margin-inline: auto;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.skip {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  z-index: 20;
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  color: var(--text-on-action);
+  background: var(--action-primary);
+  border-radius: var(--radius-control);
+  transform: translateY(-200%);
+}
+
+.skip:focus-visible {
+  transform: none;
+}
+
+:focus-visible {
+  outline: var(--ring-width) solid var(--focus-ring);
+  outline-offset: var(--ring-offset);
+}
+
+/* Type */
+.label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-regular);
+  line-height: var(--lh-snug);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+}
+
+.label-accent {
+  display: inline-flex;
+  gap: var(--space-2);
+  align-items: center;
+  color: var(--text-accent);
+}
+
+.label-accent .icon {
+  width: var(--icon);
+  height: var(--icon);
+}
+
+.section-title,
+.statement {
+  font-family: var(--font-display);
+  font-size: var(--fs-h2);
+  font-stretch: var(--stretch-display);
+  font-weight: var(--weight-medium);
+  line-height: var(--lh-tight);
+  text-transform: uppercase;
+  text-wrap: balance;
+  letter-spacing: var(--tracking-display);
+}
+
+.statement {
+  max-width: 18ch;
+  font-size: var(--fs-statement);
+  font-weight: var(--weight-regular);
+}
+
+.section-head {
+  display: grid;
+  gap: var(--space-4);
+  max-width: 46rem;
+  margin-bottom: var(--space-12);
+}
+
+.section-lede {
+  max-width: var(--measure);
+  font-size: var(--fs-lede);
+  color: var(--text-secondary);
+}
+
+.icon {
+  flex: none;
+  width: var(--icon);
+  height: var(--icon);
+}
+
+.link {
+  color: var(--text-primary);
+  text-decoration: underline;
+  text-decoration-color: var(--line-control);
+  text-decoration-thickness: var(--track);
+  text-underline-offset: 0.3em;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    text-decoration-color var(--dur-fast) var(--ease-out);
+}
+
+.link:hover {
+  color: var(--text-bright);
+  text-decoration-color: var(--text-accent);
+}
+
+.link:active {
+  color: var(--text-secondary);
+}
+
+/* Lists with a short ion tick for a bullet. */
+.ticks {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-3);
+}
+
+.ticks li {
+  position: relative;
+  padding-left: var(--space-6);
+  color: var(--text-secondary);
+}
+
+.ticks li::before {
+  position: absolute;
+  top: 0.8em;
+  left: 0;
+  width: var(--space-3);
+  height: var(--track);
+  content: '';
+  background: var(--text-accent);
+}
+
+/* Buttons. Every one has hover, focus, active and, where it applies, a done state. */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.btn {
+  display: inline-flex;
+  gap: var(--space-2);
+  align-items: center;
+  justify-content: center;
+  min-height: var(--target-min);
+  padding: var(--space-2) var(--space-5);
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  font-weight: var(--weight-medium);
+  line-height: var(--lh-snug);
+  text-align: center;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  border: var(--border) solid transparent;
+  border-radius: var(--radius-control);
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+.btn:active {
+  transform: translateY(var(--lift));
+}
+
+.btn-sm {
+  padding-inline: var(--space-3);
+}
+
+.btn-primary {
+  color: var(--text-on-action);
+  background: var(--action-primary);
+}
+
+.btn-primary:hover {
+  background: var(--action-primary-hover);
+}
+
+.btn-primary:active {
+  background: var(--action-primary-press);
+}
+
+.btn-ghost {
+  color: var(--text-primary);
+  background: var(--surface-panel);
+  border-color: var(--line-control);
+}
+
+.btn-ghost:hover {
+  background: var(--surface-hover);
+  border-color: var(--line-control-hover);
+}
+
+.btn-ghost:active {
+  background: var(--surface-press);
+}
+
+.btn[data-state='done'] {
+  color: var(--text-on-action);
+  background: var(--text-accent);
+  border-color: var(--text-accent);
+}
+
+.btn[disabled],
+.btn[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.nav-link {
+  display: inline-flex;
+  gap: var(--space-2);
+  align-items: center;
+  min-height: var(--target-min);
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  color: var(--text-secondary);
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.nav-link:hover {
+  color: var(--text-bright);
+}
+
+.nav-link:active {
+  color: var(--text-accent);
+}
+
+/* Two kinds of section. Sheets are for reading: near-opaque, feathered top and bottom
+   so the scene fades out behind them. Interludes leave the scene open. */
+.sheet {
+  position: relative;
+  padding-block: var(--space-24);
+  background: linear-gradient(
+    to bottom,
+    var(--sheet-clear) 0,
+    var(--surface-sheet) var(--fade-edge),
+    var(--surface-sheet) calc(100% - var(--fade-edge)),
+    var(--sheet-clear) 100%
+  );
+}
+
+.sheet-top {
+  padding-bottom: var(--space-16);
+  background: linear-gradient(to bottom, var(--sheet-clear) 0, var(--surface-sheet) var(--fade-edge));
+}
+
+.sheet-bottom {
+  padding-top: var(--space-16);
+  background: linear-gradient(
+    to bottom,
+    var(--surface-sheet) 0,
+    var(--surface-sheet) calc(100% - var(--fade-edge)),
+    var(--sheet-clear) 100%
+  );
+}
+
+.panel {
+  background: var(--surface-panel);
+  border: var(--border) solid var(--line-hairline);
+  border-radius: var(--radius-panel);
+}
+
+.footer {
+  position: relative;
+  padding-block: var(--space-8) var(--space-10);
+  background: var(--surface-page);
+}
+
+.footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  align-items: center;
+  justify-content: space-between;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: var(--dur-reduced) !important;
+    animation-duration: var(--dur-reduced) !important;
+    animation-iteration-count: 1 !important;
+  }
+}

@@ -1,0 +1,74 @@
+.top {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 10;
+  background: linear-gradient(to bottom, var(--scrim) 0%, var(--scrim-soft) 100%);
+}
+
+/* Once the page scrolls, a solid bar fades in so content never runs under the links. */
+.top::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  content: '';
+  background: var(--surface-header);
+  opacity: 0;
+  transition: opacity var(--dur-base) var(--ease-out);
+}
+
+.top[data-solid]::before {
+  opacity: 1;
+}
+
+.top-inner {
+  position: relative;
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--header-h);
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target-min);
+  font-family: var(--font-display);
+  font-size: var(--fs-label);
+  font-stretch: var(--stretch-display);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wordmark);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.wordmark:hover {
+  color: var(--text-bright);
+}
+
+.wordmark:active {
+  color: var(--text-accent);
+}
+
+.top-nav {
+  display: none;
+}
+
+@media (width >= 48em) {
+  .top-nav {
+    display: block;
+    margin-left: auto;
+  }
+
+  .wordmark {
+    font-size: var(--fs-small);
+    letter-spacing: var(--tracking-wordmark-wide);
+  }
+
+  .top-nav ul {
+    display: flex;
+    gap: var(--space-6);
+  }
+}

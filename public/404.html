@@ -2,21 +2,145 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ALEXHALO3115</title>
-    <script>
-      (function () {
-        var target = window.location.pathname + window.location.search + window.location.hash;
-        var fallback = '/?spa_redirect=' + encodeURIComponent(target);
-        try {
-          window.sessionStorage.setItem('portfolio_spa_redirect', target);
-        } catch (error) {
-          window.location.replace(fallback);
-          return;
-        }
-        window.location.replace('/');
-      }());
-    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Page not found, Alexhalo</title>
+    <meta name="robots" content="noindex" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#03050a" /><!-- ds-allow-hardcode: meta tags cannot read CSS variables; mirrors --void-950 -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,400;125,600&family=JetBrains+Mono:wght@400;500&display=swap" />
+    <style>
+      /* Standalone on purpose: GitHub Pages serves this file for any unknown path,
+         including old links into the removed dashboard. Tokens mirror src/styles. */
+      :root {
+        color-scheme: dark;
+        --void-950: #03050a;
+        --steel-100: #e8ecf1;
+        --steel-300: #aab3c0;
+        --white: #f8fafc;
+        --ion-400: #7cc4ff;
+        --star: rgb(232 236 241 / 0.55);
+        --star-dim: rgb(232 236 241 / 0.3);
+        --star-core: 1px;
+        --star-edge: 1.5px;
+        --star-tile-a: 13rem;
+        --star-tile-b: 19rem;
+        --star-tile-c: 29rem;
+        --font-display: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+        --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+        --stretch-display: 125%;
+        --fs-label: 0.75rem;
+        --fs-small: 0.875rem;
+        --fs-body: 1rem;
+        --fs-display: clamp(2rem, 11cqi, 5.5rem);
+        --lh-display: 0.92;
+        --lh-body: 1.6;
+        --tracking-label: 0.16em;
+        --tracking-button: 0.08em;
+        --space-2: 0.5rem;
+        --space-4: 1rem;
+        --space-5: 1.25rem;
+        --space-6: 1.5rem;
+        --space-8: 2rem;
+        --measure: 38rem;
+        --page-max: 52rem;
+        --target-min: 2.75rem;
+        --radius-control: 2px;
+        --ring-width: 2px;
+        --ring-offset: 3px;
+        --dur-fast: 150ms;
+        --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+        --lift: -1px;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        min-height: 100dvh;
+        display: grid;
+        align-items: center;
+        padding: var(--space-8) var(--space-4);
+        background-color: var(--void-950);
+        background-image:
+          radial-gradient(circle at 12% 18%, var(--star) 0 var(--star-core), transparent var(--star-edge)),
+          radial-gradient(circle at 63% 41%, var(--star) 0 var(--star-core), transparent var(--star-edge)),
+          radial-gradient(circle at 37% 77%, var(--star-dim) 0 var(--star-core), transparent var(--star-edge)),
+          radial-gradient(circle at 84% 88%, var(--star-dim) 0 var(--star-core), transparent var(--star-edge)),
+          radial-gradient(circle at 28% 52%, var(--star-dim) 0 var(--star-core), transparent var(--star-edge)),
+          radial-gradient(circle at 91% 9%, var(--star) 0 var(--star-core), transparent var(--star-edge));
+        background-size:
+          var(--star-tile-a) var(--star-tile-a),
+          var(--star-tile-a) var(--star-tile-a),
+          var(--star-tile-b) var(--star-tile-b),
+          var(--star-tile-b) var(--star-tile-b),
+          var(--star-tile-c) var(--star-tile-c),
+          var(--star-tile-c) var(--star-tile-c);
+        color: var(--steel-100);
+        font-family: var(--font-display);
+        font-size: var(--fs-body);
+        line-height: var(--lh-body);
+      }
+      main {
+        width: 100%;
+        max-width: var(--page-max);
+        margin-inline: auto;
+        container-type: inline-size;
+      }
+      .label {
+        margin: 0;
+        color: var(--ion-400);
+        font-family: var(--font-mono);
+        font-size: var(--fs-label);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-label);
+      }
+      h1 {
+        margin: var(--space-5) 0 0;
+        font-size: var(--fs-display);
+        font-stretch: var(--stretch-display);
+        font-weight: 600;
+        line-height: var(--lh-display);
+        text-transform: uppercase;
+      }
+      p.lede {
+        max-width: var(--measure);
+        margin: var(--space-6) 0 0;
+        color: var(--steel-300);
+      }
+      a {
+        display: inline-flex;
+        align-items: center;
+        min-height: var(--target-min);
+        margin-top: var(--space-8);
+        padding: var(--space-2) var(--space-5);
+        background: var(--steel-100);
+        color: var(--void-950);
+        border-radius: var(--radius-control);
+        font-family: var(--font-mono);
+        font-size: var(--fs-small);
+        font-weight: 500;
+        text-decoration: none;
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-button);
+        transition: background-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+      }
+      a:hover { background: var(--white); }
+      a:active { background: var(--steel-300); transform: translateY(var(--lift)); }
+      a:focus-visible { outline: var(--ring-width) solid var(--ion-400); outline-offset: var(--ring-offset); }
+      @media (prefers-reduced-motion: reduce) {
+        a { transition: none; }
+        a:active { transform: none; }
+      }
+    </style>
   </head>
-  <body></body>
+  <body>
+    <main>
+      <p class="label">404, signal lost</p>
+      <h1>Off the chart</h1>
+      <p class="lede">There is nothing at this address. It may have been part of the old site.</p>
+      <a href="/">Back to the portfolio</a>
+    </main>
+  </body>
 </html>

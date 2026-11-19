@@ -1,0 +1,210 @@
+/* Deep Field: the single source of every colour, size and timing on the page.
+   Primitives first, then the semantic tokens the components use.
+   The --scene-* tokens are read by the WebGL scene (src/scene/scene.js) at startup. */
+
+:root {
+  color-scheme: dark;
+
+  /* Primitives: near-black with a cold cast, steel greys, one ion blue. */
+  --void-950: #03050a;
+  --void-900: #070a11;
+  --void-850: #0a0e16;
+  --void-800: #0f141e;
+  --void-700: #171e2b;
+  --void-600: #202939;
+  --steel-500: #6c7787;
+  --steel-400: #8994a4;
+  --steel-300: #aab3c0;
+  --steel-100: #e8ecf1;
+  --white: #f8fafc;
+  --ion-400: #7cc4ff;
+  --ion-300: #a9d9ff;
+
+  /* Surfaces */
+  --surface-page: var(--void-950);
+  --surface-sheet: rgb(7 10 17 / 0.9);
+  --surface-panel: rgb(10 14 22 / 0.86);
+  --surface-raised: var(--void-800);
+  --surface-media: var(--void-900);
+  --surface-hover: var(--void-700);
+  --surface-press: var(--void-600);
+
+  /* Text */
+  --text-primary: var(--steel-100);
+  --text-secondary: var(--steel-300);
+  --text-tertiary: var(--steel-400);
+  --text-accent: var(--ion-400);
+  --text-on-action: var(--void-950);
+  --text-bright: var(--white);
+
+  /* Actions and lines */
+  --action-primary: var(--steel-100);
+  --action-primary-hover: var(--white);
+  --action-primary-press: var(--steel-300);
+  --line-hairline: rgb(255 255 255 / 0.1);
+  --line-strong: rgb(255 255 255 / 0.18);
+  --line-control: var(--steel-500);
+  --line-control-hover: var(--steel-100);
+  --focus-ring: var(--ion-400);
+  --signal: var(--ion-400);
+  --signal-glow: rgb(124 196 255 / 0.55);
+  --signal-halo: rgb(124 196 255 / 0.18);
+  --signal-clear: rgb(124 196 255 / 0);
+  --line-clear: rgb(255 255 255 / 0);
+  --scrim: rgb(3 5 10 / 0.88);
+  --scrim-mid: rgb(3 5 10 / 0.6);
+  --scrim-soft: rgb(3 5 10 / 0);
+  --surface-header: rgb(3 5 10 / 0.92);
+  --sheet-clear: rgb(7 10 17 / 0);
+
+  /* The CSS sky shown before WebGL loads, or instead of it. */
+  --fallback-star: rgb(232 236 241 / 0.55);
+  --fallback-star-dim: rgb(232 236 241 / 0.3);
+  --star-core: 1px;
+  --star-edge: 1.5px;
+  --star-tile-a: 13rem;
+  --star-tile-b: 19rem;
+  --star-tile-c: 29rem;
+
+  /* Map */
+  --map-land: rgb(170 179 192 / 0.32);
+  --map-pin: var(--steel-100);
+  --map-home: var(--ion-400);
+
+  /* Type */
+  --font-display: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --font-body: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --stretch-display: 125%;
+  --stretch-body: 100%;
+  --weight-light: 300;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+
+  --fs-label: 0.75rem;
+  --fs-small: 0.875rem;
+  --fs-body: 1rem;
+  --fs-lede: 1.125rem;
+  --fs-h3: 1.375rem;
+  --fs-h3-fit: clamp(1rem, 6cqi, 1.375rem);
+  --fs-h2: clamp(1.25rem, 8.8cqi, 3.25rem);
+  --fs-statement: clamp(1.25rem, 9.6cqi, 4rem);
+  --fs-display: clamp(1.5rem, 13.6cqi, 9.5rem);
+  --fs-mega: clamp(1.5rem, 11cqi, 6rem);
+  --fs-display-wide: clamp(3rem, 7cqi, 7rem);
+  --fs-feature: clamp(1.5rem, 0.9rem + 4.5vw, 3.25rem);
+  --fs-email: clamp(0.9375rem, 0.6rem + 1.6vw, 1.5rem);
+  --fs-micro: 0.625rem;
+
+  --lh-display: 0.92;
+  --lh-tight: 1.02;
+  --lh-snug: 1.2;
+  --lh-body: 1.6;
+  --tracking-label: 0.16em;
+  --tracking-display: 0.02em;
+  --tracking-wordmark: 0.06em;
+  --tracking-wordmark-wide: 0.22em;
+
+  /* Space: a 4px rhythm. */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+  --space-32: 8rem;
+  --gutter: 1rem;
+  --page-max: 78rem;
+  --measure: 38rem;
+  --header-h: 3.75rem;
+  --fade-edge: 6rem;
+
+  /* Shape */
+  --border: 1px;
+  --radius-panel: 6px;
+  --radius-media: 4px;
+  --radius-control: 2px;
+  --radius-pill: 999px;
+  --ring-width: 2px;
+  --ring-offset: 3px;
+  --target-min: 2.75rem;
+  --dot: 0.5rem;
+  --icon: 1.125rem;
+  --icon-brand: 1.25rem;
+  --track: 1px;
+  --dot-top: 0.45rem;
+  --key: 0.625rem;
+  --perk-size: 2.75rem;
+  --date-col: 10rem;
+  --tool-col: 9rem;
+  --nudge: 2px;
+  --pulse-spread: 0.5rem;
+
+  /* Map, in the SVG's own viewBox units (10 per degree). */
+  --map-dot: 24px;
+  --map-stroke: 6px;
+
+  /* Motion */
+  --dur-instant: 0s;
+  --dur-fast: 150ms;
+  --dur-base: 240ms;
+  --dur-slow: 1200ms;
+  --dur-pulse: 2400ms;
+  --pulse-count: 4;
+  --dur-reduced: 0.01ms;
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --lift: -1px;
+
+  /* Large screens: scale the whole page up a little so 1920 wide is not a thin column. */
+  --root-lg: 106.25%;
+  --root-xl: 112.5%;
+  --root-xxl: 125%;
+
+  /* The WebGL scene. */
+  --scene-space: #03050a;
+  --scene-hull: #c4cad2;
+  --scene-hull-dark: #6b7380;
+  --scene-ion: #6cc0ff;
+  --scene-ion-hot: #8fd0ff;
+  --scene-sun: #ffd9a8;
+  --scene-key: #fff1de;
+  --scene-rim: #79b8ff;
+  --scene-window: #ffd59a;
+  --scene-nav-port: #ff3b3b;
+  --scene-nav-starboard: #2cff8f;
+  --scene-strobe: #ffffff;
+  --scene-ring-outer: #5d6878;
+  --scene-ring-inner: #8fa3bb;
+  --scene-ring-edge: #bfe2ff;
+  --scene-nebula-a: #1d3b7a;
+  --scene-nebula-b: #1b5f73;
+  --scene-nebula-c: #4a3a6e;
+  --scene-star-cool: #cfe3ff;
+  --scene-star-white: #ffffff;
+  --scene-star-warm: #ffe2b8;
+  --scene-meteor: #e9f4ff;
+  --scene-fighter: #b9c1cc;
+  --scene-fighter-dark: #4d5562;
+  --scene-rock: #6f6a64;
+  --scene-warp: #cfe9ff;
+}
+
+@media (width >= 48em) {
+  :root {
+    --gutter: 2rem;
+    --header-h: 4.25rem;
+  }
+}
+
+@media (width >= 64em) {
+  :root {
+    --gutter: 3rem;
+  }
+}

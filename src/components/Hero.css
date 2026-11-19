@@ -1,0 +1,139 @@
+/* Phones: the first screen is the ship above and the title below it. The readouts
+   follow after the fold. */
+.hero {
+  position: relative;
+  isolation: isolate;
+}
+
+.hero::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  content: '';
+  background: linear-gradient(to top, var(--scrim) 0%, var(--scrim-mid) 42%, var(--scrim-soft) 64%);
+}
+
+.hero-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5);
+  align-content: end;
+  min-height: 100svh;
+  padding-top: var(--header-h);
+  padding-bottom: var(--space-10);
+  container-type: inline-size;
+}
+
+.hero-name {
+  font-family: var(--font-display);
+  font-size: var(--fs-display);
+  font-stretch: var(--stretch-display);
+  font-weight: var(--weight-medium);
+  line-height: var(--lh-display);
+  text-transform: uppercase;
+  white-space: nowrap;
+  letter-spacing: var(--tracking-display);
+}
+
+.hero-statement {
+  max-width: var(--measure);
+  font-size: var(--fs-lede);
+  color: var(--text-secondary);
+}
+
+.availability {
+  display: inline-flex;
+  gap: var(--space-3);
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  color: var(--text-secondary);
+}
+
+.pulse {
+  flex: none;
+  width: var(--dot);
+  height: var(--dot);
+  background: var(--signal);
+  border-radius: var(--radius-pill);
+  animation: pulse var(--dur-pulse) var(--ease-out) var(--pulse-count);
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 var(--signal-glow);
+  }
+
+  70% {
+    box-shadow: 0 0 0 var(--pulse-spread) var(--signal-clear);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 var(--signal-clear);
+  }
+}
+
+.readouts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-6);
+  padding-block: var(--space-4) var(--space-12);
+  background: var(--scrim);
+}
+
+.readout {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.readout dd {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.readout-value {
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+}
+
+.readout-detail {
+  font-size: var(--fs-small);
+  color: var(--text-secondary);
+}
+
+/* Wide screens: title on the left, ship on the right, readouts along the bottom,
+   all in the first screen. */
+@media (width >= 64em) {
+  .hero {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    min-height: 100svh;
+  }
+
+  .hero::before {
+    background:
+      linear-gradient(to right, var(--scrim) 0%, var(--scrim-mid) 34%, var(--scrim-soft) 58%),
+      linear-gradient(to top, var(--scrim) 0%, var(--scrim) 16%, var(--scrim-soft) 40%);
+  }
+
+  .hero-inner {
+    min-height: 0;
+    padding-bottom: var(--space-12);
+  }
+
+  .hero-name {
+    font-size: var(--fs-display-wide);
+  }
+
+  .hero-statement {
+    max-width: 34rem;
+  }
+
+  .readouts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-8);
+    padding-block: 0 var(--space-12);
+    background: none;
+  }
+}

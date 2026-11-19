@@ -1,0 +1,88 @@
+.record {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-10);
+}
+
+.timeline {
+  position: relative;
+  display: grid;
+  gap: var(--space-12);
+}
+
+/* The track: a hairline that fades out below the oldest entry. */
+.timeline::before {
+  position: absolute;
+  top: var(--space-2);
+  bottom: 0;
+  left: calc(var(--dot) / 2);
+  width: var(--track);
+  content: '';
+  background: linear-gradient(to bottom, var(--line-strong), var(--line-clear));
+}
+
+.entry {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-3);
+  padding-left: var(--space-8);
+}
+
+.entry::before {
+  position: absolute;
+  top: var(--dot-top);
+  left: 0;
+  width: var(--dot);
+  height: var(--dot);
+  content: '';
+  background: var(--surface-page);
+  border: var(--border) solid var(--line-control);
+  border-radius: var(--radius-pill);
+}
+
+.entry-latest::before {
+  background: var(--signal);
+  border-color: var(--signal);
+  box-shadow: 0 0 0 var(--space-1) var(--signal-halo);
+}
+
+.entry-body {
+  display: grid;
+  gap: var(--space-3);
+  max-width: var(--measure);
+}
+
+.entry-role {
+  font-family: var(--font-display);
+  font-size: var(--fs-h3-fit);
+  font-stretch: var(--stretch-display);
+  font-weight: var(--weight-medium);
+  line-height: var(--lh-snug);
+  text-transform: uppercase;
+}
+
+.entry-org,
+.entry-summary {
+  color: var(--text-secondary);
+}
+
+.entry-org {
+  margin-top: calc(var(--space-2) * -1);
+}
+
+.entry-body .link {
+  justify-self: start;
+}
+
+@media (width >= 64em) {
+  .record {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: var(--space-12);
+  }
+
+  .entry {
+    grid-template-columns: var(--date-col) minmax(0, 1fr);
+    gap: var(--space-8);
+  }
+}

@@ -1,0 +1,146 @@
+.toolkit-head {
+  margin-bottom: var(--space-10);
+}
+
+/* Two columns on phones, one if the text is enlarged enough that two would not fit. */
+.loadout {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--tool-col)), 1fr));
+  gap: var(--space-8) var(--space-6);
+}
+
+.group {
+  display: grid;
+  gap: var(--space-3);
+  align-content: start;
+}
+
+.group-list {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.group-list li {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  min-height: var(--space-8);
+}
+
+.group-list .brand,
+.group-list .icon {
+  flex: none;
+  width: var(--icon-brand);
+  height: var(--icon-brand);
+  color: var(--text-secondary);
+}
+
+.monogram {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: var(--icon-brand);
+  height: var(--icon-brand);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  font-weight: var(--weight-medium);
+  line-height: 1;
+  color: var(--text-secondary);
+  border: var(--border) solid var(--line-control);
+  border-radius: var(--radius-control);
+}
+
+/* Leveling up: what is being learned now, or improved. One panel, a list inside. */
+.leveling {
+  display: grid;
+  gap: var(--space-8);
+  padding: var(--space-6);
+  margin-top: var(--space-16);
+  background: var(--surface-panel);
+  border: var(--border) solid var(--line-hairline);
+  border-radius: var(--radius-panel);
+}
+
+.leveling-head {
+  display: grid;
+  gap: var(--space-3);
+  align-content: start;
+}
+
+.leveling-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-h3);
+  font-stretch: var(--stretch-display);
+  font-weight: var(--weight-medium);
+  text-transform: uppercase;
+}
+
+.leveling-intro {
+  color: var(--text-secondary);
+}
+
+.leveling-list {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.perk {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.perk-mark {
+  display: grid;
+  place-items: center;
+  width: var(--perk-size);
+  height: var(--perk-size);
+  color: var(--text-accent);
+  border: var(--border) solid var(--line-control);
+  border-radius: var(--radius-media);
+}
+
+.perk-mark .brand,
+.perk-mark .icon {
+  width: var(--icon-brand);
+  height: var(--icon-brand);
+}
+
+.perk-text {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.perk-text strong {
+  font-weight: var(--weight-semibold);
+}
+
+.perk-text span {
+  font-size: var(--fs-small);
+  color: var(--text-secondary);
+}
+
+@media (width >= 48em) {
+  .loadout {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (width >= 64em) {
+  /* Languages, the biggest group, leads with a wider column and splits in two. */
+  .loadout {
+    grid-template-columns: minmax(0, 2fr) repeat(4, minmax(0, 1fr));
+  }
+
+  .group:first-child .group-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--space-6);
+  }
+
+  .leveling {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    gap: var(--space-12);
+    padding: var(--space-10);
+  }
+}

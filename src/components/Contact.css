@@ -1,0 +1,54 @@
+.interlude-contact {
+  min-height: 100svh;
+}
+
+.contact-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5);
+}
+
+.contact-title {
+  max-width: 12ch;
+  font-family: var(--font-display);
+  font-size: var(--fs-mega);
+  font-stretch: var(--stretch-display);
+  font-weight: var(--weight-medium);
+  line-height: var(--lh-tight);
+  text-transform: uppercase;
+  text-wrap: balance;
+  letter-spacing: var(--tracking-display);
+}
+
+.contact-email {
+  display: inline-block;
+  padding-block: var(--space-2);
+  justify-self: start;
+  max-width: 100%;
+  min-height: var(--target-min);
+  font-family: var(--font-mono);
+  font-size: var(--fs-email);
+  color: var(--text-primary);
+  text-decoration: underline;
+  text-decoration-color: var(--line-control);
+  text-decoration-thickness: var(--track);
+  text-underline-offset: 0.3em;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    text-decoration-color var(--dur-fast) var(--ease-out);
+}
+
+.contact-email:hover {
+  color: var(--text-bright);
+  text-decoration-color: var(--text-accent);
+}
+
+.contact-email:active {
+  color: var(--text-accent);
+}
+
+.profiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+}

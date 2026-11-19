@@ -1,0 +1,75 @@
+/* Interludes leave the 3D scene open. On phones the ship sits in the top half and the
+   copy at the bottom; on wide screens the copy sits to one side of the ship. */
+.interlude {
+  position: relative;
+  display: grid;
+  align-items: end;
+  min-height: 92svh;
+  padding-block: var(--space-24) var(--space-16);
+  isolation: isolate;
+}
+
+.interlude::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  content: '';
+  background: linear-gradient(to top, var(--scrim) 0%, var(--scrim-mid) 40%, var(--scrim-soft) 68%);
+}
+
+/* Small labels over the live scene are one step brighter than on the solid sheets:
+   fighters, rocks and engine glow can pass behind them. */
+.hero .label,
+.interlude .label:not(.label-accent) {
+  color: var(--text-secondary);
+}
+
+.interlude-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5);
+}
+
+.interlude-text {
+  max-width: var(--measure);
+  font-size: var(--fs-lede);
+  color: var(--text-secondary);
+}
+
+.counters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-10);
+  margin-top: var(--space-3);
+}
+
+.counter {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: var(--space-1);
+}
+
+.counter dd {
+  font-family: var(--font-display);
+  font-size: var(--fs-h2);
+  font-stretch: var(--stretch-display);
+  font-weight: var(--weight-light);
+  line-height: var(--lh-tight);
+}
+
+@media (width >= 64em) {
+  .interlude-award,
+  .interlude-contact {
+    align-items: center;
+  }
+
+  .interlude-award .interlude-text {
+    max-width: 30rem;
+  }
+
+  .interlude-award::before,
+  .interlude-contact::before {
+    background: linear-gradient(to right, var(--scrim) 0%, var(--scrim-mid) 36%, var(--scrim-soft) 60%);
+  }
+}

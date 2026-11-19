@@ -27,10 +27,9 @@ jobs:
 
       - run: npm ci
 
-      - name: Build with GitHub token
-        env:
-          VITE_GITHUB_TOKEN: ${{ secrets.GH_PERSONAL_TOKEN }}
-          VITE_API_URL: https://api.alexhalo3115.xyz
+      # No secrets here on purpose: anything passed to a Vite build as VITE_* ends up
+      # in the public JavaScript bundle.
+      - name: Build
         run: npm run build
 
       - uses: actions/upload-pages-artifact@v3

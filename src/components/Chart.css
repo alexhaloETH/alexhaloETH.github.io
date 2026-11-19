@@ -1,0 +1,103 @@
+.chart-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-8);
+}
+
+.chart-copy {
+  container-type: inline-size;
+  display: grid;
+  gap: var(--space-4);
+  align-content: end;
+}
+
+.chart-visited {
+  max-width: var(--measure);
+  color: var(--text-secondary);
+}
+
+.chart-visited .label {
+  margin-right: var(--space-2);
+}
+
+.chart-panel {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.starmap {
+  width: 100%;
+  height: auto;
+}
+
+/* Units here are the map's own viewBox units (10 per degree). */
+.starmap-land {
+  fill: none;
+  stroke: var(--map-land);
+  stroke-linecap: round;
+  stroke-width: var(--map-dot);
+}
+
+.pin circle {
+  fill: var(--map-pin);
+}
+
+.pin-home circle {
+  fill: var(--map-home);
+}
+
+.pin-home .pin-orbit {
+  fill: none;
+  stroke: var(--map-home);
+  stroke-width: var(--map-stroke);
+}
+
+.pin-visited circle {
+  fill: var(--surface-page);
+  stroke: var(--text-secondary);
+  stroke-width: var(--map-stroke);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+}
+
+.legend li {
+  display: inline-flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.key {
+  width: var(--key);
+  height: var(--key);
+  border-radius: var(--radius-pill);
+}
+
+.key-home {
+  background: var(--map-home);
+}
+
+.key-worked {
+  background: var(--map-pin);
+}
+
+.key-visited {
+  border: var(--border) solid var(--text-secondary);
+}
+
+@media (width >= 64em) {
+  .chart-grid {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: var(--space-12);
+    align-items: end;
+  }
+}
