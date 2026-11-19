@@ -13,6 +13,7 @@ import {
   CylinderGeometry,
   DirectionalLight,
   DoubleSide,
+  Fog,
   Float32BufferAttribute,
   Group,
   HalfFloatType,
@@ -607,6 +608,9 @@ export async function startScene(canvas) {
       toneMapped: false,
     }),
   );
+  // The sun sits beyond the haze below, and must not be dimmed by it.
+  sunCore.material.fog = false;
+  sunGlare.material.fog = false;
   sunGlare.position.copy(sunCore.position);
   sunGlare.scale.setScalar(900);
   scene.add(sunCore, sunGlare);
@@ -615,11 +619,18 @@ export async function startScene(canvas) {
   // in the backdrop of every shot while still showing some parallax.
   const ringPivot = new Group();
   // Far out and scaled up to match, so it reads as a distant structure, not a hoop.
-  const ring = ringStructure({ palette, sunDir, radius: 2000, width: 120 });
+  // The shaded band is drawn at once; the ring model (public/models/ring.glb, built at
+  // a 1,000 m radius) replaces it when it has loaded.
+  const ring = new Group();
+  const ringBand = ringStructure({ palette, sunDir, radius: 2000, width: 120 });
+  ring.add(ringBand);
   const ringTilt = new Group();
   ringTilt.position.set(-4400, -520, 2200);
   ringTilt.rotation.set(1.18, 0.2, 0.42);
   ringTilt.add(ring);
+  // A faint distance haze. It starts well beyond the ships, so only the ring leans
+  // towards the colour of space. The shader-drawn sky, stars and band ignore fog.
+  scene.fog = new Fog(palette.space, 2500, 11000);
   ringPivot.add(ringTilt);
   scene.add(ringPivot);
 
@@ -663,6 +674,26 @@ export async function startScene(canvas) {
       }
     });
   }
+
+  loadModel('ring', 30000).then((model) => {
+    if (stopped || !model) return;
+    model.scale.setScalar(2);
+    model.traverse((node) => {
+      if (!node.isMesh) return;
+      // Repeated modules are instanced; never let culling drop one at the screen edge.
+      node.frustumCulled = false;
+      node.material.envMapIntensity = 0.5;
+      node.material.emissiveIntensity = 1.6;
+      for (const key of ['map', 'normalMap', 'emissiveMap', 'roughnessMap']) {
+        if (node.material[key]) node.material[key].anisotropy = anisotropy;
+      }
+    });
+    ring.remove(ringBand);
+    ringBand.geometry.dispose();
+    ringBand.material.dispose();
+    ring.add(model);
+    if (reduceMotion) render();
+  });
 
   const meteors = meteorShower({ palette });
 
