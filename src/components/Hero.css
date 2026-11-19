@@ -78,8 +78,9 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--space-6);
-  padding-block: var(--space-4) var(--space-12);
-  background: var(--scrim);
+  padding-block: var(--space-12);
+  /* Fades in above the first label rather than starting as a hard-edged block. */
+  background: linear-gradient(to bottom, var(--scrim-soft) 0, var(--scrim) var(--space-12));
 }
 
 .readout {

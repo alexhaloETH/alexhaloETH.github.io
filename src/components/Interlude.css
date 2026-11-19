@@ -16,6 +16,21 @@
   pointer-events: none;
   content: '';
   background: linear-gradient(to top, var(--scrim) 0%, var(--scrim-mid) 40%, var(--scrim-soft) 68%);
+
+  /* Soften the scrim's top and bottom edges, so it meets the sections around it
+     without a hard line. The bottom fade stays inside the padding below the text. */
+  mask-image: linear-gradient(
+    to bottom,
+    var(--mask-off) 0,
+    var(--mask-on) var(--fade-edge),
+    var(--mask-on) calc(100% - var(--space-12)),
+    var(--mask-off) 100%
+  );
+}
+
+/* The last one runs into the footer, which is solid, so it keeps its bottom edge. */
+.interlude:last-child::before {
+  mask-image: linear-gradient(to bottom, var(--mask-off) 0, var(--mask-on) var(--fade-edge));
 }
 
 /* Small labels over the live scene are one step brighter than on the solid sheets:

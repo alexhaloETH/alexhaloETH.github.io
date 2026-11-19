@@ -56,6 +56,9 @@
   --scrim-soft: rgb(3 5 10 / 0);
   --surface-header: rgb(3 5 10 / 0.92);
   --sheet-clear: rgb(7 10 17 / 0);
+  /* Mask stops: only their alpha matters. */
+  --mask-on: rgb(0 0 0);
+  --mask-off: rgb(0 0 0 / 0);
 
   /* The CSS sky shown before WebGL loads, or instead of it. */
   --fallback-star: rgb(232 236 241 / 0.55);

@@ -378,6 +378,18 @@ ol {
   background: linear-gradient(to bottom, var(--sheet-clear) 0, var(--surface-sheet) var(--fade-edge));
 }
 
+/* The hero's lower edge is fully scrimmed, so the sheet after it starts at the scrim
+   colour instead of clear. Starting clear left a hard dark-to-light line at the join. */
+.hero + .sheet {
+  background: linear-gradient(
+    to bottom,
+    var(--scrim) 0,
+    var(--surface-sheet) var(--fade-edge),
+    var(--surface-sheet) calc(100% - var(--fade-edge)),
+    var(--sheet-clear) 100%
+  );
+}
+
 .sheet-bottom {
   padding-top: var(--space-16);
   background: linear-gradient(
